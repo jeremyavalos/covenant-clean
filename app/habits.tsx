@@ -36,11 +36,14 @@ import {
 } from "../utils/language";
 
 import {
-  CovenantProPlan,
-  customerHasCovenantPro,
-  hasCovenantPro,
-  purchaseSubscription,
-} from "../utils/revenuecat";
+  getOfferings,
+  hasProAccess,
+  purchasePackage,
+} from "../services/revenuecat";
+
+import {
+  useSubscription,
+} from "../context/SubscriptionContext";
 
 import {
   useAuthStore,
@@ -54,7 +57,12 @@ bronzeSoft: "rgba(184,115,51,0.10)",
 text: "#f5f5f5",
 muted: "#8e8e93",
 border: "rgba(184,115,51,0.38)",
-};
+	};
+
+const FREE_HABIT_LIMIT = 1;
+const PRO_HABIT_LIMIT = 4;
+
+type CovenantProPlan = "monthly" | "annual";
 
 const habits = {
 
@@ -212,6 +220,10 @@ export default function HabitsScreen() {
 
 const router = useRouter();
 const posthog = usePostHog();
+const {
+isPro,
+refreshSubscription,
+} = useSubscription();
 const logout =
 useAuthStore(
 (state) => state.logout
@@ -233,11 +245,6 @@ setLanguage,
 ] = useState<Language>(
 "es"
 );
-
-const [
-isPro,
-setIsPro,
-] = useState(false);
 
 const [
 selectedFreeHabit,
@@ -309,8 +316,6 @@ loadLanguage();
 
 loadProgress();
 
-loadSubscription();
-
 loadSelectedFreeHabit();
 
 	}, [loadSelectedFreeHabit]);
@@ -375,23 +380,20 @@ false
 
 }
 
-async function loadSubscription() {
-
-const hasPro =
-await hasCovenantPro();
-
-setIsPro(
-hasPro
-);
-
-}
-
 function canOpenHabit(
 slug: string
 ) {
 
 if (isPro) {
-return true;
+const index =
+currentHabits.findIndex(
+(habit) => habit.slug === slug
+);
+
+return (
+index >= 0 &&
+index < PRO_HABIT_LIMIT
+);
 }
 
 if (!isFreeHabitReady) {
@@ -495,6 +497,44 @@ router.replace(
 
 }
 
+async function purchaseSelectedPlan(
+plan: CovenantProPlan
+) {
+const offerings =
+await getOfferings();
+
+const offering =
+offerings?.all.default ??
+offerings?.current ??
+null;
+
+const packageToPurchase =
+plan === "annual"
+? offering?.annual ??
+offering?.availablePackages.find(
+(item) =>
+item.identifier === "$rc_annual" ||
+item.packageType === "ANNUAL"
+)
+: offering?.monthly ??
+offering?.availablePackages.find(
+(item) =>
+item.identifier === "$rc_monthly" ||
+item.packageType === "MONTHLY"
+);
+
+if (!packageToPurchase) {
+console.warn(
+`[RevenueCat] No ${plan} package found in default offering.`
+);
+return null;
+}
+
+return purchasePackage(
+packageToPurchase
+);
+}
+
 async function activateCovenantPro(
 plan: CovenantProPlan
 ) {
@@ -506,19 +546,17 @@ true
 try {
 
 const customerInfo =
-await purchaseSubscription(
+await purchaseSelectedPlan(
 plan
 );
 
 if (
 customerInfo &&
-customerHasCovenantPro(
+hasProAccess(
 customerInfo
 )
 ) {
-setIsPro(
-true
-);
+await refreshSubscription();
 setPaywallVisible(
 false
 );

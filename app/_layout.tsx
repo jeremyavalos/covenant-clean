@@ -19,10 +19,6 @@ import {
 import { PostHogProvider } from "posthog-react-native";
 
 import {
-  initializeRevenueCat,
-} from "../utils/revenuecat";
-
-import {
   syncProgress,
 } from "../utils/progress";
 
@@ -31,6 +27,10 @@ import {
 } from "../store/authStore";
 
 import { posthog } from "../config/posthog";
+
+import {
+  SubscriptionProvider,
+} from "../context/SubscriptionContext";
 
 export default function Layout() {
   const router = useRouter();
@@ -58,7 +58,6 @@ export default function Layout() {
 
   useEffect(() => {
 
-    initializeRevenueCat();
     initializeAuth();
 
   }, [initializeAuth]);
@@ -160,26 +159,30 @@ export default function Layout() {
       }}
     >
 
-      <Stack
+      <SubscriptionProvider>
 
-        screenOptions={{
+        <Stack
 
-          headerShown: false,
+          screenOptions={{
 
-          animation:
-            "fade",
+            headerShown: false,
 
-          animationDuration:
-            700,
+            animation:
+              "fade",
 
-          contentStyle: {
-            backgroundColor:
-              "#050505",
-          },
+            animationDuration:
+              700,
 
-        }}
+            contentStyle: {
+              backgroundColor:
+                "#050505",
+            },
 
-      />
+          }}
+
+        />
+
+      </SubscriptionProvider>
 
     </PostHogProvider>
 

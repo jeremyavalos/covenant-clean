@@ -1,0 +1,247 @@
+import Constants from "expo-constants";
+import { Platform } from "react-native";
+import Purchases, {
+  CustomerInfo,
+  LOG_LEVEL,
+  PurchasesOfferings,
+  PurchasesPackage,
+} from "react-native-purchases";
+
+type RevenueCatExtra = {
+  revenueCatAndroidApiKey?: string;
+  revenueCatIosApiKey?: string;
+};
+
+type RevenueCatEnv = {
+  EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY?: string;
+  EXPO_PUBLIC_REVENUECAT_IOS_API_KEY?: string;
+};
+
+declare const __DEV__: boolean;
+
+declare const process:
+  | {
+      env?: RevenueCatEnv;
+    }
+  | undefined;
+
+const IOS_API_KEY_PLACEHOLDER = "ios api key";
+const ANDROID_API_KEY_PLACEHOLDER = "android api key";
+const OFFERING_IDENTIFIER = "default";
+const PRO_ENTITLEMENT_IDS = ["covenant Pro", "covenant_pro"];
+
+let initialized = false;
+let initPromise: Promise<boolean> | null = null;
+
+function logRevenueCat(message: string, extra?: unknown) {
+  if (extra) {
+    console.log(`[RevenueCat] ${message}`, extra);
+    return;
+  }
+
+  console.log(`[RevenueCat] ${message}`);
+}
+
+function warnRevenueCat(message: string, error?: unknown) {
+  if (error) {
+    console.warn(`[RevenueCat] ${message}`, error);
+    return;
+  }
+
+  console.warn(`[RevenueCat] ${message}`);
+}
+
+function getExpoExtra(): RevenueCatExtra {
+  return (Constants.expoConfig?.extra ?? {}) as RevenueCatExtra;
+}
+
+function cleanApiKey(value?: string | null) {
+  const apiKey = value?.trim();
+
+  if (
+    !apiKey ||
+    apiKey === IOS_API_KEY_PLACEHOLDER ||
+    apiKey === ANDROID_API_KEY_PLACEHOLDER
+  ) {
+    return null;
+  }
+
+  return apiKey;
+}
+
+function getRevenueCatApiKey() {
+  const extra = getExpoExtra();
+
+  if (Platform.OS === "ios") {
+    return cleanApiKey(
+      process?.env?.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY ??
+        extra.revenueCatIosApiKey ??
+        IOS_API_KEY_PLACEHOLDER
+    );
+  }
+
+  if (Platform.OS === "android") {
+    return cleanApiKey(
+      process?.env?.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY ??
+        extra.revenueCatAndroidApiKey ??
+        ANDROID_API_KEY_PLACEHOLDER
+    );
+  }
+
+  warnRevenueCat(`Unsupported platform: ${Platform.OS}.`);
+  return null;
+}
+
+export async function initRevenueCat(appUserID?: string): Promise<boolean> {
+  if (initialized) {
+    return true;
+  }
+
+  if (initPromise) {
+    return initPromise;
+  }
+
+  initPromise = (async () => {
+    const apiKey = getRevenueCatApiKey();
+
+    if (!apiKey) {
+      warnRevenueCat(
+        "Missing RevenueCat API key. Set EXPO_PUBLIC_REVENUECAT_IOS_API_KEY and EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY."
+      );
+      initPromise = null;
+      return false;
+    }
+
+    try {
+      if (__DEV__) {
+        await Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+      }
+
+      Purchases.configure({
+        apiKey,
+        appUserID,
+      });
+
+      initialized = true;
+      logRevenueCat("Initialized Purchases.", {
+        appUserID: appUserID ?? null,
+        platform: Platform.OS,
+      });
+
+      return true;
+    } catch (error) {
+      initPromise = null;
+      warnRevenueCat("Could not initialize Purchases.", error);
+      return false;
+    }
+  })();
+
+  return initPromise;
+}
+
+async function ensureRevenueCat() {
+  return initRevenueCat();
+}
+
+export async function getCustomerInfo(): Promise<CustomerInfo | null> {
+  const ready = await ensureRevenueCat();
+
+  if (!ready) {
+    return null;
+  }
+
+  try {
+    const customerInfo = await Purchases.getCustomerInfo();
+    logRevenueCat("Loaded customer info.");
+    return customerInfo;
+  } catch (error) {
+    warnRevenueCat("Could not load customer info.", error);
+    return null;
+  }
+}
+
+export async function getOfferings(): Promise<PurchasesOfferings | null> {
+  const ready = await ensureRevenueCat();
+
+  if (!ready) {
+    return null;
+  }
+
+  try {
+    const offerings = await Purchases.getOfferings();
+    logRevenueCat("Loaded offerings.", {
+      current: offerings.current?.identifier ?? null,
+    });
+    return offerings;
+  } catch (error) {
+    warnRevenueCat("Could not load offerings.", error);
+    return null;
+  }
+}
+
+export async function purchasePackage(
+  packageToPurchase: PurchasesPackage
+): Promise<CustomerInfo | null> {
+  const ready = await ensureRevenueCat();
+
+  if (!ready) {
+    return null;
+  }
+
+  try {
+    const { customerInfo } =
+      await Purchases.purchasePackage(packageToPurchase);
+    logRevenueCat("Purchase completed.", {
+      packageIdentifier: packageToPurchase.identifier,
+    });
+    return customerInfo;
+  } catch (error) {
+    const purchaseError = error as {
+      userCancelled?: boolean;
+    };
+
+    if (purchaseError.userCancelled) {
+      logRevenueCat("Purchase cancelled by user.");
+      return null;
+    }
+
+    warnRevenueCat("Purchase failed.", error);
+    throw error;
+  }
+}
+
+export async function restorePurchases(): Promise<CustomerInfo | null> {
+  const ready = await ensureRevenueCat();
+
+  if (!ready) {
+    return null;
+  }
+
+  try {
+    const customerInfo = await Purchases.restorePurchases();
+    logRevenueCat("Purchases restored.");
+    return customerInfo;
+  } catch (error) {
+    warnRevenueCat("Could not restore purchases.", error);
+    return null;
+  }
+}
+
+export function hasProAccess(customerInfo: CustomerInfo | null): boolean {
+  if (!customerInfo) {
+    return false;
+  }
+
+  return PRO_ENTITLEMENT_IDS.some(
+    (entitlementId) =>
+      customerInfo.entitlements.active[entitlementId]?.isActive === true
+  );
+}
+
+export async function getDefaultOfferingPackages() {
+  const offerings = await getOfferings();
+  const offering =
+    offerings?.all[OFFERING_IDENTIFIER] ?? offerings?.current ?? null;
+
+  return offering?.availablePackages ?? [];
+}
