@@ -1,6 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
 
+const habits = [
+  "Cold shower",
+  "Exercise",
+  "Dominate the mind",
+  "Mental strength",
+  "No vices",
+  "Writing",
+  "Gratitude",
+  "Silence",
+  "Meditation",
+];
+
 const steps = [
   {
     number: "01",
@@ -92,7 +104,10 @@ export default function Home() {
             </p>
             <div className="hero-actions">
               <a className="button button-primary" href="#download">
-                Join the beta
+                Download for iOS
+              </a>
+              <a className="button" href="#download">
+                Download for Android
               </a>
               <span>Coming soon on iOS and Android</span>
             </div>
@@ -129,6 +144,36 @@ export default function Home() {
                 <p>{step.text}</p>
               </article>
             ))}
+          </div>
+        </section>
+
+        <section className="section habits-section">
+          <div className="section-heading">
+            <p className="eyebrow">Habits</p>
+            <h2>Practices that make avoidance visible.</h2>
+          </div>
+          <div className="habit-list">
+            {habits.map((habit) => (
+              <span key={habit}>{habit}</span>
+            ))}
+          </div>
+        </section>
+
+        <section className="section philosophy-section">
+          <div className="section-heading">
+            <p className="eyebrow">Philosophy</p>
+            <h2>Discipline is not intensity. It is return.</h2>
+          </div>
+          <div className="text-columns">
+            <p>
+              Covenant is quiet on purpose. It does not turn your life into a
+              feed, a contest, or a performance. It gives the day a place to
+              answer.
+            </p>
+            <p>
+              The work is simple: choose the habit, complete what is true, and
+              come back when comfort asks you to forget.
+            </p>
           </div>
         </section>
 
