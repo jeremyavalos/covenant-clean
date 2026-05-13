@@ -3,19 +3,13 @@ import os
 import resend
 
 
-def _build_app_url(path: str, token: str) -> str:
-    covenant_app_url = os.getenv("COVENANT_APP_URL", "covenant://auth")
-    base_url = covenant_app_url.rstrip("/")
-    return f"{base_url}/{path}?token={token}"
-
-
-def _build_verification_url(token: str) -> str:
+def _build_backend_url(path: str, token: str) -> str:
     backend_url = os.getenv(
         "COVENANT_BACKEND_URL",
         "https://covenant-clean-production.up.railway.app",
     )
     base_url = backend_url.rstrip("/")
-    return f"{base_url}/auth/verify-email?token={token}"
+    return f"{base_url}/auth/{path}?token={token}"
 
 
 def _email_shell(title: str, body: str, button_text: str, button_url: str) -> str:
@@ -79,7 +73,7 @@ def send_email(to_email: str, subject: str, html: str) -> None:
 
 
 def send_verification_email(to_email: str, token: str) -> None:
-    verify_url = _build_verification_url(token)
+    verify_url = _build_backend_url("verify-email", token)
     html = _email_shell(
         title="Verify your covenant.",
         body="Confirm your email to protect your account and keep your discipline tied to you alone.",
@@ -95,7 +89,7 @@ def send_verification_email(to_email: str, token: str) -> None:
 
 
 def send_password_reset_email(to_email: str, token: str) -> None:
-    reset_url = _build_app_url("reset-password", token)
+    reset_url = _build_backend_url("reset-password", token)
     html = _email_shell(
         title="Reset your password.",
         body="Use this secure link to choose a new password. The link expires soon.",
