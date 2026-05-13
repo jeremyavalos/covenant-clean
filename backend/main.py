@@ -1,5 +1,6 @@
 import os
 import secrets
+from html import escape
 from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
@@ -227,6 +228,116 @@ def verify_user_email_token(token: str, db: Session) -> bool:
     return True
 
 
+def has_valid_reset_token(token: str, db: Session) -> bool:
+    user = db.query(User).filter(User.reset_token == token).first()
+
+    if user is None or is_expired(user.token_expires):
+        print("[Covenant auth] Invalid or expired password reset token page.")
+        return False
+
+    return True
+
+
+def render_reset_password_page(token: str, valid: bool) -> HTMLResponse:
+    if not valid:
+        return HTMLResponse(
+            content="""
+            <!doctype html>
+            <html lang="en">
+              <head>
+                <meta charset="utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <title>Covenant - Reset link expired</title>
+              </head>
+              <body style="margin:0;min-height:100vh;background:#050505;color:#fff8ef;font-family:Inter,Arial,sans-serif;display:grid;place-items:center;padding:24px;">
+                <main style="width:min(100%,560px);border:1px solid rgba(216,140,58,0.34);background:#0b0b0b;padding:36px 28px;text-align:center;">
+                  <p style="margin:0 0 18px;color:#d88c3a;font-size:12px;font-weight:800;letter-spacing:6px;">COVENANT</p>
+                  <h1 style="margin:0 0 16px;color:#ffb08c;font-family:Georgia,'Times New Roman',serif;font-size:42px;line-height:1.05;font-weight:400;">Reset link expired.</h1>
+                  <p style="margin:0 auto;max-width:430px;color:#c9c0b4;font-size:17px;line-height:1.7;">This password reset link is invalid or expired. Please request a new password reset email from Covenant.</p>
+                </main>
+              </body>
+            </html>
+            """,
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    safe_token = escape(token, quote=True)
+    content = """
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Covenant - Reset password</title>
+      </head>
+      <body style="margin:0;min-height:100vh;background:#050505;color:#fff8ef;font-family:Inter,Arial,sans-serif;display:grid;place-items:center;padding:24px;">
+        <main style="width:min(100%,560px);border:1px solid rgba(216,140,58,0.34);background:#0b0b0b;padding:34px 28px;text-align:center;">
+          <p style="margin:0 0 18px;color:#d88c3a;font-size:12px;font-weight:800;letter-spacing:6px;">COVENANT</p>
+          <h1 style="margin:0 0 12px;color:#fff8ef;font-family:Georgia,'Times New Roman',serif;font-size:42px;line-height:1.05;font-weight:400;">Reset your password.</h1>
+          <p style="margin:0 auto 24px;max-width:430px;color:#c9c0b4;font-size:16px;line-height:1.6;">Choose a new password to return to Covenant.</p>
+          <form id="reset-form" action="/auth/reset-password" method="post" style="display:grid;gap:14px;text-align:left;">
+            <input id="token" name="token" type="hidden" value="__TOKEN__" />
+            <label style="display:grid;gap:8px;color:#d8c2aa;font-size:13px;">
+              New password
+              <input id="password" name="password" type="password" minlength="8" maxlength="72" required style="min-height:54px;border-radius:14px;border:1px solid rgba(255,255,255,0.12);background:#050505;color:#fff8ef;font-size:16px;padding:0 16px;" />
+            </label>
+            <label style="display:grid;gap:8px;color:#d8c2aa;font-size:13px;">
+              Confirm password
+              <input id="confirm-password" name="confirm_password" type="password" minlength="8" maxlength="72" required style="min-height:54px;border-radius:14px;border:1px solid rgba(255,255,255,0.12);background:#050505;color:#fff8ef;font-size:16px;padding:0 16px;" />
+            </label>
+            <p id="message" style="min-height:22px;margin:0;color:#ffb08c;font-size:14px;line-height:1.5;text-align:center;"></p>
+            <button type="submit" style="min-height:56px;border-radius:16px;border:1px solid rgba(216,140,58,0.62);background:rgba(216,110,34,0.22);color:#ffd1a0;font-size:12px;font-weight:800;letter-spacing:4px;">RESET PASSWORD</button>
+          </form>
+        </main>
+        <script>
+          const form = document.getElementById("reset-form");
+          const message = document.getElementById("message");
+          form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            message.style.color = "#ffb08c";
+            message.textContent = "";
+
+            const token = document.getElementById("token").value;
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirm-password").value;
+
+            if (password !== confirmPassword) {
+              message.textContent = "Passwords do not match.";
+              return;
+            }
+
+            try {
+              const response = await fetch("/auth/reset-password", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  token,
+                  password
+                })
+              });
+
+              if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                throw new Error(data.detail || "Could not reset password.");
+              }
+
+              form.reset();
+              message.style.color = "#ffd1a0";
+              message.textContent = "Password reset. You can now return to Covenant.";
+            } catch (error) {
+              message.textContent = error.message || "Could not reset password.";
+            }
+          });
+        </script>
+      </body>
+    </html>
+    """.replace("__TOKEN__", safe_token)
+
+    return HTMLResponse(content=content)
+
+
 @app.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
 def register(payload: UserCreate, db: Session = Depends(get_db)):
     email = payload.email.lower()
@@ -361,6 +472,17 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
         ) from exc
 
     return generic_response
+
+
+@app.get("/auth/reset-password", response_class=HTMLResponse)
+def reset_password_link(
+    token: str = Query(..., min_length=16, max_length=512),
+    db: Session = Depends(get_db),
+):
+    return render_reset_password_page(
+        token,
+        has_valid_reset_token(token, db),
+    )
 
 
 @app.post("/auth/reset-password", response_model=MessageResponse)
