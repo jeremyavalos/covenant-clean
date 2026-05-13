@@ -15,6 +15,7 @@ import {
 } from "react";
 
 import { useRouter } from "expo-router";
+import { usePostHog } from "posthog-react-native";
 
 import CovenantBackdrop from "../components/CovenantBackdrop";
 
@@ -210,6 +211,7 @@ description:
 export default function HabitsScreen() {
 
 const router = useRouter();
+const posthog = usePostHog();
 const logout =
 useAuthStore(
 (state) => state.logout
@@ -290,7 +292,7 @@ setIsSyncingProgress,
 
 	const selectedHabit =
 	await getSelectedFreeHabit(
-	String(user.id || user.email)
+	String(user.id || user.id)
 	);
 
 	setSelectedFreeHabit(
@@ -422,6 +424,10 @@ slug
 setPaywallVisible(
 true
 );
+posthog.capture("paywall_shown", {
+habit_slug: slug,
+is_pro: isPro,
+});
 return;
 }
 
@@ -435,7 +441,7 @@ return;
 
 const savedHabit =
 await saveSelectedFreeHabit(
-String(user.id || user.email),
+String(user.id || user.id),
 slug
 );
 
@@ -450,9 +456,18 @@ slug
 setPaywallVisible(
 true
 );
+posthog.capture("paywall_shown", {
+habit_slug: slug,
+is_pro: isPro,
+});
 return;
 }
 }
+
+posthog.capture("habit_opened", {
+habit_slug: slug,
+is_pro: isPro,
+});
 
 router.push({
 pathname:
@@ -508,6 +523,11 @@ setPaywallVisible(
 false
 );
 
+posthog.capture("subscription_started", {
+plan,
+habit_slug: selectedLockedHabit ?? null,
+});
+
 if (selectedLockedHabit) {
 router.push({
 pathname:
@@ -527,6 +547,23 @@ console.warn(
 "Could not activate Covenant Pro.",
 error
 );
+
+if (error instanceof Error) {
+posthog.capture("$exception", {
+$exception_list: [
+{
+type: error.name,
+value: error.message,
+stacktrace: {
+type: "raw",
+frames: error.stack ?? "",
+},
+},
+],
+$exception_source: "subscription",
+plan,
+});
+}
 
 } finally {
 

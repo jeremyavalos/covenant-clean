@@ -26,6 +26,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { usePostHog } from 'posthog-react-native';
+
 import CovenantBackdrop from '../../components/CovenantBackdrop';
 import { getTodayHabitEntry } from '../../utils/habitEngine';
 import { getLanguage, Language } from '../../utils/language';
@@ -60,6 +62,7 @@ const HABIT_INFO = {
 
 export default function HabitScreen() {
   const { habit } = useLocalSearchParams();
+  const posthog = usePostHog();
 
   const [language, setLanguage] = useState<Language>('es');
   const [completedDays, setCompletedDays] = useState(0);
@@ -296,6 +299,14 @@ export default function HabitScreen() {
       setStreak(updated.streak);
       setCompletedToday(true);
 
+      posthog.capture('habit_completed', {
+        habit_slug: String(habit),
+        completed_days: updated.completedDays,
+        streak: updated.streak,
+        period: isNight ? 'night' : 'morning',
+        language,
+      });
+
       Alert.alert(t.successTitle, t.successText);
     } finally {
       setIsCompleting(false);
@@ -332,6 +343,13 @@ export default function HabitScreen() {
 
   const navigateDeeper = async () => {
     await Haptics.selectionAsync();
+
+    posthog.capture('deeper_entered', {
+      habit_slug: String(habit),
+      day: currentDay,
+      period: current.period,
+      language,
+    });
 
     router.push({
       pathname: '/deeper',
@@ -417,7 +435,7 @@ export default function HabitScreen() {
             <Text style={styles.contentLabel}>{t.phrase}</Text>
 
             <Text style={[styles.quote, isNight && styles.nightQuote]}>
-              “{current.quote}”
+              {'"'}{current.quote}{'"'}
             </Text>
 
             <Text style={styles.author}>— {current.quoteAuthor}</Text>
@@ -428,7 +446,7 @@ export default function HabitScreen() {
               <Text style={styles.verseLabel}>{t.verse}</Text>
 
               <Text style={[styles.verse, isNight && styles.nightVerse]}>
-                “{current.verse}”
+                {'"'}{current.verse}{'"'}
               </Text>
 
               <Text style={styles.reference}>{current.reference}</Text>

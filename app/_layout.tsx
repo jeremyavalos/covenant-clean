@@ -2,16 +2,21 @@ import {
   Stack,
   useRouter,
   useSegments,
+  usePathname,
+  useGlobalSearchParams,
 } from "expo-router";
 
 import {
   useEffect,
+  useRef,
 } from "react";
 
 import {
   ActivityIndicator,
   View,
 } from "react-native";
+
+import { PostHogProvider } from "posthog-react-native";
 
 import {
   initializeRevenueCat,
@@ -25,12 +30,22 @@ import {
   useAuthStore,
 } from "../store/authStore";
 
+import { posthog } from "../config/posthog";
+
 export default function Layout() {
   const router = useRouter();
   const segments = useSegments();
+  const pathname = usePathname();
+  const params = useGlobalSearchParams();
+  const previousPathname = useRef<string | undefined>(undefined);
+  const previousToken = useRef<string | null>(null);
 
   const token = useAuthStore(
     (state) => state.token
+  );
+
+  const user = useAuthStore(
+    (state) => state.user
   );
 
   const loading = useAuthStore(
@@ -86,6 +101,38 @@ export default function Layout() {
     }
   }, [loading, token]);
 
+  // Identify user and track sign-in/sign-out via token changes
+  useEffect(() => {
+    if (loading) return;
+
+    const hadToken = previousToken.current;
+    previousToken.current = token;
+
+    if (token && !hadToken && user) {
+      // New login: identify by numeric user ID (no PII)
+      posthog.identify(String(user.id), {
+        $set: { is_pro: user.is_pro },
+        $set_once: { first_seen_date: new Date().toISOString() },
+      });
+      posthog.capture("user_signed_in");
+    } else if (!token && hadToken) {
+      // Logout
+      posthog.capture("user_signed_out");
+      posthog.reset();
+    }
+  }, [loading, token, user]);
+
+  // Manual screen tracking for Expo Router
+  useEffect(() => {
+    if (previousPathname.current !== pathname) {
+      posthog.screen(pathname, {
+        previous_screen: previousPathname.current ?? null,
+        ...params,
+      });
+      previousPathname.current = pathname;
+    }
+  }, [pathname, params]);
+
   if (loading) {
     return (
       <View
@@ -103,26 +150,38 @@ export default function Layout() {
 
   return (
 
-    <Stack
-
-      screenOptions={{
-
-        headerShown: false,
-
-        animation:
-          "fade",
-
-        animationDuration:
-          700,
-
-        contentStyle: {
-          backgroundColor:
-            "#050505",
-        },
-
+    <PostHogProvider
+      client={posthog}
+      autocapture={{
+        captureScreens: false,
+        captureTouches: true,
+        propsToCapture: ["testID"],
+        maxElementsCaptured: 20,
       }}
+    >
 
-    />
+      <Stack
+
+        screenOptions={{
+
+          headerShown: false,
+
+          animation:
+            "fade",
+
+          animationDuration:
+            700,
+
+          contentStyle: {
+            backgroundColor:
+              "#050505",
+          },
+
+        }}
+
+      />
+
+    </PostHogProvider>
 
   );
 
