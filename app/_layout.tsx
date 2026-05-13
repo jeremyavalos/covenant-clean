@@ -61,7 +61,9 @@ export default function Layout() {
       currentRoute === "auth" ||
       currentRoute === "index" ||
       currentRoute === "language" ||
-      currentRoute === "transition";
+      currentRoute === "transition" ||
+      currentRoute === "reset-password" ||
+      currentRoute === "verify-email";
 
     if (!token && !isPublicRoute) {
       router.replace("/auth" as never);

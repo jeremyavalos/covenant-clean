@@ -20,6 +20,15 @@ type AuthModePayload = {
   password: string;
 };
 
+type EmailPayload = {
+  email: string;
+};
+
+type ResetPasswordPayload = {
+  token: string;
+  password: string;
+};
+
 type TokenResponse = {
   access_token: string;
   token_type: string;
@@ -41,6 +50,9 @@ type AuthState = {
   initializeAuth: () => Promise<void>;
   login: (payload: AuthModePayload) => Promise<void>;
   register: (payload: AuthModePayload) => Promise<void>;
+  resendVerification: (payload: EmailPayload) => Promise<void>;
+  forgotPassword: (payload: EmailPayload) => Promise<void>;
+  resetPassword: (payload: ResetPasswordPayload) => Promise<void>;
   logout: () => Promise<void>;
   refreshMe: () => Promise<void>;
 };
@@ -146,28 +158,90 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ busy: true, error: null });
 
     try {
-      const tokenResponse = await apiFetch<TokenResponse>("/register", {
+      await apiFetch<TokenResponse>("/register", {
         method: "POST",
         auth: false,
         body: JSON.stringify(payload),
       });
 
-      await saveAuthToken(tokenResponse.access_token);
-      const user = await fetchMe();
-
-      await prepareProgressForUser(
-        user,
-        "register"
-      );
-
       set({
-        token: tokenResponse.access_token,
-        user,
         busy: false,
       });
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : "Could not register",
+        busy: false,
+      });
+
+      throw error;
+    }
+  },
+
+  resendVerification: async (payload) => {
+    set({ busy: true, error: null });
+
+    try {
+      await apiFetch("/auth/send-verification", {
+        method: "POST",
+        auth: false,
+        body: JSON.stringify(payload),
+      });
+
+      set({ busy: false });
+    } catch (error) {
+      set({
+        error:
+          error instanceof Error
+            ? error.message
+            : "Could not resend verification email",
+        busy: false,
+      });
+
+      throw error;
+    }
+  },
+
+  forgotPassword: async (payload) => {
+    set({ busy: true, error: null });
+
+    try {
+      await apiFetch("/auth/forgot-password", {
+        method: "POST",
+        auth: false,
+        body: JSON.stringify(payload),
+      });
+
+      set({ busy: false });
+    } catch (error) {
+      set({
+        error:
+          error instanceof Error
+            ? error.message
+            : "Could not send reset instructions",
+        busy: false,
+      });
+
+      throw error;
+    }
+  },
+
+  resetPassword: async (payload) => {
+    set({ busy: true, error: null });
+
+    try {
+      await apiFetch("/auth/reset-password", {
+        method: "POST",
+        auth: false,
+        body: JSON.stringify(payload),
+      });
+
+      set({ busy: false });
+    } catch (error) {
+      set({
+        error:
+          error instanceof Error
+            ? error.message
+            : "Could not reset password",
         busy: false,
       });
 

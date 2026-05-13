@@ -3,8 +3,9 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -172,6 +173,60 @@ def send_reset_for_user(user: User):
     print(f"[Covenant auth] Password reset email sent to user {user.id}.")
 
 
+def render_verification_page(success: bool) -> HTMLResponse:
+    title = "Email verified." if success else "Verification link expired."
+    message = (
+        "Email verified. You can now return to Covenant."
+        if success
+        else "This verification link is invalid or expired. Please request a new verification email."
+    )
+    secondary = (
+        "Correo verificado. Ya puedes volver a Covenant."
+        if success
+        else "Este enlace es invalido o expiro. Solicita un nuevo correo de verificacion."
+    )
+    accent = "#d88c3a" if success else "#ffb08c"
+
+    return HTMLResponse(
+        content=f"""
+        <!doctype html>
+        <html lang="en">
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <title>Covenant - {title}</title>
+          </head>
+          <body style="margin:0;min-height:100vh;background:#050505;color:#fff8ef;font-family:Inter,Arial,sans-serif;display:grid;place-items:center;padding:24px;">
+            <main style="width:min(100%,560px);border:1px solid rgba(216,140,58,0.34);background:#0b0b0b;padding:36px 28px;text-align:center;">
+              <p style="margin:0 0 18px;color:#d88c3a;font-size:12px;font-weight:800;letter-spacing:6px;">COVENANT</p>
+              <h1 style="margin:0 0 16px;color:{accent};font-family:Georgia,'Times New Roman',serif;font-size:42px;line-height:1.05;font-weight:400;">{title}</h1>
+              <p style="margin:0 auto 12px;max-width:430px;color:#c9c0b4;font-size:17px;line-height:1.7;">{message}</p>
+              <p style="margin:0 auto;max-width:430px;color:#8f867c;font-size:14px;line-height:1.6;">{secondary}</p>
+            </main>
+          </body>
+        </html>
+        """,
+        status_code=status.HTTP_200_OK if success else status.HTTP_400_BAD_REQUEST,
+    )
+
+
+def verify_user_email_token(token: str, db: Session) -> bool:
+    user = db.query(User).filter(User.verification_token == token).first()
+
+    if user is None or is_expired(user.token_expires):
+        print("[Covenant auth] Invalid or expired verification token.")
+        return False
+
+    user.is_verified = True
+    user.verification_token = None
+    user.token_expires = None
+    user.verified_at = now_utc()
+    db.commit()
+
+    print(f"[Covenant auth] User {user.id} verified email.")
+    return True
+
+
 @app.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
 def register(payload: UserCreate, db: Session = Depends(get_db)):
     email = payload.email.lower()
@@ -215,6 +270,13 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    if not user.is_verified:
+        print(f"[Covenant auth] Login blocked for unverified user {user.id}.")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Email not verified",
+        )
+
     access_token = create_access_token({"sub": str(user.id)})
     return Token(access_token=access_token)
 
@@ -250,28 +312,25 @@ def send_verification(payload: EmailRequest, db: Session = Depends(get_db)):
     return MessageResponse(message="Verification email sent.")
 
 
+@app.get("/auth/verify-email", response_class=HTMLResponse)
+def verify_email_link(
+    token: str = Query(..., min_length=16, max_length=512),
+    db: Session = Depends(get_db),
+):
+    verified = verify_user_email_token(token, db)
+    return render_verification_page(verified)
+
+
 @app.post("/auth/verify-email", response_model=MessageResponse)
 def verify_email(payload: VerifyEmailRequest, db: Session = Depends(get_db)):
-    user = (
-        db.query(User)
-        .filter(User.verification_token == payload.token)
-        .first()
-    )
+    verified = verify_user_email_token(payload.token, db)
 
-    if user is None or is_expired(user.token_expires):
-        print("[Covenant auth] Invalid or expired verification token.")
+    if not verified:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired verification token.",
         )
 
-    user.is_verified = True
-    user.verification_token = None
-    user.token_expires = None
-    user.verified_at = now_utc()
-    db.commit()
-
-    print(f"[Covenant auth] User {user.id} verified email.")
     return MessageResponse(message="Email verified.")
 
 

@@ -20,7 +20,7 @@ import { colors } from "../constants/theme";
 import { useAuthStore } from "../store/authStore";
 import { getLanguage, Language } from "../utils/language";
 
-type AuthMode = "login" | "register";
+type AuthMode = "login" | "register" | "forgot";
 
 export default function AuthScreen() {
   const [language, setLanguage] = useState<Language>("es");
@@ -28,9 +28,17 @@ export default function AuthScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [verificationEmail, setVerificationEmail] = useState<string | null>(
+    null
+  );
 
   const login = useAuthStore((state) => state.login);
   const register = useAuthStore((state) => state.register);
+  const resendVerification = useAuthStore(
+    (state) => state.resendVerification
+  );
+  const forgotPassword = useAuthStore((state) => state.forgotPassword);
   const busy = useAuthStore((state) => state.busy);
   const token = useAuthStore((state) => state.token);
 
@@ -108,12 +116,24 @@ export default function AuthScreen() {
           passwordPlaceholder: "contraseña",
           loginAction: "ENTRAR",
           registerAction: "CREAR PACTO",
+          forgotTitle: "Recupera el acceso.",
+          forgotAction: "ENVIAR INSTRUCCIONES",
+          forgotPassword: "¿OLVIDASTE TU CONTRASEÑA?",
+          backToLogin: "VOLVER A ENTRAR",
           createAccount: "CREAR CUENTA",
           haveAccount: "YA TENGO CUENTA",
           loading: "ABRIENDO",
           genericError: "No se pudo abrir la sesión.",
           invalidError: "Email o contraseña incorrectos.",
           registeredError: "Ese email ya está registrado.",
+          unverifiedError: "Verifica tu correo antes de entrar.",
+          verificationSent:
+            "Te enviamos un correo de verificación. Revisa tu bandeja de entrada y correo no deseado.",
+          resendVerification: "REENVIAR CORREO DE VERIFICACIÓN",
+          resendSent:
+            "Te enviamos otro correo de verificación.",
+          forgotSent:
+            "Si este correo existe, enviamos instrucciones para restablecer tu contraseña.",
         }
       : {
           kicker: "COVENANT ACCESS",
@@ -127,23 +147,39 @@ export default function AuthScreen() {
           passwordPlaceholder: "password",
           loginAction: "ENTER",
           registerAction: "CREATE COVENANT",
+          forgotTitle: "Recover access.",
+          forgotAction: "SEND INSTRUCTIONS",
+          forgotPassword: "FORGOT PASSWORD?",
+          backToLogin: "RETURN TO LOGIN",
           createAccount: "CREATE ACCOUNT",
           haveAccount: "I HAVE AN ACCOUNT",
           loading: "OPENING",
           genericError: "Could not open the session.",
           invalidError: "Invalid email or password.",
           registeredError: "That email is already registered.",
+          unverifiedError: "Please verify your email before entering.",
+          verificationSent:
+            "We sent you a verification email. Check your inbox and spam folder.",
+          resendVerification: "RESEND VERIFICATION EMAIL",
+          resendSent:
+            "We sent another verification email.",
+          forgotSent:
+            "If this email exists, we sent password reset instructions.",
         };
 
   const title =
     mode === "login"
       ? t.loginTitle
-      : t.registerTitle;
+      : mode === "register"
+        ? t.registerTitle
+        : t.forgotTitle;
 
   const actionText =
     mode === "login"
       ? t.loginAction
-      : t.registerAction;
+      : mode === "register"
+        ? t.registerAction
+        : t.forgotAction;
 
   const toggleText =
     mode === "login"
@@ -172,30 +208,92 @@ export default function AuthScreen() {
       return t.registeredError;
     }
 
+    if (
+      message.includes("verify") ||
+      message.includes("verified")
+    ) {
+      return t.unverifiedError;
+    }
+
     return error.message || t.genericError;
   }
 
   async function submit() {
     setLocalError(null);
+    setNotice(null);
+
+    const submittedEmail =
+      email.trim().toLowerCase();
 
     try {
       const payload = {
-        email: email.trim().toLowerCase(),
+        email: submittedEmail,
         password,
       };
 
       if (mode === "login") {
         await login(payload);
-      } else {
-        await register(payload);
+        router.replace("/habits" as never);
+        return;
       }
 
-      router.replace("/habits" as never);
+      if (mode === "register") {
+        await register(payload);
+        setVerificationEmail(payload.email);
+        setPassword("");
+        setNotice(t.verificationSent);
+        return;
+      }
+
+      await forgotPassword({
+        email: payload.email,
+      });
+      setNotice(t.forgotSent);
+    } catch (error) {
+      if (mode === "login" && error instanceof Error) {
+        const message = error.message.toLowerCase();
+
+        if (
+          message.includes("verify") ||
+          message.includes("verified")
+        ) {
+          setVerificationEmail(submittedEmail);
+        }
+      }
+
+      setLocalError(
+        getAuthErrorMessage(error)
+      );
+    }
+  }
+
+  async function handleResendVerification() {
+    const targetEmail =
+      verificationEmail || email.trim().toLowerCase();
+
+    if (!targetEmail) {
+      return;
+    }
+
+    setLocalError(null);
+    setNotice(null);
+
+    try {
+      await resendVerification({
+        email: targetEmail,
+      });
+      setNotice(t.resendSent);
     } catch (error) {
       setLocalError(
         getAuthErrorMessage(error)
       );
     }
+  }
+
+  function switchMode(nextMode: AuthMode) {
+    setMode(nextMode);
+    setLocalError(null);
+    setNotice(null);
   }
 
   return (
@@ -242,7 +340,7 @@ export default function AuthScreen() {
           <BlurView intensity={24} tint="dark" style={styles.panel}>
             <View style={styles.toggle}>
               <Pressable
-                onPress={() => setMode("login")}
+                onPress={() => switchMode("login")}
                 style={[
                   styles.toggleSide,
                   mode === "login" && styles.toggleActive,
@@ -259,7 +357,7 @@ export default function AuthScreen() {
               </Pressable>
 
               <Pressable
-                onPress={() => setMode("register")}
+                onPress={() => switchMode("register")}
                 style={[
                   styles.toggleSide,
                   mode === "register" && styles.toggleActive,
@@ -287,18 +385,24 @@ export default function AuthScreen() {
               value={email}
             />
 
-            <TextInput
-              autoCapitalize="none"
-              onChangeText={setPassword}
-              placeholder={t.passwordPlaceholder}
-              placeholderTextColor="rgba(255,255,255,0.32)"
-              secureTextEntry
-              style={styles.input}
-              value={password}
-            />
+            {mode !== "forgot" ? (
+              <TextInput
+                autoCapitalize="none"
+                onChangeText={setPassword}
+                placeholder={t.passwordPlaceholder}
+                placeholderTextColor="rgba(255,255,255,0.32)"
+                secureTextEntry
+                style={styles.input}
+                value={password}
+              />
+            ) : null}
 
             {localError ? (
               <Text style={styles.error}>{localError}</Text>
+            ) : null}
+
+            {notice ? (
+              <Text style={styles.notice}>{notice}</Text>
             ) : null}
 
             <Pressable
@@ -320,14 +424,40 @@ export default function AuthScreen() {
               )}
             </Pressable>
 
+            {verificationEmail ? (
+              <Pressable
+                disabled={busy}
+                onPress={handleResendVerification}
+                style={styles.secondaryButton}
+              >
+                <Text style={styles.secondaryText}>
+                  {t.resendVerification}
+                </Text>
+              </Pressable>
+            ) : null}
+
+            {mode === "login" ? (
+              <Pressable
+                disabled={busy}
+                onPress={() => switchMode("forgot")}
+                style={styles.secondaryButton}
+              >
+                <Text style={styles.secondaryText}>
+                  {t.forgotPassword}
+                </Text>
+              </Pressable>
+            ) : null}
+
             <Pressable
               disabled={busy}
               onPress={() =>
-                setMode(mode === "login" ? "register" : "login")
+                switchMode(mode === "login" ? "register" : "login")
               }
               style={styles.switchButton}
             >
-              <Text style={styles.switchText}>{toggleText}</Text>
+              <Text style={styles.switchText}>
+                {mode === "forgot" ? t.backToLogin : toggleText}
+              </Text>
             </Pressable>
           </BlurView>
         </Animated.View>
@@ -455,6 +585,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
+  notice: {
+    color: "#FFD1A0",
+    fontSize: 13,
+    lineHeight: 21,
+    marginBottom: 14,
+    textAlign: "center",
+  },
+
   button: {
     minHeight: 60,
     borderRadius: 18,
@@ -486,6 +624,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800",
     letterSpacing: 4,
+  },
+
+  secondaryButton: {
+    alignItems: "center",
+    paddingTop: 16,
+  },
+
+  secondaryText: {
+    color: "#D8C2AA",
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 2.4,
+    textAlign: "center",
   },
 
   switchButton: {
