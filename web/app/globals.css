@@ -1,0 +1,500 @@
+:root {
+  color-scheme: dark;
+  --bg: #050505;
+  --panel: #0b0a08;
+  --panel-2: #11100d;
+  --text: #fff8ef;
+  --muted: #b9afa3;
+  --quiet: #81786f;
+  --copper: #d88c3a;
+  --copper-soft: #f0b56d;
+  --line: rgba(216, 140, 58, 0.24);
+  --line-strong: rgba(216, 140, 58, 0.46);
+  --max: 1120px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--bg);
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(216, 140, 58, 0.08), transparent 34rem),
+    var(--bg);
+  color: var(--text);
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.site-header {
+  position: fixed;
+  z-index: 20;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px clamp(18px, 4vw, 44px);
+  border-bottom: 1px solid rgba(216, 140, 58, 0.13);
+  background: rgba(5, 5, 5, 0.76);
+  backdrop-filter: blur(18px);
+}
+
+.brand,
+.footer-brand,
+.eyebrow {
+  color: var(--copper);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.34em;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: none;
+  align-items: center;
+  gap: 24px;
+}
+
+.nav-links a,
+.footer-links a {
+  color: var(--muted);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.nav-links a:hover,
+.footer-links a:hover,
+.support-section a:hover {
+  color: var(--copper-soft);
+}
+
+.hero {
+  position: relative;
+  min-height: 94svh;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hero-image {
+  z-index: -3;
+  object-fit: cover;
+  transform: scale(1.03);
+}
+
+.hero-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    linear-gradient(180deg, rgba(5, 5, 5, 0.25) 0%, rgba(5, 5, 5, 0.72) 62%, #050505 100%),
+    linear-gradient(90deg, rgba(5, 5, 5, 0.92), rgba(5, 5, 5, 0.50), rgba(5, 5, 5, 0.88));
+}
+
+.hero-inner {
+  width: min(var(--max), 100%);
+  margin: 0 auto;
+  padding: 132px clamp(20px, 5vw, 48px) 64px;
+}
+
+.eyebrow {
+  margin: 0 0 18px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1,
+h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+}
+
+h1 {
+  max-width: 860px;
+  margin-bottom: 18px;
+  font-size: clamp(54px, 13vw, 136px);
+  line-height: 0.88;
+}
+
+h2 {
+  margin-bottom: 0;
+  font-size: clamp(34px, 7vw, 68px);
+  line-height: 1;
+}
+
+h3 {
+  margin-bottom: 12px;
+  font-size: 24px;
+  line-height: 1.16;
+  font-weight: 500;
+}
+
+.hero-copy {
+  max-width: 640px;
+  color: var(--muted);
+  font-size: clamp(17px, 2.6vw, 22px);
+  line-height: 1.65;
+}
+
+.hero-actions,
+.store-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.hero-actions {
+  margin-top: 34px;
+}
+
+.hero-actions span {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.button,
+.store-actions a,
+.store-actions button {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 20px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.button-primary,
+.store-actions a {
+  background: var(--copper);
+  color: #080604;
+  border-color: var(--copper);
+}
+
+.store-actions button {
+  color: var(--muted);
+}
+
+.section {
+  width: min(var(--max), 100%);
+  margin: 0 auto;
+  padding: 82px clamp(20px, 5vw, 48px);
+}
+
+.section-heading {
+  max-width: 760px;
+  margin-bottom: 34px;
+}
+
+.text-columns {
+  display: grid;
+  gap: 18px;
+}
+
+.text-columns p,
+.step-card p,
+.plan-card li,
+.faq-list p,
+.download-section p,
+.support-section p,
+.legal-page p,
+.legal-page li {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.steps-grid,
+.plans-grid,
+.mockup-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.step-card,
+.plan-card,
+.faq-list details,
+.legal-card {
+  border: 1px solid var(--line);
+  background: rgba(12, 11, 9, 0.82);
+}
+
+.step-card {
+  min-height: 218px;
+  padding: 24px;
+}
+
+.step-card span,
+.plan-label {
+  color: var(--copper);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.step-card h3,
+.plan-card h3 {
+  margin-top: 28px;
+}
+
+.plans-section,
+.faq-section {
+  border-top: 1px solid rgba(216, 140, 58, 0.12);
+}
+
+.plan-card {
+  display: flex;
+  min-height: 372px;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 28px;
+}
+
+.pro-card {
+  border-color: var(--line-strong);
+  background:
+    linear-gradient(180deg, rgba(216, 140, 58, 0.12), rgba(12, 11, 9, 0.84) 42%),
+    var(--panel);
+}
+
+.price {
+  margin: 18px 0;
+  color: var(--text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 30px;
+  line-height: 1.08;
+}
+
+ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+li::marker {
+  color: var(--copper);
+}
+
+.mockup-grid {
+  align-items: center;
+}
+
+.phone-frame {
+  position: relative;
+  min-height: 430px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 34px;
+  background: var(--panel-2);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.45);
+}
+
+.phone-frame.tall {
+  min-height: 560px;
+}
+
+.phone-frame img {
+  object-fit: cover;
+}
+
+.phone-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.76));
+}
+
+.phone-copy {
+  position: absolute;
+  z-index: 2;
+  left: 24px;
+  right: 24px;
+  bottom: 28px;
+  display: grid;
+  gap: 8px;
+}
+
+.phone-copy span {
+  color: var(--copper);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.28em;
+}
+
+.phone-copy strong {
+  color: var(--text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1.08;
+}
+
+.faq-list {
+  display: grid;
+  gap: 10px;
+}
+
+.faq-list details {
+  padding: 20px 22px;
+}
+
+.faq-list summary {
+  cursor: pointer;
+  color: var(--text);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.faq-list summary::marker {
+  color: var(--copper);
+}
+
+.faq-list p {
+  margin: 14px 0 0;
+}
+
+.download-section,
+.support-section {
+  border: 1px solid var(--line-strong);
+  background:
+    linear-gradient(180deg, rgba(216, 140, 58, 0.10), rgba(10, 9, 8, 0.94)),
+    var(--panel-2);
+}
+
+.download-section {
+  display: grid;
+  gap: 30px;
+}
+
+.support-section a {
+  color: var(--copper-soft);
+}
+
+.site-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px clamp(20px, 5vw, 48px) 36px;
+  border-top: 1px solid rgba(216, 140, 58, 0.16);
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legal-page {
+  width: min(860px, 100%);
+  margin: 0 auto;
+  padding: 118px clamp(20px, 5vw, 48px) 82px;
+}
+
+.legal-card {
+  padding: clamp(24px, 5vw, 42px);
+}
+
+.legal-card h1 {
+  margin-bottom: 18px;
+  font-size: clamp(44px, 9vw, 84px);
+}
+
+.legal-card h2 {
+  margin-top: 34px;
+  margin-bottom: 12px;
+  font-size: 28px;
+}
+
+@media (min-width: 720px) {
+  .nav-links {
+    display: flex;
+  }
+
+  .hero-actions,
+  .store-actions {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .text-columns,
+  .plans-grid,
+  .mockup-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .steps-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .download-section {
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: center;
+  }
+
+  .store-actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .site-footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-links {
+    flex-direction: row;
+    align-items: center;
+    gap: 22px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+
+@media (min-width: 1040px) {
+  .section {
+    padding-top: 106px;
+    padding-bottom: 106px;
+  }
+
+  .steps-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
