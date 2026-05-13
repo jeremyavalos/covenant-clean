@@ -1,5 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
+import {
+  TrackedButton,
+  TrackedDetails,
+  TrackedLink,
+} from "./analytics-controls";
 
 const habits = [
   "Cold shower",
@@ -103,12 +108,28 @@ export default function Home() {
               to yourself.
             </p>
             <div className="hero-actions">
-              <a className="button button-primary" href="#download">
+              <TrackedLink
+                className="button button-primary"
+                eventName="cta_clicked"
+                eventProperties={{
+                  cta: "download_ios_hero",
+                  location: "hero",
+                }}
+                href="#download"
+              >
                 Download for iOS
-              </a>
-              <a className="button" href="#download">
+              </TrackedLink>
+              <TrackedLink
+                className="button"
+                eventName="cta_clicked"
+                eventProperties={{
+                  cta: "download_android_hero",
+                  location: "hero",
+                }}
+                href="#download"
+              >
                 Download for Android
-              </a>
+              </TrackedLink>
               <span>Coming soon on iOS and Android</span>
             </div>
           </div>
@@ -249,10 +270,11 @@ export default function Home() {
           </div>
           <div className="faq-list">
             {faqs.map((faq) => (
-              <details key={faq.question}>
-                <summary>{faq.question}</summary>
-                <p>{faq.answer}</p>
-              </details>
+              <TrackedDetails
+                answer={faq.answer}
+                key={faq.question}
+                question={faq.question}
+              />
             ))}
           </div>
         </section>
@@ -267,11 +289,31 @@ export default function Home() {
             </p>
           </div>
           <div className="store-actions">
-            <button type="button">App Store — Coming soon</button>
-            <button type="button">Google Play — Coming soon</button>
-            <a href="mailto:support@joincovenantapp.com?subject=Covenant%20beta">
+            <TrackedButton
+              eventName="app_store_button_clicked"
+              eventProperties={{
+                location: "download_section",
+              }}
+            >
+              App Store — Coming soon
+            </TrackedButton>
+            <TrackedButton
+              eventName="google_play_button_clicked"
+              eventProperties={{
+                location: "download_section",
+              }}
+            >
+              Google Play — Coming soon
+            </TrackedButton>
+            <TrackedLink
+              eventName="join_beta_clicked"
+              eventProperties={{
+                location: "download_section",
+              }}
+              href="mailto:support@joincovenantapp.com?subject=Covenant%20beta"
+            >
               Join the beta
-            </a>
+            </TrackedLink>
           </div>
         </section>
 
