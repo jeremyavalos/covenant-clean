@@ -483,10 +483,10 @@ const styles = StyleSheet.create({
     width: 260,
     height: 260,
     borderRadius: 130,
-    backgroundColor: "rgba(216,140,58,0.16)",
+    backgroundColor: "rgba(216,140,58,0.08)",
     shadowColor: colors.accent,
-    shadowOpacity: 0.45,
-    shadowRadius: 70,
+    shadowOpacity: 0.22,
+    shadowRadius: 44,
     shadowOffset: {
       width: 0,
       height: 0,
@@ -529,8 +529,8 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: "rgba(216,140,58,0.34)",
-    backgroundColor: "rgba(6,6,6,0.58)",
+    borderColor: "rgba(216,140,58,0.24)",
+    backgroundColor: "rgba(6,6,6,0.66)",
     padding: 18,
   },
 
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "rgba(216,140,58,0.22)",
+    borderColor: "rgba(216,140,58,0.18)",
     marginBottom: 18,
     overflow: "hidden",
   },
@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
   },
 
   toggleActive: {
-    backgroundColor: "rgba(216,140,58,0.18)",
+    backgroundColor: "rgba(216,140,58,0.13)",
   },
 
   toggleText: {
@@ -598,9 +598,9 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(216,110,34,0.22)",
+    backgroundColor: "rgba(216,110,34,0.18)",
     borderWidth: 1,
-    borderColor: "rgba(216,140,58,0.62)",
+    borderColor: "rgba(216,140,58,0.48)",
     marginTop: 4,
   },
 

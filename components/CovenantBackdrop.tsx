@@ -13,7 +13,7 @@ type Props = {
 const overlayOpacity = {
   subtle: 0.84,
   medium: 0.74,
-  strong: 0.56,
+  strong: 0.64,
 };
 
 const sources: Record<NonNullable<Props['variant']>, ImageSourcePropType> = {
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
 
   imageLayer: {
-    opacity: 0.92,
+    opacity: 0.86,
   },
 
   darkVeil: {
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
 
   copperVeil: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(216,110,34,0.08)',
+    backgroundColor: 'rgba(216,110,34,0.05)',
   },
 
   topVignette: {
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 260,
-    backgroundColor: 'rgba(0,0,0,0.36)',
+    backgroundColor: 'rgba(0,0,0,0.48)',
   },
 
   bottomVignette: {
@@ -91,6 +91,6 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     height: 420,
-    backgroundColor: 'rgba(0,0,0,0.72)',
+    backgroundColor: 'rgba(0,0,0,0.82)',
   },
 });

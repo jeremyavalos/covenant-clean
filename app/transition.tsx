@@ -122,9 +122,9 @@ export default function TransitionScreen() {
               color:
                 colors.text,
 
-              fontSize: 52,
+              fontSize: 48,
 
-              lineHeight: 72,
+              lineHeight: 66,
 
               fontWeight: "300",
 
@@ -158,15 +158,15 @@ export default function TransitionScreen() {
               color:
                 colors.soft,
 
-              fontSize: 22,
+              fontSize: 20,
 
-              lineHeight: 42,
+              lineHeight: 38,
 
               textAlign: "center",
 
               paddingHorizontal: 10,
 
-              marginBottom: 130,
+              marginBottom: 112,
             }}
           >
             {t.description}
@@ -193,7 +193,7 @@ export default function TransitionScreen() {
 
                 fontSize: 18,
 
-                letterSpacing: 8,
+                letterSpacing: 6,
 
                 opacity: 0.88,
               }}

@@ -544,8 +544,8 @@ const styles = StyleSheet.create({
     height: 340,
     borderRadius: 170,
     shadowColor: '#D88C3A',
-    shadowOpacity: 0.32,
-    shadowRadius: 80,
+    shadowOpacity: 0.18,
+    shadowRadius: 52,
     shadowOffset: {
       width: 0,
       height: 0,
@@ -638,10 +638,10 @@ const styles = StyleSheet.create({
 
   progressCard: {
     marginBottom: 74,
-    borderRadius: 28,
+    borderRadius: 24,
     shadowColor: '#D88C3A',
-    shadowOpacity: 0.13,
-    shadowRadius: 34,
+    shadowOpacity: 0.08,
+    shadowRadius: 24,
     shadowOffset: {
       width: 0,
       height: 18,
@@ -650,7 +650,7 @@ const styles = StyleSheet.create({
 
   progressBlur: {
     overflow: 'hidden',
-    borderRadius: 28,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: 'rgba(216,140,58,0.13)',
     backgroundColor: 'rgba(7,7,7,0.64)',
@@ -760,7 +760,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(216,140,58,0.13)',
-    borderRadius: 30,
+    borderRadius: 24,
     backgroundColor: 'rgba(8,8,8,0.68)',
     padding: 26,
     marginTop: 44,
@@ -830,7 +830,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#11100F',
     borderWidth: 1,
     borderColor: 'rgba(216,140,58,0.22)',
-    borderRadius: 26,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 18,
@@ -883,10 +883,10 @@ const styles = StyleSheet.create({
   },
 
   deeperButton: {
-    borderRadius: 26,
+    borderRadius: 22,
     shadowColor: '#000',
-    shadowOpacity: 0.42,
-    shadowRadius: 24,
+    shadowOpacity: 0.28,
+    shadowRadius: 18,
     shadowOffset: {
       width: 0,
       height: 16,
@@ -898,7 +898,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.09)',
-    borderRadius: 26,
+    borderRadius: 22,
     backgroundColor: 'rgba(8,8,8,0.58)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -915,7 +915,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
     borderWidth: 1,
     borderColor: 'rgba(216,140,58,0.11)',
-    borderRadius: 24,
+    borderRadius: 20,
     backgroundColor: 'rgba(7,7,7,0.48)',
     paddingHorizontal: 22,
     paddingVertical: 24,

@@ -87,11 +87,11 @@ export default function LanguageScreen() {
                 color:
                   colors.text,
 
-                fontSize: 38,
+                fontSize: 36,
 
                 textAlign: "center",
 
-                lineHeight: 58,
+                lineHeight: 54,
 
                 fontWeight: "300",
 
@@ -127,13 +127,13 @@ export default function LanguageScreen() {
                 color:
                   colors.soft,
 
-                fontSize: 30,
+                fontSize: 28,
 
                 textAlign: "center",
 
-                lineHeight: 46,
+                lineHeight: 42,
 
-                marginBottom: 100,
+                marginBottom: 88,
               }}
             >
               When nobody
@@ -158,9 +158,9 @@ export default function LanguageScreen() {
                 backgroundColor:
                   colors.card,
 
-                borderRadius: 34,
+                borderRadius: 24,
 
-                paddingVertical: 26,
+                paddingVertical: 24,
 
                 marginBottom: 20,
 
@@ -178,7 +178,7 @@ export default function LanguageScreen() {
                   color:
                     colors.text,
 
-                  fontSize: 26,
+                  fontSize: 24,
 
                   fontWeight: "300",
                 }}
@@ -203,9 +203,9 @@ export default function LanguageScreen() {
                 backgroundColor:
                   colors.card,
 
-                borderRadius: 34,
+                borderRadius: 24,
 
-                paddingVertical: 26,
+                paddingVertical: 24,
 
                 alignItems: "center",
 
@@ -221,7 +221,7 @@ export default function LanguageScreen() {
                   color:
                     colors.text,
 
-                  fontSize: 26,
+                  fontSize: 24,
 
                   fontWeight: "300",
                 }}

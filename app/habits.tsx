@@ -1300,7 +1300,7 @@ marginBottom: 34,
 topLabel: {
 color: COLORS.bronze,
 letterSpacing: 11,
-fontSize: 12,
+fontSize: 11,
 textAlign: "left",
 },
 
@@ -1346,22 +1346,22 @@ COLORS.bronzeSoft,
 borderWidth: 1,
 borderColor:
 COLORS.border,
-borderRadius: 42,
-padding: 34,
-marginBottom: 42,
+borderRadius: 28,
+padding: 30,
+marginBottom: 38,
 },
 
 proMini: {
 color: COLORS.bronze,
-letterSpacing: 10,
-fontSize: 12,
-marginBottom: 32,
+letterSpacing: 8,
+fontSize: 11,
+marginBottom: 28,
 },
 
 proTitle: {
 color: COLORS.text,
-fontSize: 36,
-lineHeight: 56,
+fontSize: 34,
+lineHeight: 50,
 fontWeight: "300",
 marginBottom: 34,
 },
@@ -1375,8 +1375,8 @@ marginBottom: 34,
 
 proText: {
 color: COLORS.text,
-fontSize: 20,
-lineHeight: 38,
+fontSize: 18,
+lineHeight: 34,
 marginBottom: 10,
 fontWeight: "300",
 },
@@ -1409,8 +1409,8 @@ letterSpacing: 2,
 habitCard: {
 backgroundColor:
 COLORS.card,
-borderRadius: 38,
-padding: 30,
+borderRadius: 28,
+padding: 28,
 marginBottom: 24,
 borderWidth: 1,
 borderColor:
@@ -1440,15 +1440,15 @@ letterSpacing: 3,
 
 habitTitle: {
 color: COLORS.text,
-fontSize: 31,
+fontSize: 29,
 marginBottom: 18,
 fontWeight: "300",
 },
 
 habitDescription: {
 color: COLORS.muted,
-fontSize: 19,
-lineHeight: 34,
+fontSize: 18,
+lineHeight: 32,
 marginBottom: 28,
 },
 
@@ -1532,12 +1532,12 @@ backgroundColor:
 borderWidth: 1,
 borderColor:
 COLORS.border,
-borderRadius: 34,
+borderRadius: 28,
 padding: 30,
 shadowColor:
 COLORS.bronze,
-shadowOpacity: 0.2,
-shadowRadius: 34,
+shadowOpacity: 0.12,
+shadowRadius: 24,
 shadowOffset: {
 width: 0,
 height: 18,
@@ -1553,8 +1553,8 @@ marginBottom: 26,
 
 paywallTitle: {
 color: COLORS.text,
-fontSize: 34,
-lineHeight: 48,
+fontSize: 32,
+lineHeight: 44,
 fontWeight: "300",
 marginBottom: 28,
 },
@@ -1584,7 +1584,7 @@ flex: 1,
 borderWidth: 1,
 borderColor:
 "rgba(255,255,255,0.08)",
-borderRadius: 20,
+borderRadius: 16,
 paddingVertical: 16,
 paddingHorizontal: 12,
 backgroundColor:
