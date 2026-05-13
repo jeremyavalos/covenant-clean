@@ -52,7 +52,7 @@ def send_email(to_email: str, subject: str, html: str) -> None:
     resend_api_key = os.getenv("RESEND_API_KEY")
     resend_from_email = os.getenv(
         "RESEND_FROM_EMAIL",
-        "Covenant <onboarding@resend.dev>",
+        "Covenant <noreply@joincovenantapp.com>",
     )
 
     if not resend_api_key:
