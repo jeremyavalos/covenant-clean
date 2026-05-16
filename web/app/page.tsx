@@ -343,6 +343,7 @@ export default function Home() {
             support@joincovenantapp.com
           </a>
         </div>
+        <p className="footer-credit">Created by Jeremy Ávalos</p>
       </footer>
     </>
   );

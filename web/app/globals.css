@@ -437,6 +437,15 @@ li::marker {
   gap: 12px;
 }
 
+.footer-credit {
+  margin: 18px 0 0;
+  color: var(--quiet);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12px;
+  line-height: 1.8;
+  opacity: 0.48;
+}
+
 .legal-page {
   width: min(860px, 100%);
   margin: 0 auto;
@@ -493,6 +502,7 @@ li::marker {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
   }
 
   .footer-links {
@@ -501,6 +511,12 @@ li::marker {
     gap: 22px;
     flex-wrap: wrap;
     justify-content: flex-end;
+  }
+
+  .footer-credit {
+    flex-basis: 100%;
+    margin-top: 24px;
+    text-align: right;
   }
 }
 
