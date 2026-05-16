@@ -7,6 +7,7 @@ import Animated, {
   Easing,
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
   withTiming,
 } from "react-native-reanimated";
 
@@ -29,24 +30,30 @@ export default function FadeIn({
   useEffect(() => {
 
     opacity.value =
-      withTiming(1, {
-        duration: 1600,
-        easing:
-          Easing.out(
-            Easing.cubic
-          ),
-      });
+      withDelay(
+        delay,
+        withTiming(1, {
+          duration: 1600,
+          easing:
+            Easing.out(
+              Easing.cubic
+            ),
+        })
+      );
 
     translateY.value =
-      withTiming(0, {
-        duration: 1600,
-        easing:
-          Easing.out(
-            Easing.cubic
-          ),
-      });
+      withDelay(
+        delay,
+        withTiming(0, {
+          duration: 1600,
+          easing:
+            Easing.out(
+              Easing.cubic
+            ),
+        })
+      );
 
-  }, []);
+  }, [delay, opacity, translateY]);
 
   const animatedStyle =
     useAnimatedStyle(() => {

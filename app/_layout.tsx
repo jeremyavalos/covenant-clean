@@ -91,12 +91,7 @@ export default function Layout() {
 
   useEffect(() => {
     if (!loading && token) {
-      syncProgress().catch((error) => {
-        console.warn(
-          "[Covenant progress] Startup sync failed.",
-          error
-        );
-      });
+      syncProgress().catch(() => undefined);
     }
   }, [loading, token]);
 

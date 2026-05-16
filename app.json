@@ -53,8 +53,6 @@
     },
     "extra": {
       "covenantApiUrl": "https://covenant-clean-production.up.railway.app",
-      "revenueCatIosApiKey": "ios api key",
-      "revenueCatAndroidApiKey": "android api key",
       "router": {},
       "eas": {
         "projectId": "bba6268c-17db-4d5b-867a-c3f3563e4cad"

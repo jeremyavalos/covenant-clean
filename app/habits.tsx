@@ -529,9 +529,6 @@ item.packageType === "MONTHLY"
 );
 
 if (!packageToPurchase) {
-console.warn(
-`[RevenueCat] No ${plan} package found in default offering.`
-);
 return null;
 }
 
@@ -585,11 +582,6 @@ selectedLockedHabit,
 }
 
 } catch (error) {
-
-console.warn(
-"Could not activate Covenant Pro.",
-error
-);
 
 if (error instanceof Error) {
 posthog.capture("$exception", {

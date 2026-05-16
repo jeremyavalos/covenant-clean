@@ -18,12 +18,7 @@ export async function saveLanguage(
       language
     );
 
-  } catch (error) {
-
-    console.error(
-      'Error saving language:',
-      error
-    );
+  } catch {
 
   }
 
@@ -47,12 +42,7 @@ Promise<Language> {
 
     return 'es';
 
-  } catch (error) {
-
-    console.error(
-      'Error loading language:',
-      error
-    );
+  } catch {
 
     return 'es';
 

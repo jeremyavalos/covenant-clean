@@ -37,13 +37,10 @@ export function SubscriptionProvider({
     setLoading(true);
 
     try {
-      console.log("[Subscription] Refreshing RevenueCat status.");
       await initRevenueCat();
 
       const info = await getCustomerInfo();
       setCustomerInfo(info);
-
-      console.log("[Subscription] Pro access:", hasProAccess(info));
     } finally {
       setLoading(false);
     }
@@ -53,7 +50,6 @@ export function SubscriptionProvider({
     refreshSubscription();
 
     const listener = (info: CustomerInfo) => {
-      console.log("[Subscription] Customer info updated.");
       setCustomerInfo(info);
     };
 

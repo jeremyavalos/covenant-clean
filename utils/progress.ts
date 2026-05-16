@@ -118,9 +118,6 @@ export async function setProgressUser(
     currentUserKey
   );
 
-  console.log(
-    `[Covenant progress] Active progress cache set for user ${currentUserLabel}.`
-  );
 }
 
 export async function clearProgressUser() {
@@ -239,11 +236,6 @@ async function withRetry<T>(
       throw error;
     }
 
-    console.warn(
-      `[Covenant progress] ${label} failed, retrying once.`,
-      error
-    );
-
     await new Promise((resolve) =>
       setTimeout(resolve, 650)
     );
@@ -263,9 +255,6 @@ async function saveLocalProgress(
     await getActiveStorageKey();
 
   if (!storageKey) {
-    console.warn(
-      "[Covenant progress] No active user cache key, skipping local save."
-    );
     return;
   }
 
@@ -274,9 +263,6 @@ async function saveLocalProgress(
     JSON.stringify(progress)
   );
 
-  console.log(
-    `[Covenant progress] Cached ${Object.keys(progress).length} habits locally in ${storageKey}.`
-  );
 }
 
 export async function clearLegacyProgressCache() {
@@ -360,9 +346,6 @@ export async function getLocalProgress(): Promise<ProgressData> {
     await getActiveStorageKey();
 
   if (!storageKey) {
-    console.warn(
-      "[Covenant progress] No active user cache key, returning empty progress."
-    );
     return {};
   }
 
@@ -390,12 +373,7 @@ export async function getLocalProgress(): Promise<ProgressData> {
         ]
       )
     );
-  } catch (error) {
-    console.warn(
-      `[Covenant progress] Local cache parse failed for ${storageKey}, using empty progress.`,
-      error
-    );
-
+  } catch {
     return {};
   }
 }
@@ -417,21 +395,10 @@ export async function syncProgress() {
   const token = await getStoredAuthToken();
 
   if (!token) {
-    console.log(
-      "[Covenant progress] No auth token, using local cache."
-    );
-
     return getLocalProgress();
   }
 
   syncRequest = (async () => {
-    const storageKey =
-      await getActiveStorageKey();
-
-    console.log(
-      `[Covenant progress] Loading remote progress with GET /progress for ${storageKey ?? "unknown user"}.`
-    );
-
     const remote =
       await withRetry(
         "load remote progress",
@@ -462,27 +429,12 @@ export async function syncProgress() {
 
     lastSyncAt = Date.now();
 
-    if (remote.length === 0) {
-      console.log(
-        "[Covenant progress] Backend returned no progress, starting from zero."
-      );
-    } else {
-      console.log(
-        `[Covenant progress] Synced ${Object.keys(progress).length} habits from backend.`
-      );
-    }
-
     return progress;
   })();
 
   try {
     return await syncRequest;
-  } catch (error) {
-    console.warn(
-      "[Covenant progress] Sync failed, using local cache.",
-      error
-    );
-
+  } catch {
     return getLocalProgress();
   } finally {
     syncRequest = null;
@@ -573,17 +525,9 @@ export async function completeHabit(
 
   await saveLocalProgress(progress);
 
-  console.log(
-    `[Covenant progress] Habit ${habit} completed locally; preparing backend save.`
-  );
-
   const token = await getStoredAuthToken();
 
   if (!token) {
-    console.log(
-      `[Covenant progress] No auth token for ${habit}; local cache kept as fallback.`
-    );
-
     return updated;
   }
 
@@ -613,16 +557,8 @@ export async function completeHabit(
 
     await saveLocalProgress(progress);
 
-    console.log(
-      `[Covenant progress] Saved ${habit} to backend with POST /progress/save.`
-    );
-
     return synced;
-  } catch (error) {
-    console.warn(
-      "[Covenant progress] Save failed, kept local fallback.",
-      error
-    );
+  } catch {
   }
 
   return updated;

@@ -66,14 +66,9 @@ function getUserCacheId(user: CovenantUser) {
 }
 
 async function prepareProgressForUser(
-  user: CovenantUser,
-  label: string
+  user: CovenantUser
 ) {
   const cacheId = getUserCacheId(user);
-
-  console.log(
-    `[Covenant auth] ${label}: preparing progress for user ${cacheId}.`
-  );
 
   await setProgressUser(cacheId);
   await clearLegacyProgressCache();
@@ -99,10 +94,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       setAuthToken(token);
       const user = await fetchMe();
 
-      await prepareProgressForUser(
-        user,
-        "startup"
-      );
+      await prepareProgressForUser(user);
 
       set({
         token,
@@ -134,10 +126,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       await saveAuthToken(tokenResponse.access_token);
       const user = await fetchMe();
 
-      await prepareProgressForUser(
-        user,
-        "login"
-      );
+      await prepareProgressForUser(user);
 
       set({
         token: tokenResponse.access_token,
@@ -250,10 +239,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: async () => {
-    console.log(
-      "[Covenant auth] Logout: clearing auth token and active progress user."
-    );
-
     await clearAuthToken();
     await clearProgressUser();
 

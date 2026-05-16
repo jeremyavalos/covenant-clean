@@ -64,10 +64,6 @@ export async function getSelectedFreeHabit(
     await AsyncStorage.getItem(key);
 
   if (selectedHabit) {
-    console.log(
-      `[Covenant free habit] Loaded selected free habit ${selectedHabit} from ${key}.`
-    );
-
     return selectedHabit;
   }
 
@@ -81,16 +77,8 @@ export async function getSelectedFreeHabit(
     );
     await clearLegacyFreeHabit();
 
-    console.log(
-      `[Covenant free habit] Migrated legacy selected free habit ${legacyHabit} into ${key}.`
-    );
-
     return legacyHabit;
   }
-
-  console.log(
-    `[Covenant free habit] No selected free habit found for ${key}.`
-  );
 
   return null;
 }
@@ -108,19 +96,11 @@ export async function saveSelectedFreeHabit(
     await AsyncStorage.getItem(key);
 
   if (existing) {
-    console.log(
-      `[Covenant free habit] Keeping existing selected free habit ${existing}; attempted ${slug}.`
-    );
-
     return existing;
   }
 
   await AsyncStorage.setItem(key, slug);
   await clearLegacyFreeHabit();
-
-  console.log(
-    `[Covenant free habit] Saved selected free habit ${slug} into ${key}.`
-  );
 
   return slug;
 }

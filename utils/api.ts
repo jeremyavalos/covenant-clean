@@ -15,7 +15,7 @@ const extra = (Constants.expoConfig?.extra ?? {}) as ExpoExtra;
 
 export const API_BASE_URL =
   extra.covenantApiUrl ||
-  "http://localhost:8000";
+  "https://covenant-clean-production.up.railway.app";
 
 let authToken: string | null = null;
 

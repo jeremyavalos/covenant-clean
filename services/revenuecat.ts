@@ -33,16 +33,11 @@ const PRO_ENTITLEMENT_IDS = ["covenant Pro", "covenant_pro"];
 let initialized = false;
 let initPromise: Promise<boolean> | null = null;
 
-function logRevenueCat(message: string, extra?: unknown) {
-  if (extra) {
-    console.log(`[RevenueCat] ${message}`, extra);
+function warnRevenueCat(message: string, error?: unknown) {
+  if (!__DEV__) {
     return;
   }
 
-  console.log(`[RevenueCat] ${message}`);
-}
-
-function warnRevenueCat(message: string, error?: unknown) {
   if (error) {
     console.warn(`[RevenueCat] ${message}`, error);
     return;
@@ -123,10 +118,6 @@ export async function initRevenueCat(appUserID?: string): Promise<boolean> {
       });
 
       initialized = true;
-      logRevenueCat("Initialized Purchases.", {
-        appUserID: appUserID ?? null,
-        platform: Platform.OS,
-      });
 
       return true;
     } catch (error) {
@@ -152,7 +143,6 @@ export async function getCustomerInfo(): Promise<CustomerInfo | null> {
 
   try {
     const customerInfo = await Purchases.getCustomerInfo();
-    logRevenueCat("Loaded customer info.");
     return customerInfo;
   } catch (error) {
     warnRevenueCat("Could not load customer info.", error);
@@ -169,9 +159,6 @@ export async function getOfferings(): Promise<PurchasesOfferings | null> {
 
   try {
     const offerings = await Purchases.getOfferings();
-    logRevenueCat("Loaded offerings.", {
-      current: offerings.current?.identifier ?? null,
-    });
     return offerings;
   } catch (error) {
     warnRevenueCat("Could not load offerings.", error);
@@ -191,9 +178,6 @@ export async function purchasePackage(
   try {
     const { customerInfo } =
       await Purchases.purchasePackage(packageToPurchase);
-    logRevenueCat("Purchase completed.", {
-      packageIdentifier: packageToPurchase.identifier,
-    });
     return customerInfo;
   } catch (error) {
     const purchaseError = error as {
@@ -201,7 +185,6 @@ export async function purchasePackage(
     };
 
     if (purchaseError.userCancelled) {
-      logRevenueCat("Purchase cancelled by user.");
       return null;
     }
 
@@ -219,7 +202,6 @@ export async function restorePurchases(): Promise<CustomerInfo | null> {
 
   try {
     const customerInfo = await Purchases.restorePurchases();
-    logRevenueCat("Purchases restored.");
     return customerInfo;
   } catch (error) {
     warnRevenueCat("Could not restore purchases.", error);
