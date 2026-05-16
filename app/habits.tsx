@@ -1,6 +1,8 @@
 import {
   ActivityIndicator,
+  Linking,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,6 +20,11 @@ import { useRouter } from "expo-router";
 import { usePostHog } from "posthog-react-native";
 
 import CovenantBackdrop from "../components/CovenantBackdrop";
+import {
+  PRIVACY_POLICY_URL,
+  SUPPORT_URL,
+  TERMS_OF_USE_URL,
+} from "../constants/legal";
 
 import {
   clearProgressUser,
@@ -39,6 +46,7 @@ import {
   getOfferings,
   hasProAccess,
   purchasePackage,
+  restorePurchases,
 } from "../services/revenuecat";
 
 import {
@@ -59,10 +67,9 @@ muted: "#8e8e93",
 border: "rgba(184,115,51,0.38)",
 	};
 
-const FREE_HABIT_LIMIT = 1;
 const PRO_HABIT_LIMIT = 4;
 
-type CovenantProPlan = "monthly" | "annual";
+type CovenantProPlan = "monthly";
 
 const habits = {
 
@@ -266,6 +273,11 @@ setPaywallVisible,
 const [
 isPurchasing,
 setIsPurchasing,
+] = useState(false);
+
+const [
+isRestoring,
+setIsRestoring,
 ] = useState(false);
 
 const [
@@ -509,14 +521,7 @@ offerings?.current ??
 null;
 
 const packageToPurchase =
-plan === "annual"
-? offering?.annual ??
-offering?.availablePackages.find(
-(item) =>
-item.identifier === "$rc_annual" ||
-item.packageType === "ANNUAL"
-)
-: offering?.monthly ??
+offering?.monthly ??
 offering?.availablePackages.find(
 (item) =>
 item.identifier === "$rc_monthly" ||
@@ -613,6 +618,47 @@ false
 
 }
 
+async function handleRestorePurchases() {
+
+setIsRestoring(
+true
+);
+
+try {
+
+const customerInfo =
+await restorePurchases();
+
+if (
+customerInfo &&
+hasProAccess(
+customerInfo
+)
+) {
+await refreshSubscription();
+setPaywallVisible(
+false
+);
+}
+
+} finally {
+
+setIsRestoring(
+false
+);
+
+}
+
+}
+
+function openLegalUrl(
+url: string
+) {
+Linking.openURL(
+url
+).catch(() => undefined);
+}
+
 const currentHabits =
 language === "es"
 ? habits.es
@@ -648,19 +694,13 @@ pro4:
 	"• progreso extendido",
 
 	price:
-	"$1.99 USD / MES · $10 USD / AÑO",
+	"$1.99 USD / MES",
 
 monthlyPlan:
 "Mensual",
 
-annualPlan:
-"Anual",
-
 monthlyPrice:
 "$1.99 USD / mes",
-
-annualPrice:
-"$10 USD / año",
 
 free:
 "1 hábito / 24 hrs",
@@ -687,13 +727,29 @@ paywallTitle:
 "La profundidad completa\nrequiere compromiso.",
 
 paywallText:
-"La versión gratis abre un hábito cada 24 horas. Covenant Pro desbloquea todos los hábitos, sesiones y progreso extendido.",
+`La versión gratis abre 1 hábito cada 24 horas. Covenant Pro cuesta $1.99 USD al mes como suscripción mensual auto-renovable. Puedes cancelar cuando quieras desde ${
+Platform.OS === "ios"
+? "los ajustes de Apple"
+: "los ajustes de suscripción de tu tienda"
+}.`,
 
 paywallButton:
-"TEST PURCHASE",
+"INICIAR PRO MENSUAL",
 
 paywallCancel:
 "VOLVER",
+
+restore:
+"RESTAURAR COMPRAS",
+
+privacy:
+"Privacidad",
+
+terms:
+"Términos de uso",
+
+support:
+"Soporte",
 
 processing:
 "PROCESANDO",
@@ -730,19 +786,13 @@ pro4:
 	"• extended progress",
 
 	price:
-	"$1.99 USD / MONTH · $10 USD / YEAR",
+	"$1.99 USD / MONTH",
 
 monthlyPlan:
 "Monthly",
 
-annualPlan:
-"Annual",
-
 monthlyPrice:
 "$1.99 USD / month",
-
-annualPrice:
-"$10 USD / year",
 
 free:
 "1 habit / 24 hrs",
@@ -769,13 +819,29 @@ paywallTitle:
 "Full depth\nrequires commitment.",
 
 paywallText:
-"The free version opens one habit every 24 hours. Covenant Pro unlocks all habits, sessions, and extended progress.",
+`The free version opens 1 habit every 24 hours. Covenant Pro is $1.99 USD per month as an auto-renewing monthly subscription. Cancel anytime through ${
+Platform.OS === "ios"
+? "Apple settings"
+: "your app store subscription settings"
+}.`,
 
 paywallButton:
-"TEST PURCHASE",
+"START MONTHLY PRO",
 
 paywallCancel:
 "RETURN",
+
+restore:
+"RESTORE PURCHASES",
+
+privacy:
+"Privacy",
+
+terms:
+"Terms of Use",
+
+support:
+"Support",
 
 processing:
 "PROCESSING",
@@ -1065,6 +1131,29 @@ styles.progressText
 
 })}
 
+<View style={styles.accountLinks}>
+<TouchableOpacity
+activeOpacity={0.72}
+onPress={() => openLegalUrl(PRIVACY_POLICY_URL)}
+>
+<Text style={styles.accountLinkText}>{t.privacy}</Text>
+</TouchableOpacity>
+
+<TouchableOpacity
+activeOpacity={0.72}
+onPress={() => openLegalUrl(TERMS_OF_USE_URL)}
+>
+<Text style={styles.accountLinkText}>{t.terms}</Text>
+</TouchableOpacity>
+
+<TouchableOpacity
+activeOpacity={0.72}
+onPress={() => openLegalUrl(SUPPORT_URL)}
+>
+<Text style={styles.accountLinkText}>{t.support}</Text>
+</TouchableOpacity>
+</View>
+
 </ScrollView>
 
 <Modal
@@ -1084,6 +1173,11 @@ false
 style={
 styles.paywallOverlay
 }
+>
+
+<ScrollView
+showsVerticalScrollIndicator={false}
+contentContainerStyle={styles.paywallScroll}
 >
 
 <View
@@ -1163,45 +1257,6 @@ styles.planPriceActive,
 
 </TouchableOpacity>
 
-<TouchableOpacity
-activeOpacity={0.84}
-onPress={() =>
-setSelectedPlan(
-"annual"
-)
-}
-disabled={
-isPurchasing
-}
-style={[
-styles.planOption,
-selectedPlan === "annual" &&
-styles.planOptionActive,
-]}
->
-
-<Text
-style={[
-styles.planName,
-selectedPlan === "annual" &&
-styles.planNameActive,
-]}
->
-{t.annualPlan}
-</Text>
-
-<Text
-style={[
-styles.planPrice,
-selectedPlan === "annual" &&
-styles.planPriceActive,
-]}
->
-{t.annualPrice}
-</Text>
-
-</TouchableOpacity>
-
 </View>
 
 <TouchableOpacity
@@ -1246,6 +1301,53 @@ styles.paywallButtonText
 
 <TouchableOpacity
 activeOpacity={0.72}
+onPress={handleRestorePurchases}
+disabled={
+isPurchasing ||
+isRestoring
+}
+style={
+styles.restoreButton
+}
+>
+
+<Text
+style={
+styles.restoreText
+}
+>
+{isRestoring
+? t.processing
+: t.restore}
+</Text>
+
+</TouchableOpacity>
+
+<View style={styles.paywallLegalLinks}>
+<TouchableOpacity
+activeOpacity={0.72}
+onPress={() => openLegalUrl(PRIVACY_POLICY_URL)}
+>
+<Text style={styles.paywallLegalText}>{t.privacy}</Text>
+</TouchableOpacity>
+
+<TouchableOpacity
+activeOpacity={0.72}
+onPress={() => openLegalUrl(TERMS_OF_USE_URL)}
+>
+<Text style={styles.paywallLegalText}>{t.terms}</Text>
+</TouchableOpacity>
+
+<TouchableOpacity
+activeOpacity={0.72}
+onPress={() => openLegalUrl(SUPPORT_URL)}
+>
+<Text style={styles.paywallLegalText}>{t.support}</Text>
+</TouchableOpacity>
+</View>
+
+<TouchableOpacity
+activeOpacity={0.72}
 onPress={() =>
 setPaywallVisible(
 false
@@ -1269,6 +1371,8 @@ styles.paywallCancelText
 </TouchableOpacity>
 
 </View>
+
+</ScrollView>
 
 </View>
 
@@ -1516,13 +1620,30 @@ fontSize: 10,
 letterSpacing: 3,
 },
 
+accountLinks: {
+alignItems: "center",
+gap: 14,
+paddingTop: 28,
+paddingBottom: 8,
+},
+
+accountLinkText: {
+color: COLORS.muted,
+fontSize: 12,
+letterSpacing: 2,
+},
+
 paywallOverlay: {
 flex: 1,
 backgroundColor:
 "rgba(0,0,0,0.82)",
-alignItems: "center",
-justifyContent: "center",
 paddingHorizontal: 24,
+},
+
+paywallScroll: {
+flexGrow: 1,
+justifyContent: "center",
+paddingVertical: 32,
 },
 
 paywallPanel: {
@@ -1574,7 +1695,7 @@ marginBottom: 30,
 },
 
 planRow: {
-flexDirection: "row",
+flexDirection: "column",
 gap: 12,
 marginBottom: 22,
 },
@@ -1635,6 +1756,31 @@ color: COLORS.background,
 fontSize: 13,
 letterSpacing: 3,
 fontWeight: "600",
+},
+
+restoreButton: {
+alignItems: "center",
+paddingVertical: 11,
+},
+
+restoreText: {
+color: COLORS.bronze,
+fontSize: 11,
+letterSpacing: 3,
+},
+
+paywallLegalLinks: {
+flexDirection: "row",
+flexWrap: "wrap",
+justifyContent: "center",
+gap: 14,
+paddingVertical: 8,
+},
+
+paywallLegalText: {
+color: COLORS.muted,
+fontSize: 11,
+letterSpacing: 1.4,
 },
 
 paywallCancel: {

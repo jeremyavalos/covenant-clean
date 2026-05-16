@@ -337,7 +337,7 @@ export default function Home() {
         </Link>
         <div className="footer-links">
           <Link href="/privacy">Privacy Policy</Link>
-          <Link href="/terms">Terms of Service</Link>
+          <Link href="/terms">Terms of Use</Link>
           <Link href="/support">Support</Link>
           <a href="mailto:support@joincovenantapp.com">
             support@joincovenantapp.com

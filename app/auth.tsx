@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Animated,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable,
   StyleSheet,
@@ -16,6 +17,11 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import CovenantBackdrop from "../components/CovenantBackdrop";
+import {
+  PRIVACY_POLICY_URL,
+  SUPPORT_URL,
+  TERMS_OF_USE_URL,
+} from "../constants/legal";
 import { colors } from "../constants/theme";
 import { useAuthStore } from "../store/authStore";
 import { getLanguage, Language } from "../utils/language";
@@ -134,6 +140,9 @@ export default function AuthScreen() {
             "Te enviamos otro correo de verificación.",
           forgotSent:
             "Si este correo existe, enviamos instrucciones para restablecer tu contraseña.",
+          privacy: "Privacidad",
+          terms: "Términos",
+          support: "Soporte",
         }
       : {
           kicker: "COVENANT ACCESS",
@@ -165,6 +174,9 @@ export default function AuthScreen() {
             "We sent another verification email.",
           forgotSent:
             "If this email exists, we sent password reset instructions.",
+          privacy: "Privacy",
+          terms: "Terms",
+          support: "Support",
         };
 
   const title =
@@ -294,6 +306,10 @@ export default function AuthScreen() {
     setMode(nextMode);
     setLocalError(null);
     setNotice(null);
+  }
+
+  function openLegalUrl(url: string) {
+    Linking.openURL(url).catch(() => undefined);
   }
 
   return (
@@ -459,6 +475,20 @@ export default function AuthScreen() {
                 {mode === "forgot" ? t.backToLogin : toggleText}
               </Text>
             </Pressable>
+
+            <View style={styles.legalLinks}>
+              <Pressable onPress={() => openLegalUrl(PRIVACY_POLICY_URL)}>
+                <Text style={styles.legalLink}>{t.privacy}</Text>
+              </Pressable>
+              <Text style={styles.legalSeparator}>/</Text>
+              <Pressable onPress={() => openLegalUrl(TERMS_OF_USE_URL)}>
+                <Text style={styles.legalLink}>{t.terms}</Text>
+              </Pressable>
+              <Text style={styles.legalSeparator}>/</Text>
+              <Pressable onPress={() => openLegalUrl(SUPPORT_URL)}>
+                <Text style={styles.legalLink}>{t.support}</Text>
+              </Pressable>
+            </View>
           </BlurView>
         </Animated.View>
       </KeyboardAvoidingView>
@@ -650,5 +680,24 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 3,
+  },
+
+  legalLinks: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: 10,
+    paddingTop: 18,
+  },
+
+  legalLink: {
+    color: "rgba(255,255,255,0.58)",
+    fontSize: 11,
+    letterSpacing: 1.2,
+  },
+
+  legalSeparator: {
+    color: "rgba(255,255,255,0.24)",
+    fontSize: 11,
   },
 });

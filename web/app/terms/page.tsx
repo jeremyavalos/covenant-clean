@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Terms of Service",
+  title: "Terms of Use",
 };
 
 export default function TermsPage() {
@@ -9,10 +9,20 @@ export default function TermsPage() {
     <main className="legal-page">
       <article className="legal-card">
         <p className="eyebrow">COVENANT</p>
-        <h1>Terms of Service</h1>
+        <h1>Terms of Use</h1>
         <p>
           By using Covenant, you agree to use the app responsibly and to keep
           your account information accurate and secure.
+        </p>
+
+        <h2>Apple Standard EULA</h2>
+        <p>
+          Covenant uses Apple&apos;s Standard End User License Agreement for iOS
+          distribution. You can review it at{" "}
+          <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/">
+            Apple Standard EULA
+          </a>
+          .
         </p>
 
         <h2>Use of Covenant</h2>
@@ -24,8 +34,10 @@ export default function TermsPage() {
 
         <h2>Subscriptions</h2>
         <p>
-          Covenant Pro unlocks additional app features. Pricing and availability
-          may vary by platform and region when iOS and Android launch.
+          Covenant Pro is offered as an auto-renewing monthly subscription.
+          Pricing is shown before purchase. You can cancel through your Apple
+          account settings or the equivalent subscription settings on your
+          platform.
         </p>
 
         <h2>Support</h2>
