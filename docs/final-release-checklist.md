@@ -6,7 +6,7 @@
 - [x] Expo slug is `covenant-clean`.
 - [x] URL scheme is `covenant`.
 - [x] iOS bundle identifier is `com.joincovenantapp.covenant`.
-- [x] Android package is `com.joincovenantapp.covenant`.
+- [x] Android package is `com.joincovenant.app`.
 - [x] App version is `1.0.0`.
 - [x] iOS build number is `1`.
 - [x] Android version code is `2`.
