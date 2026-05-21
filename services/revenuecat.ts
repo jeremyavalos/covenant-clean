@@ -172,12 +172,28 @@ export async function purchasePackage(
   const ready = await ensureRevenueCat();
 
   if (!ready) {
-    return null;
+    console.warn("[RevenueCat] purchasePackage skipped because SDK is not ready.");
+    throw new Error(
+      "RevenueCat SDK is not ready. Check the RevenueCat API key configuration."
+    );
   }
 
   try {
+    console.log("[RevenueCat] Calling Purchases.purchasePackage.", {
+      identifier: packageToPurchase.identifier,
+      packageType: packageToPurchase.packageType,
+      productIdentifier: packageToPurchase.product.identifier,
+      priceString: packageToPurchase.product.priceString,
+      title: packageToPurchase.product.title,
+    });
+
     const { customerInfo } =
       await Purchases.purchasePackage(packageToPurchase);
+
+    console.log("[RevenueCat] Purchases.purchasePackage responded.", {
+      activeEntitlements: Object.keys(customerInfo.entitlements.active),
+    });
+
     return customerInfo;
   } catch (error) {
     const purchaseError = error as {
@@ -185,9 +201,11 @@ export async function purchasePackage(
     };
 
     if (purchaseError.userCancelled) {
+      console.log("[RevenueCat] Purchases.purchasePackage cancelled by user.");
       return null;
     }
 
+    console.error("[RevenueCat] Purchases.purchasePackage error.", error);
     warnRevenueCat("Purchase failed.", error);
     throw error;
   }

@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Alert,
   Linking,
   Modal,
   Platform,
@@ -48,6 +49,9 @@ import {
   purchasePackage,
   restorePurchases,
 } from "../services/revenuecat";
+import type {
+  PurchasesPackage,
+} from "react-native-purchases";
 
 import {
   useSubscription,
@@ -70,6 +74,20 @@ border: "rgba(184,115,51,0.38)",
 const PRO_HABIT_LIMIT = 4;
 
 type CovenantProPlan = "monthly";
+
+function describePurchasePackage(packageToPurchase: PurchasesPackage | null) {
+if (!packageToPurchase) {
+return null;
+}
+
+return {
+identifier: packageToPurchase.identifier,
+packageType: packageToPurchase.packageType,
+productIdentifier: packageToPurchase.product.identifier,
+priceString: packageToPurchase.product.priceString,
+title: packageToPurchase.product.title,
+};
+}
 
 const habits = {
 
@@ -512,6 +530,10 @@ router.replace(
 async function purchaseSelectedPlan(
 plan: CovenantProPlan
 ) {
+console.log("[Paywall] Loading RevenueCat offerings for selected plan.", {
+plan,
+});
+
 const offerings =
 await getOfferings();
 
@@ -519,6 +541,15 @@ const offering =
 offerings?.all.default ??
 offerings?.current ??
 null;
+
+console.log("[Paywall] RevenueCat offering selected.", {
+plan,
+offeringIdentifier: offering?.identifier ?? null,
+availablePackages:
+offering?.availablePackages.map((item) =>
+describePurchasePackage(item)
+) ?? [],
+});
 
 const packageToPurchase =
 offering?.monthly ??
@@ -529,8 +560,18 @@ item.packageType === "MONTHLY"
 );
 
 if (!packageToPurchase) {
-return null;
+console.warn("[Paywall] No RevenueCat package available to purchase.", {
+plan,
+offeringIdentifier: offering?.identifier ?? null,
+});
+
+throw new Error(t.paywallPurchaseUnavailableText);
 }
+
+console.log("[Paywall] Attempting purchasePackage.", {
+plan,
+package: describePurchasePackage(packageToPurchase),
+});
 
 return purchasePackage(
 packageToPurchase
@@ -540,6 +581,9 @@ packageToPurchase
 async function activateCovenantPro(
 plan: CovenantProPlan
 ) {
+console.log("[Paywall] Purchase button pressed.", {
+plan,
+});
 
 setIsPurchasing(
 true
@@ -551,6 +595,21 @@ const customerInfo =
 await purchaseSelectedPlan(
 plan
 );
+
+console.log("[Paywall] purchasePackage responded.", {
+plan,
+hasCustomerInfo: Boolean(customerInfo),
+activeEntitlements: customerInfo
+? Object.keys(customerInfo.entitlements.active)
+: [],
+});
+
+if (!customerInfo) {
+console.log("[Paywall] Purchase finished without customerInfo.", {
+plan,
+});
+return;
+}
 
 if (
 customerInfo &&
@@ -582,6 +641,7 @@ selectedLockedHabit,
 }
 
 } catch (error) {
+console.error("[Paywall] purchasePackage error.", error);
 
 if (error instanceof Error) {
 posthog.capture("$exception", {
@@ -599,6 +659,13 @@ $exception_source: "subscription",
 plan,
 });
 }
+
+Alert.alert(
+t.paywallPurchaseErrorTitle,
+error instanceof Error
+? error.message
+: t.paywallPurchaseErrorText
+);
 
 } finally {
 
@@ -728,6 +795,15 @@ Platform.OS === "ios"
 paywallButton:
 "INICIAR PRO MENSUAL",
 
+paywallPurchaseUnavailableText:
+"No se encontró el paquete mensual de Covenant Pro. Revisa la configuración de RevenueCat e inténtalo de nuevo.",
+
+paywallPurchaseErrorTitle:
+"No se pudo iniciar la compra",
+
+paywallPurchaseErrorText:
+"Ocurrió un error al intentar comprar Covenant Pro. Inténtalo de nuevo.",
+
 paywallCancel:
 "VOLVER",
 
@@ -819,6 +895,15 @@ Platform.OS === "ios"
 
 paywallButton:
 "START MONTHLY PRO",
+
+paywallPurchaseUnavailableText:
+"The monthly Covenant Pro package was not found. Check the RevenueCat setup and try again.",
+
+paywallPurchaseErrorTitle:
+"Could not start purchase",
+
+paywallPurchaseErrorText:
+"Something went wrong while trying to purchase Covenant Pro. Please try again.",
 
 paywallCancel:
 "RETURN",
