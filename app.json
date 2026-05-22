@@ -18,7 +18,7 @@
     },
     "android": {
       "package": "com.joincovenant.app",
-      "versionCode": 6,
+      "versionCode": 7,
       "adaptiveIcon": {
         "backgroundColor": "#030303",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
