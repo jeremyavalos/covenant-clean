@@ -474,6 +474,29 @@ li::marker {
   gap: 12px;
 }
 
+.footer-social {
+  display: grid;
+  gap: 7px;
+  color: var(--quiet);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.footer-social span {
+  opacity: 0.56;
+}
+
+.footer-social a {
+  color: var(--copper-soft);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+}
+
+.footer-social a:hover {
+  color: var(--text);
+}
+
 .footer-credit {
   margin: 18px 0 0;
   color: var(--quiet);
@@ -548,6 +571,12 @@ li::marker {
     gap: 22px;
     flex-wrap: wrap;
     justify-content: flex-end;
+  }
+
+  .footer-social {
+    flex-basis: 100%;
+    justify-items: flex-end;
+    text-align: right;
   }
 
   .footer-credit {

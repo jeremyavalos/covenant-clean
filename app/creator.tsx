@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import {
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,7 +11,13 @@ import {
 import Screen from "../components/Screen";
 import { colors } from "../constants/theme";
 
+const INSTAGRAM_URL = "https://www.instagram.com/join.covenant.app";
+
 export default function CreatorScreen() {
+  function openInstagram() {
+    Linking.openURL(INSTAGRAM_URL).catch(() => undefined);
+  }
+
   return (
     <Screen backdropIntensity="subtle" backdropVariant="deeper">
       <ScrollView
@@ -41,6 +48,24 @@ export default function CreatorScreen() {
             verdad, ordenar el impulso y reconstruir el carácter hasta que el
             cuerpo, la mente y la vida exterior respondan a la misma medida.
           </Text>
+
+          <Text style={styles.bodySecondary}>
+            No todo cambio empieza afuera. Primero se ordena lo invisible; luego
+            el mundo recibe la forma de esa medida.
+          </Text>
+
+          <Pressable
+            onPress={openInstagram}
+            style={({ pressed }) => [
+              styles.instagramLink,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={styles.instagramKicker}>
+              ACTUALIZACIONES, REFLEXIONES Y LANZAMIENTOS
+            </Text>
+            <Text style={styles.instagramHandle}>@join.covenant.app</Text>
+          </Pressable>
 
           <Text style={styles.seal}>COVENANT</Text>
         </View>
@@ -113,16 +138,52 @@ const styles = StyleSheet.create({
   body: {
     maxWidth: 340,
     color: "#B9AFA3",
-    fontSize: 17,
-    lineHeight: 30,
+    fontSize: 16,
+    lineHeight: 28,
     fontWeight: "300",
     textAlign: "center",
+  },
+
+  bodySecondary: {
+    maxWidth: 326,
+    color: "#8F867E",
+    fontSize: 14,
+    lineHeight: 24,
+    fontWeight: "300",
+    textAlign: "center",
+    marginTop: 22,
+  },
+
+  instagramLink: {
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(216,140,58,0.2)",
+    borderRadius: 18,
+    backgroundColor: "rgba(10,10,10,0.58)",
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    marginTop: 34,
+  },
+
+  instagramKicker: {
+    color: "#716960",
+    fontSize: 9,
+    letterSpacing: 2.2,
+    lineHeight: 15,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+
+  instagramHandle: {
+    color: colors.accent,
+    fontSize: 12,
+    letterSpacing: 2,
   },
 
   seal: {
     color: "#716960",
     fontSize: 10,
     letterSpacing: 6,
-    marginTop: 54,
+    marginTop: 40,
   },
 });

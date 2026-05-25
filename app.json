@@ -4,26 +4,24 @@
     "slug": "covenant-clean",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/icon.png",
     "scheme": "covenant",
     "userInterfaceStyle": "dark",
     "ios": {
       "bundleIdentifier": "com.joincovenantapp.covenant",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "supportsTablet": false,
-      "icon": "./assets/images/icon.png",
+      "icon": "./assets/ios-icon.png",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "package": "com.joincovenant.app",
-      "versionCode": 7,
+      "versionCode": 8,
       "adaptiveIcon": {
         "backgroundColor": "#030303",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/icon.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false

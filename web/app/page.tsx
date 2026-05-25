@@ -357,6 +357,16 @@ export default function Home() {
             support@joincovenantapp.com
           </a>
         </div>
+        <div className="footer-social">
+          <span>Updates, reflections, and releases</span>
+          <a
+            href="https://www.instagram.com/join.covenant.app"
+            rel="noreferrer"
+            target="_blank"
+          >
+            @join.covenant.app
+          </a>
+        </div>
         <p className="footer-credit">Created by Jeremy Ávalos</p>
       </footer>
     </>
