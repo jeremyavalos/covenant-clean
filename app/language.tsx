@@ -49,7 +49,7 @@ export default function LanguageScreen() {
 
           alignItems: "center",
 
-          paddingHorizontal: 34,
+          paddingHorizontal: 26,
 
           width: "100%",
         }}
@@ -68,11 +68,11 @@ export default function LanguageScreen() {
                 color:
                   colors.accent,
 
-                fontSize: 11,
+                fontSize: 10,
 
-                letterSpacing: 8,
+                letterSpacing: 6,
 
-                marginBottom: 34,
+                marginBottom: 28,
 
                 opacity: 0.8,
 
@@ -87,15 +87,15 @@ export default function LanguageScreen() {
                 color:
                   colors.text,
 
-                fontSize: 36,
+                fontSize: 30,
 
                 textAlign: "center",
 
-                lineHeight: 54,
+                lineHeight: 42,
 
                 fontWeight: "300",
 
-                marginBottom: 42,
+                marginBottom: 34,
               }}
             >
               Cuando nadie
@@ -116,7 +116,7 @@ export default function LanguageScreen() {
                 backgroundColor:
                   colors.divider,
 
-                marginBottom: 42,
+                marginBottom: 34,
 
                 opacity: 0.5,
               }}
@@ -127,13 +127,13 @@ export default function LanguageScreen() {
                 color:
                   colors.soft,
 
-                fontSize: 28,
+                fontSize: 23,
 
                 textAlign: "center",
 
-                lineHeight: 42,
+                lineHeight: 34,
 
-                marginBottom: 88,
+                marginBottom: 64,
               }}
             >
               When nobody
@@ -158,9 +158,9 @@ export default function LanguageScreen() {
                 backgroundColor:
                   colors.card,
 
-                borderRadius: 24,
+                borderRadius: 20,
 
-                paddingVertical: 24,
+                paddingVertical: 20,
 
                 marginBottom: 20,
 
@@ -178,7 +178,7 @@ export default function LanguageScreen() {
                   color:
                     colors.text,
 
-                  fontSize: 24,
+                  fontSize: 21,
 
                   fontWeight: "300",
                 }}
@@ -203,9 +203,9 @@ export default function LanguageScreen() {
                 backgroundColor:
                   colors.card,
 
-                borderRadius: 24,
+                borderRadius: 20,
 
-                paddingVertical: 24,
+                paddingVertical: 20,
 
                 alignItems: "center",
 
@@ -221,7 +221,7 @@ export default function LanguageScreen() {
                   color:
                     colors.text,
 
-                  fontSize: 24,
+                  fontSize: 21,
 
                   fontWeight: "300",
                 }}

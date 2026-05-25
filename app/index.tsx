@@ -46,23 +46,23 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
     alignItems: 'center',
-    paddingHorizontal: 28,
-    paddingBottom: 76,
+    paddingHorizontal: 24,
+    paddingBottom: 58,
   },
 
   mark: {
-    width: 154,
-    height: 154,
+    width: 134,
+    height: 134,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 54,
+    marginBottom: 42,
   },
 
   ring: {
     position: 'absolute',
-    width: 154,
-    height: 154,
-    borderRadius: 77,
+    width: 134,
+    height: 134,
+    borderRadius: 67,
     borderWidth: 1,
     borderColor: 'rgba(216,140,58,0.48)',
     shadowColor: colors.accent,
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
 
   innerFlame: {
     width: 10,
-    height: 64,
+    height: 56,
     borderRadius: 999,
     backgroundColor: 'rgba(216,140,58,0.68)',
     shadowColor: colors.accent,
@@ -91,45 +91,45 @@ const styles = StyleSheet.create({
   kicker: {
     color: '#B9793A',
     fontSize: 10,
-    letterSpacing: 7,
-    marginBottom: 22,
+    letterSpacing: 5.8,
+    marginBottom: 18,
   },
 
   title: {
     color: colors.text,
-    fontSize: 54,
+    fontSize: 46,
     fontWeight: '300',
-    letterSpacing: 6,
-    marginBottom: 28,
+    letterSpacing: 5,
+    marginBottom: 22,
   },
 
   copy: {
     color: '#EFE1D0',
-    fontSize: 20,
+    fontSize: 18,
     textAlign: 'center',
-    lineHeight: 34,
-    marginBottom: 26,
+    lineHeight: 30,
+    marginBottom: 22,
   },
 
   divider: {
     width: 62,
     height: 1,
     backgroundColor: 'rgba(216,140,58,0.5)',
-    marginBottom: 26,
+    marginBottom: 22,
   },
 
   copySecondary: {
     color: colors.soft,
-    fontSize: 17,
+    fontSize: 15,
     textAlign: 'center',
-    lineHeight: 30,
-    marginBottom: 58,
+    lineHeight: 26,
+    marginBottom: 44,
   },
 
   button: {
     width: '100%',
-    minHeight: 62,
-    borderRadius: 18,
+    minHeight: 56,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(216,140,58,0.46)',
     backgroundColor: 'rgba(216,110,34,0.09)',
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFD1A0',
     fontSize: 12,
-    letterSpacing: 4,
+    letterSpacing: 3.2,
     fontWeight: '700',
   },
 });

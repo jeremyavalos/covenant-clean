@@ -819,6 +819,9 @@ terms:
 support:
 "Soporte",
 
+creator:
+"EL CREADOR",
+
 processing:
 "PROCESANDO",
 
@@ -919,6 +922,9 @@ terms:
 
 support:
 "Support",
+
+creator:
+"EL CREADOR",
 
 processing:
 "PROCESSING",
@@ -1229,6 +1235,14 @@ onPress={() => openLegalUrl(SUPPORT_URL)}
 >
 <Text style={styles.accountLinkText}>{t.support}</Text>
 </TouchableOpacity>
+
+<TouchableOpacity
+activeOpacity={0.72}
+onPress={() => router.push("/creator" as never)}
+style={styles.creatorLink}
+>
+<Text style={styles.creatorLinkText}>{t.creator}</Text>
+</TouchableOpacity>
 </View>
 
 </ScrollView>
@@ -1467,8 +1481,8 @@ container: {
 flex: 1,
 backgroundColor:
 COLORS.background,
-paddingHorizontal: 24,
-paddingTop: 74,
+paddingHorizontal: 22,
+paddingTop: 62,
 },
 
 headerRow: {
@@ -1476,13 +1490,15 @@ flexDirection: "row",
 alignItems: "center",
 justifyContent: "space-between",
 marginBottom: 34,
+gap: 14,
 },
 
 topLabel: {
 color: COLORS.bronze,
 letterSpacing: 11,
-fontSize: 11,
+fontSize: 10,
 textAlign: "left",
+flexShrink: 1,
 },
 
 logoutButton: {
@@ -1505,20 +1521,20 @@ fontWeight: "600",
 
 title: {
 color: COLORS.text,
-fontSize: 50,
-lineHeight: 68,
+fontSize: 42,
+lineHeight: 56,
 textAlign: "center",
 fontWeight: "300",
-marginBottom: 30,
+marginBottom: 24,
 },
 
 subtitle: {
 color: COLORS.muted,
-fontSize: 21,
-lineHeight: 38,
+fontSize: 18,
+lineHeight: 31,
 textAlign: "center",
-marginBottom: 58,
-paddingHorizontal: 8,
+marginBottom: 42,
+paddingHorizontal: 4,
 },
 
 proCard: {
@@ -1527,72 +1543,72 @@ COLORS.bronzeSoft,
 borderWidth: 1,
 borderColor:
 COLORS.border,
-borderRadius: 28,
-padding: 30,
-marginBottom: 38,
+borderRadius: 24,
+padding: 24,
+marginBottom: 30,
 },
 
 proMini: {
 color: COLORS.bronze,
 letterSpacing: 8,
-fontSize: 11,
-marginBottom: 28,
+fontSize: 10,
+marginBottom: 22,
 },
 
 proTitle: {
 color: COLORS.text,
-fontSize: 34,
-lineHeight: 50,
+fontSize: 28,
+lineHeight: 40,
 fontWeight: "300",
-marginBottom: 34,
+marginBottom: 26,
 },
 
 divider: {
 height: 1,
 backgroundColor:
 COLORS.border,
-marginBottom: 34,
+marginBottom: 26,
 },
 
 proText: {
 color: COLORS.text,
-fontSize: 18,
-lineHeight: 34,
-marginBottom: 10,
+fontSize: 16,
+lineHeight: 28,
+marginBottom: 8,
 fontWeight: "300",
 },
 
 price: {
 color: COLORS.text,
-marginTop: 34,
-fontSize: 19,
-letterSpacing: 7,
+marginTop: 28,
+fontSize: 16,
+letterSpacing: 5,
 },
 
 freeCard: {
 alignItems: "center",
-marginBottom: 42,
+marginBottom: 32,
 },
 
 freeLabel: {
 color: COLORS.bronze,
 letterSpacing: 9,
-fontSize: 12,
+fontSize: 10,
 marginBottom: 14,
 },
 
 freeText: {
 color: COLORS.muted,
-fontSize: 19,
+fontSize: 16,
 letterSpacing: 2,
 },
 
 habitCard: {
 backgroundColor:
 COLORS.card,
-borderRadius: 28,
-padding: 28,
-marginBottom: 24,
+borderRadius: 24,
+padding: 22,
+marginBottom: 18,
 borderWidth: 1,
 borderColor:
 "rgba(255,255,255,0.04)",
@@ -1602,7 +1618,7 @@ position: "relative",
 lockBadge: {
 position: "absolute",
 top: 24,
-right: 24,
+right: 18,
 borderWidth: 1,
 borderColor:
 COLORS.border,
@@ -1616,21 +1632,22 @@ backgroundColor:
 lockBadgeText: {
 color: COLORS.bronze,
 fontSize: 10,
-letterSpacing: 3,
+letterSpacing: 2,
 },
 
 habitTitle: {
 color: COLORS.text,
-fontSize: 29,
-marginBottom: 18,
+fontSize: 25,
+marginBottom: 14,
 fontWeight: "300",
+paddingRight: 94,
 },
 
 habitDescription: {
 color: COLORS.muted,
-fontSize: 18,
-lineHeight: 32,
-marginBottom: 28,
+fontSize: 16,
+lineHeight: 27,
+marginBottom: 22,
 },
 
 statusRow: {
@@ -1639,18 +1656,21 @@ justifyContent:
 "space-between",
 alignItems: "center",
 marginBottom: 24,
+gap: 12,
 },
 
 status: {
 color: COLORS.muted,
 fontSize: 12,
-letterSpacing: 4,
+letterSpacing: 3,
+flexShrink: 1,
 },
 
 streak: {
 color: COLORS.muted,
 fontSize: 12,
-letterSpacing: 3,
+letterSpacing: 2,
+flexShrink: 0,
 },
 
 progressContainer: {
@@ -1700,7 +1720,7 @@ letterSpacing: 3,
 accountLinks: {
 alignItems: "center",
 gap: 14,
-paddingTop: 28,
+paddingTop: 24,
 paddingBottom: 8,
 },
 
@@ -1708,6 +1728,24 @@ accountLinkText: {
 color: COLORS.muted,
 fontSize: 12,
 letterSpacing: 2,
+},
+
+creatorLink: {
+borderWidth: 1,
+borderColor:
+COLORS.border,
+borderRadius: 999,
+paddingHorizontal: 18,
+paddingVertical: 12,
+marginTop: 8,
+backgroundColor:
+"rgba(184,115,51,0.06)",
+},
+
+creatorLinkText: {
+color: COLORS.bronze,
+fontSize: 10,
+letterSpacing: 3,
 },
 
 paywallOverlay: {
@@ -1751,10 +1789,10 @@ marginBottom: 26,
 
 paywallTitle: {
 color: COLORS.text,
-fontSize: 32,
-lineHeight: 44,
+fontSize: 28,
+lineHeight: 38,
 fontWeight: "300",
-marginBottom: 28,
+marginBottom: 24,
 },
 
 paywallLine: {
@@ -1766,9 +1804,9 @@ marginBottom: 26,
 
 paywallText: {
 color: COLORS.muted,
-fontSize: 18,
-lineHeight: 32,
-marginBottom: 30,
+fontSize: 15,
+lineHeight: 26,
+marginBottom: 24,
 },
 
 planRow: {
@@ -1830,9 +1868,11 @@ marginBottom: 18,
 
 paywallButtonText: {
 color: COLORS.background,
-fontSize: 13,
-letterSpacing: 3,
+fontSize: 12,
+letterSpacing: 2.4,
 fontWeight: "600",
+textAlign: "center",
+paddingHorizontal: 16,
 },
 
 restoreButton: {

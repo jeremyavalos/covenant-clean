@@ -317,6 +317,20 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="section origin-section">
+          <div className="origin-inner">
+            <p className="eyebrow">Why Covenant exists</p>
+            <h2>Visible change begins in a place no one can see.</h2>
+            <div className="origin-line" />
+            <p>
+              Covenant exists for the quiet work beneath the surface: the
+              discipline to tell the truth, the patience to rebuild character,
+              and the strength to let the inner order become visible through
+              the body, the mind, and the life one constructs.
+            </p>
+          </div>
+        </section>
+
         <section id="support" className="section support-section">
           <p className="eyebrow">Support</p>
           <h2>Questions should not become friction.</h2>

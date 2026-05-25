@@ -532,8 +532,8 @@ const styles = StyleSheet.create({
   },
 
   content: {
-    paddingHorizontal: 24,
-    paddingTop: 70,
+    paddingHorizontal: 22,
+    paddingTop: 58,
   },
 
   backgroundGlow: {
@@ -574,7 +574,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 22,
+    marginBottom: 18,
   },
 
   headerCopy: {
@@ -584,9 +584,9 @@ const styles = StyleSheet.create({
 
   date: {
     color: '#F4F0EB',
-    fontSize: 16,
+    fontSize: 15,
     textTransform: 'capitalize',
-    marginBottom: 12,
+    marginBottom: 10,
     fontWeight: '400',
   },
 
@@ -597,17 +597,18 @@ const styles = StyleSheet.create({
   day: {
     color: '#74706B',
     fontSize: 11,
-    letterSpacing: 4,
+    letterSpacing: 3,
+    lineHeight: 17,
   },
 
   streakShell: {
-    minWidth: 112,
+    minWidth: 104,
     borderWidth: 1,
     borderColor: 'rgba(216,140,58,0.14)',
     borderRadius: 22,
     overflow: 'hidden',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     alignItems: 'flex-end',
     backgroundColor: 'rgba(8,8,8,0.42)',
   },
@@ -621,7 +622,7 @@ const styles = StyleSheet.create({
 
   streak: {
     color: '#D88C3A',
-    fontSize: 29,
+    fontSize: 26,
     fontWeight: '300',
   },
 
@@ -637,7 +638,7 @@ const styles = StyleSheet.create({
   },
 
   progressCard: {
-    marginBottom: 74,
+    marginBottom: 56,
     borderRadius: 24,
     shadowColor: '#D88C3A',
     shadowOpacity: 0.08,
@@ -654,7 +655,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(216,140,58,0.13)',
     backgroundColor: 'rgba(7,7,7,0.64)',
-    padding: 22,
+    padding: 20,
   },
 
   progressHeader: {
@@ -705,14 +706,14 @@ const styles = StyleSheet.create({
   },
 
   hero: {
-    marginBottom: 70,
+    marginBottom: 58,
   },
 
   period: {
     color: '#756C63',
     fontSize: 11,
-    letterSpacing: 6,
-    marginBottom: 26,
+    letterSpacing: 5,
+    marginBottom: 22,
   },
 
   nightPeriod: {
@@ -721,10 +722,10 @@ const styles = StyleSheet.create({
 
   title: {
     color: '#FFF9F2',
-    fontSize: 50,
+    fontSize: 42,
     fontWeight: '700',
     letterSpacing: 1,
-    marginBottom: 48,
+    marginBottom: 38,
   },
 
   nightTitle: {
@@ -740,8 +741,8 @@ const styles = StyleSheet.create({
 
   quote: {
     color: '#F8F1EA',
-    fontSize: 38,
-    lineHeight: 60,
+    fontSize: 31,
+    lineHeight: 48,
     fontWeight: '300',
   },
 
@@ -751,8 +752,8 @@ const styles = StyleSheet.create({
 
   author: {
     color: '#746C65',
-    marginTop: 28,
-    fontSize: 15,
+    marginTop: 22,
+    fontSize: 14,
     letterSpacing: 1,
   },
 
@@ -762,8 +763,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(216,140,58,0.13)',
     borderRadius: 24,
     backgroundColor: 'rgba(8,8,8,0.68)',
-    padding: 26,
-    marginTop: 44,
+    padding: 22,
+    marginTop: 34,
   },
 
   verseLine: {
@@ -782,8 +783,8 @@ const styles = StyleSheet.create({
 
   verse: {
     color: '#E7E0D8',
-    fontSize: 29,
-    lineHeight: 48,
+    fontSize: 24,
+    lineHeight: 38,
     fontStyle: 'italic',
     fontWeight: '300',
   },
@@ -795,12 +796,12 @@ const styles = StyleSheet.create({
   reference: {
     color: '#81776E',
     marginTop: 22,
-    fontSize: 15,
+    fontSize: 14,
     letterSpacing: 1,
   },
 
   reflectionSection: {
-    marginBottom: 92,
+    marginBottom: 74,
   },
 
   reflectionLabel: {
@@ -812,8 +813,8 @@ const styles = StyleSheet.create({
 
   reflection: {
     color: '#A69C92',
-    fontSize: 32,
-    lineHeight: 52,
+    fontSize: 26,
+    lineHeight: 42,
     fontWeight: '300',
   },
 
@@ -826,7 +827,7 @@ const styles = StyleSheet.create({
   },
 
   completeButton: {
-    minHeight: 76,
+    minHeight: 68,
     backgroundColor: '#11100F',
     borderWidth: 1,
     borderColor: 'rgba(216,140,58,0.22)',
@@ -894,7 +895,7 @@ const styles = StyleSheet.create({
   },
 
   deeperBlur: {
-    minHeight: 74,
+    minHeight: 66,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.09)',
@@ -907,7 +908,7 @@ const styles = StyleSheet.create({
   deeperText: {
     color: '#F3EEE8',
     fontSize: 12,
-    letterSpacing: 5,
+    letterSpacing: 4,
     fontWeight: '600',
   },
 

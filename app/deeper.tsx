@@ -298,8 +298,8 @@ const styles = StyleSheet.create({
   },
 
   content: {
-    paddingHorizontal: 24,
-    paddingTop: 82,
+    paddingHorizontal: 22,
+    paddingTop: 64,
     paddingBottom: 180,
   },
 
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     color: '#8C7661',
     fontSize: 10,
     letterSpacing: 6,
-    marginBottom: 34,
+    marginBottom: 28,
     textAlign: 'center',
   },
 
@@ -320,10 +320,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(216,140,58,0.16)',
-    borderRadius: 26,
+    borderRadius: 22,
     backgroundColor: 'rgba(7,7,7,0.58)',
-    paddingHorizontal: 24,
-    paddingVertical: 34,
+    paddingHorizontal: 22,
+    paddingVertical: 28,
     alignItems: 'center',
     shadowColor: '#D88C3A',
     shadowOpacity: 0.07,
@@ -337,14 +337,14 @@ const styles = StyleSheet.create({
   microLabel: {
     color: '#A87442',
     fontSize: 10,
-    letterSpacing: 7,
-    marginBottom: 28,
+    letterSpacing: 5.5,
+    marginBottom: 22,
   },
 
   verse: {
     color: '#FFF6ED',
-    fontSize: 40,
-    lineHeight: 62,
+    fontSize: 32,
+    lineHeight: 48,
     textAlign: 'center',
     fontStyle: 'italic',
     fontWeight: '300',
@@ -352,19 +352,19 @@ const styles = StyleSheet.create({
 
   reference: {
     color: '#8A8178',
-    marginTop: 26,
-    fontSize: 14,
+    marginTop: 22,
+    fontSize: 13,
     letterSpacing: 2,
   },
 
   bodyWrap: {
-    marginTop: 78,
+    marginTop: 62,
   },
 
   divider: {
     height: 1,
     backgroundColor: 'rgba(255,255,255,0.06)',
-    marginBottom: 74,
+    marginBottom: 58,
     overflow: 'hidden',
   },
 
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
   },
 
   section: {
-    marginBottom: 74,
+    marginBottom: 58,
     alignItems: 'center',
   },
 
@@ -398,8 +398,8 @@ const styles = StyleSheet.create({
 
   body: {
     color: '#BDB4AA',
-    fontSize: 23,
-    lineHeight: 40,
+    fontSize: 20,
+    lineHeight: 34,
     textAlign: 'center',
     fontWeight: '300',
   },
@@ -410,21 +410,21 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(216,140,58,0.12)',
     borderRadius: 24,
     backgroundColor: 'rgba(8,8,8,0.62)',
-    paddingHorizontal: 24,
-    paddingVertical: 34,
-    marginBottom: 72,
+    paddingHorizontal: 22,
+    paddingVertical: 28,
+    marginBottom: 58,
   },
 
   deep: {
     color: '#FFF7EF',
-    fontSize: 34,
-    lineHeight: 55,
+    fontSize: 28,
+    lineHeight: 44,
     textAlign: 'center',
     fontWeight: '300',
   },
 
   finalSection: {
-    paddingTop: 58,
+    paddingTop: 46,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.07)',
     alignItems: 'center',
@@ -439,8 +439,8 @@ const styles = StyleSheet.create({
 
   question: {
     color: '#FFF',
-    fontSize: 36,
-    lineHeight: 58,
+    fontSize: 30,
+    lineHeight: 46,
     textAlign: 'center',
     fontWeight: '300',
   },
@@ -449,6 +449,6 @@ const styles = StyleSheet.create({
     color: '#6F675F',
     fontSize: 10,
     letterSpacing: 6,
-    marginTop: 42,
+    marginTop: 34,
   },
 });
