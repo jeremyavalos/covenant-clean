@@ -9,7 +9,7 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "bundleIdentifier": "com.joincovenantapp.covenant",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "supportsTablet": false,
       "icon": "./assets/ios-icon.png",
       "infoPlist": {
@@ -18,7 +18,7 @@
     },
     "android": {
       "package": "com.joincovenant.app",
-      "versionCode": 8,
+      "versionCode": 9,
       "adaptiveIcon": {
         "backgroundColor": "#030303",
         "foregroundImage": "./assets/icon.png"
