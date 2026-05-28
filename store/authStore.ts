@@ -57,6 +57,23 @@ type AuthState = {
   refreshMe: () => Promise<void>;
 };
 
+const AUTH_INITIALIZE_TIMEOUT_MS =
+  8000;
+
+let authInitializeAttempt =
+  0;
+
+function timeoutAfter(
+  timeoutMs: number
+): Promise<never> {
+  return new Promise((_, reject) => {
+    setTimeout(
+      () => reject(new Error("Auth initialization timed out.")),
+      timeoutMs
+    );
+  });
+}
+
 async function fetchMe() {
   return apiFetch<CovenantUser>("/me");
 }
@@ -83,8 +100,32 @@ export const useAuthStore = create<AuthState>((set) => ({
   error: null,
 
   initializeAuth: async () => {
-    try {
+    const attemptId =
+      ++authInitializeAttempt;
+
+    const isCurrentAttempt = () =>
+      attemptId === authInitializeAttempt;
+
+    const continueUnauthenticated = () => {
+      authInitializeAttempt++;
+      setAuthToken(null);
+
+      set({
+        token: null,
+        user: null,
+        loading: false,
+      });
+
+      clearAuthToken().catch(() => undefined);
+      clearProgressUser().catch(() => undefined);
+    };
+
+    const initialize = async () => {
       const token = await getStoredAuthToken();
+
+      if (!isCurrentAttempt()) {
+        return;
+      }
 
       if (!token) {
         set({ loading: false });
@@ -94,22 +135,32 @@ export const useAuthStore = create<AuthState>((set) => ({
       setAuthToken(token);
       const user = await fetchMe();
 
+      if (!isCurrentAttempt()) {
+        return;
+      }
+
       await prepareProgressForUser(user);
+
+      if (!isCurrentAttempt()) {
+        return;
+      }
 
       set({
         token,
         user,
         loading: false,
       });
-    } catch {
-      await clearAuthToken();
-      await clearProgressUser();
+    };
 
-      set({
-        token: null,
-        user: null,
-        loading: false,
-      });
+    try {
+      await Promise.race([
+        initialize(),
+        timeoutAfter(AUTH_INITIALIZE_TIMEOUT_MS),
+      ]);
+    } catch {
+      if (isCurrentAttempt()) {
+        continueUnauthenticated();
+      }
     }
   },
 

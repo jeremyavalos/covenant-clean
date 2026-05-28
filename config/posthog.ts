@@ -33,7 +33,7 @@ export const posthog = new PostHog(apiKey || "placeholder_key", {
   maxQueueSize: 1000,
 
   // Feature flags
-  preloadFeatureFlags: true,
+  preloadFeatureFlags: false,
   sendFeatureFlagEvent: true,
   featureFlagsRequestTimeoutMs: 10000,
 
