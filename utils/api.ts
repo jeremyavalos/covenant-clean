@@ -17,6 +17,9 @@ export const API_BASE_URL =
   extra.covenantApiUrl ||
   "https://covenant-clean-production.up.railway.app";
 
+const REQUEST_TIMEOUT_MS =
+  12000;
+
 let authToken: string | null = null;
 
 export function setAuthToken(token: string | null) {
@@ -47,6 +50,15 @@ export async function apiFetch<T>(
   options: RequestOptions = {}
 ): Promise<T> {
   const headers = new Headers(options.headers);
+  const controller =
+    new AbortController();
+  const timeout =
+    setTimeout(
+      () => controller.abort(),
+      REQUEST_TIMEOUT_MS
+    );
+  const externalSignal =
+    options.signal;
 
   if (!headers.has("Content-Type") && options.body) {
     headers.set("Content-Type", "application/json");
@@ -60,20 +72,46 @@ export async function apiFetch<T>(
     }
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers,
-  });
-
-  const text = await response.text();
-  const data = text ? JSON.parse(text) : null;
-
-  if (!response.ok) {
-    const message =
-      data?.detail || data?.message || "Covenant request failed";
-
-    throw new Error(message);
+  if (externalSignal) {
+    if (externalSignal.aborted) {
+      controller.abort();
+    } else {
+      externalSignal.addEventListener(
+        "abort",
+        () => controller.abort(),
+        { once: true }
+      );
+    }
   }
 
-  return data as T;
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : null;
+
+    if (!response.ok) {
+      const message =
+        data?.detail || data?.message || "Covenant request failed";
+
+      throw new Error(message);
+    }
+
+    return data as T;
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.name === "AbortError"
+    ) {
+      throw new Error("Covenant request timed out. Please try again.");
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 }

@@ -11,16 +11,10 @@ export async function saveLanguage(
   language: Language
 ) {
 
-  try {
-
-    await AsyncStorage.setItem(
-      LANGUAGE_KEY,
-      language
-    );
-
-  } catch {
-
-  }
+  await AsyncStorage.setItem(
+    LANGUAGE_KEY,
+    language
+  );
 
 }
 

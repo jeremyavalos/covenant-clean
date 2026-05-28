@@ -4,6 +4,7 @@ import {
   useSegments,
   usePathname,
   useGlobalSearchParams,
+  useRootNavigationState,
 } from "expo-router";
 
 import {
@@ -13,6 +14,7 @@ import {
 
 import {
   ActivityIndicator,
+  StyleSheet,
   View,
 } from "react-native";
 
@@ -37,6 +39,7 @@ export default function Layout() {
   const segments = useSegments();
   const pathname = usePathname();
   const params = useGlobalSearchParams();
+  const rootNavigationState = useRootNavigationState();
   const previousPathname = useRef<string | undefined>(undefined);
   const previousToken = useRef<string | null>(null);
 
@@ -63,7 +66,10 @@ export default function Layout() {
   }, [initializeAuth]);
 
   useEffect(() => {
-    if (loading) {
+    if (
+      loading ||
+      !rootNavigationState?.key
+    ) {
       return;
     }
 
@@ -87,7 +93,7 @@ export default function Layout() {
     if (token && currentRoute === "auth") {
       router.replace("/habits");
     }
-  }, [loading, router, segments, token]);
+  }, [loading, rootNavigationState?.key, router, segments, token]);
 
   useEffect(() => {
     if (!loading && token) {
@@ -127,21 +133,6 @@ export default function Layout() {
     }
   }, [pathname, params]);
 
-  if (loading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#050505",
-        }}
-      >
-        <ActivityIndicator color="#D88C3A" />
-      </View>
-    );
-  }
-
   return (
 
     <PostHogProvider
@@ -177,6 +168,12 @@ export default function Layout() {
 
         />
 
+        {loading && (
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator color="#D88C3A" />
+          </View>
+        )}
+
       </SubscriptionProvider>
 
     </PostHogProvider>
@@ -184,3 +181,12 @@ export default function Layout() {
   );
 
 }
+
+const styles = StyleSheet.create({
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#050505",
+  },
+});
