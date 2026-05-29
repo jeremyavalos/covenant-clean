@@ -32,13 +32,10 @@ import {
 } from "../utils/language";
 
 const PERSISTENCE_TIMEOUT_MS =
-  8000;
+  2000;
 
 const FALLBACK_NAVIGATION_DELAY_MS =
   500;
-
-const CONTINUE_AFTER_STORAGE_ERROR_MS =
-  700;
 
 function withTimeout<T>(
   promise: Promise<T>,
@@ -82,35 +79,37 @@ export default function LanguageScreen() {
     setSelectedLanguage,
   ] = useState<Language | null>(null);
 
-  const [
-    fallbackMessage,
-    setFallbackMessage,
-  ] = useState<string | null>(null);
-
   useEffect(() => {
     pathnameRef.current =
       pathname;
   }, [pathname]);
 
-  function navigateToTransition() {
-    router.replace(
-      "/transition"
-    );
+  function navigateToTransition(
+    language: Language
+  ) {
+    router.replace({
+      pathname:
+        "/transition",
+      params: {
+        language,
+      },
+    });
   }
 
   function scheduleFallbackNavigation(
+    language: Language,
     delayMs = FALLBACK_NAVIGATION_DELAY_MS
   ) {
     setTimeout(() => {
       if (
         pathnameRef.current === "/language"
       ) {
-        navigateToTransition();
+        navigateToTransition(language);
       }
     }, delayMs);
   }
 
-  async function selectLanguage(
+  function selectLanguage(
     language: Language
   ) {
     if (
@@ -127,43 +126,23 @@ export default function LanguageScreen() {
       language
     );
 
-    setFallbackMessage(
-      null
-    );
+    withTimeout(
+      saveLanguage(language),
+      PERSISTENCE_TIMEOUT_MS
+    ).catch(() => undefined);
 
-    try {
-      await withTimeout(
-        saveLanguage(language),
-        PERSISTENCE_TIMEOUT_MS
-      );
-
-      if (
-        rootNavigationState?.key
-      ) {
-        navigateToTransition();
-      } else {
-        setTimeout(
-          navigateToTransition,
-          0
-        );
-      }
-
-      scheduleFallbackNavigation();
-    } catch {
-      setFallbackMessage(
-        "Continuing... we'll save this later."
-      );
-
+    if (
+      rootNavigationState?.key
+    ) {
+      navigateToTransition(language);
+    } else {
       setTimeout(
-        navigateToTransition,
-        CONTINUE_AFTER_STORAGE_ERROR_MS
-      );
-
-      scheduleFallbackNavigation(
-        CONTINUE_AFTER_STORAGE_ERROR_MS +
-          FALLBACK_NAVIGATION_DELAY_MS
+        () => navigateToTransition(language),
+        0
       );
     }
+
+    scheduleFallbackNavigation(language);
   }
 
   return (
@@ -336,12 +315,6 @@ export default function LanguageScreen() {
 
             </TouchableOpacity>
 
-            {fallbackMessage && (
-              <Text style={styles.fallbackMessage}>
-                {fallbackMessage}
-              </Text>
-            )}
-
           </FadeIn>
 
         </View>
@@ -379,13 +352,5 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 21,
     fontWeight: "300",
-  },
-
-  fallbackMessage: {
-    color: colors.soft,
-    fontSize: 13,
-    lineHeight: 20,
-    marginTop: 18,
-    textAlign: "center",
   },
 });

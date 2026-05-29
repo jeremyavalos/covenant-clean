@@ -5,11 +5,14 @@ import {
 } from "react-native";
 
 import {
+  useCallback,
   useEffect,
+  useRef,
   useState,
 } from "react";
 
 import {
+  useLocalSearchParams,
   router,
 } from "expo-router";
 
@@ -26,31 +29,106 @@ import {
   Language,
 } from "../utils/language";
 
+import {
+  useAuthStore,
+} from "../store/authStore";
+
+const AUTO_CONTINUE_DELAY_MS =
+  2200;
+
+const FALLBACK_CONTINUE_DELAY_MS =
+  2600;
+
 export default function TransitionScreen() {
+  const params =
+    useLocalSearchParams<{
+      language?: Language;
+    }>();
+
+  const routeLanguage =
+    params.language === 'en'
+      ? 'en'
+      : params.language === 'es'
+        ? 'es'
+        : null;
+
+  const token =
+    useAuthStore(
+      (state) => state.token
+    );
+
+  const didContinueRef =
+    useRef(false);
 
   const [
     language,
     setLanguage,
   ] = useState<Language>(
-    'es'
+    routeLanguage === 'en'
+      ? 'en'
+      : 'es'
   );
 
+  const continueToApp = useCallback(() => {
+    if (didContinueRef.current) {
+      return;
+    }
+
+    didContinueRef.current =
+      true;
+
+    router.replace(
+      token
+        ? "/habits"
+        : "/auth"
+    );
+  }, [token]);
+
   useEffect(() => {
+    if (routeLanguage) {
+      setLanguage(routeLanguage);
+      return;
+    }
+
+    let active =
+      true;
+
+    async function loadLanguage() {
+      const currentLanguage =
+        await getLanguage();
+
+      if (active) {
+        setLanguage(
+          currentLanguage
+        );
+      }
+    }
 
     loadLanguage();
 
-  }, []);
+    return () => {
+      active =
+        false;
+    };
 
-  async function loadLanguage() {
+  }, [routeLanguage]);
 
-    const currentLanguage =
-      await getLanguage();
+  useEffect(() => {
+    const timeout =
+      setTimeout(() => {
+        continueToApp();
+      }, AUTO_CONTINUE_DELAY_MS);
 
-    setLanguage(
-      currentLanguage
-    );
+    const fallbackTimeout =
+      setTimeout(() => {
+        continueToApp();
+      }, FALLBACK_CONTINUE_DELAY_MS);
 
-  }
+    return () => {
+      clearTimeout(timeout);
+      clearTimeout(fallbackTimeout);
+    };
+  }, [continueToApp]);
 
   const t =
     language === 'es'
@@ -175,11 +253,7 @@ export default function TransitionScreen() {
           <TouchableOpacity
             activeOpacity={0.7}
 
-            onPress={() =>
-              router.push(
-                "/habits"
-              )
-            }
+            onPress={continueToApp}
 
             style={{
               alignSelf: "center",

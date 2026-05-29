@@ -60,7 +60,7 @@ type AuthState = {
 };
 
 const AUTH_INITIALIZE_TIMEOUT_MS =
-  8000;
+  2500;
 
 let authInitializeAttempt =
   0;
@@ -85,13 +85,19 @@ function getUserCacheId(user: CovenantUser) {
 }
 
 async function prepareProgressForUser(
-  user: CovenantUser
+  user: CovenantUser,
+  syncRemote = true
 ) {
   const cacheId = getUserCacheId(user);
 
   await setProgressUser(cacheId);
   await clearLegacyProgressCache();
-  await syncProgress();
+
+  if (syncRemote) {
+    await syncProgress();
+  } else {
+    syncProgress().catch(() => undefined);
+  }
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -141,7 +147,10 @@ export const useAuthStore = create<AuthState>((set) => ({
         return;
       }
 
-      await prepareProgressForUser(user);
+      await prepareProgressForUser(
+        user,
+        false
+      );
 
       if (!isCurrentAttempt()) {
         return;

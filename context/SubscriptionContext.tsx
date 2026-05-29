@@ -31,7 +31,7 @@ export function SubscriptionProvider({
 }) {
   const [customerInfo, setCustomerInfo] =
     useState<CustomerInfo | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const refreshSubscription = useCallback(async () => {
     setLoading(true);
@@ -47,18 +47,24 @@ export function SubscriptionProvider({
   }, []);
 
   useEffect(() => {
-    refreshSubscription();
-
     const listener = (info: CustomerInfo) => {
       setCustomerInfo(info);
     };
 
-    Purchases.addCustomerInfoUpdateListener(listener);
+    try {
+      Purchases.addCustomerInfoUpdateListener(listener);
+    } catch {
+      return;
+    }
 
     return () => {
-      Purchases.removeCustomerInfoUpdateListener(listener);
+      try {
+        Purchases.removeCustomerInfoUpdateListener(listener);
+      } catch {
+        // RevenueCat may not be configured during first launch.
+      }
     };
-  }, [refreshSubscription]);
+  }, []);
 
   const value = useMemo(
     () => ({

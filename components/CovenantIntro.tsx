@@ -1,8 +1,10 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
+  AccessibilityInfo,
   Animated,
   Easing,
+  Pressable,
   StyleSheet,
   Text,
   View,
@@ -18,6 +20,7 @@ type Props = {
 
 const FIRST_INTRO_DURATION_MS = 4600;
 const DAILY_INTRO_DURATION_MS = 1350;
+const FINISH_FAILSAFE_MS = 5400;
 
 export default function CovenantIntro({
   mode,
@@ -36,6 +39,18 @@ export default function CovenantIntro({
     : DAILY_INTRO_DURATION_MS;
 
   const finishTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const failsafeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reduceMotionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const finishedRef = useRef(false);
+
+  const finishOnce = useCallback(() => {
+    if (finishedRef.current) {
+      return;
+    }
+
+    finishedRef.current = true;
+    onFinish();
+  }, [onFinish]);
 
   const titleStyle = useMemo(
     () => ({
@@ -98,6 +113,22 @@ export default function CovenantIntro({
   );
 
   useEffect(() => {
+    let active =
+      true;
+
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((reduceMotionEnabled) => {
+        if (active && reduceMotionEnabled) {
+          reduceMotionTimer.current = setTimeout(finishOnce, 300);
+        }
+      })
+      .catch(() => undefined);
+
+    failsafeTimer.current = setTimeout(
+      finishOnce,
+      FINISH_FAILSAFE_MS
+    );
+
     Animated.timing(fade, {
       toValue: 1,
       duration: 220,
@@ -160,12 +191,23 @@ export default function CovenantIntro({
         duration: 260,
         easing: Easing.in(Easing.cubic),
         useNativeDriver: true,
-      }).start(onFinish);
+      }).start(finishOnce);
     }, duration);
 
     return () => {
+      active =
+        false;
+
       if (finishTimer.current) {
         clearTimeout(finishTimer.current);
+      }
+
+      if (failsafeTimer.current) {
+        clearTimeout(failsafeTimer.current);
+      }
+
+      if (reduceMotionTimer.current) {
+        clearTimeout(reduceMotionTimer.current);
       }
     };
   }, [
@@ -174,7 +216,7 @@ export default function CovenantIntro({
     eclipse,
     fade,
     isFirstIntro,
-    onFinish,
+    finishOnce,
     second,
     title,
   ]);
@@ -195,6 +237,12 @@ export default function CovenantIntro({
       />
 
       <View style={styles.texture} />
+
+      <Pressable
+        accessibilityLabel="Skip intro"
+        onPress={finishOnce}
+        style={StyleSheet.absoluteFill}
+      />
 
       <Animated.View style={[styles.eclipseWrap, eclipseStyle]}>
         <View style={styles.eclipseOuter} />

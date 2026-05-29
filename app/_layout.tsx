@@ -117,25 +117,38 @@ export default function Layout() {
 
     if (token && !hadToken && user) {
       // New login: identify by numeric user ID (no PII)
-      posthog.identify(String(user.id), {
-        $set: { is_pro: user.is_pro },
-        $set_once: { first_seen_date: new Date().toISOString() },
-      });
-      posthog.capture("user_signed_in");
+      try {
+        posthog.identify(String(user.id), {
+          $set: { is_pro: user.is_pro },
+          $set_once: { first_seen_date: new Date().toISOString() },
+        });
+        posthog.capture("user_signed_in");
+      } catch {
+        // Analytics must never block navigation.
+      }
     } else if (!token && hadToken) {
       // Logout
-      posthog.capture("user_signed_out");
-      posthog.reset();
+      try {
+        posthog.capture("user_signed_out");
+        posthog.reset();
+      } catch {
+        // Analytics must never block navigation.
+      }
     }
   }, [loading, token, user]);
 
   // Manual screen tracking for Expo Router
   useEffect(() => {
     if (previousPathname.current !== pathname) {
-      posthog.screen(pathname, {
-        previous_screen: previousPathname.current ?? null,
-        ...params,
-      });
+      try {
+        posthog.screen(pathname, {
+          previous_screen: previousPathname.current ?? null,
+          ...params,
+        });
+      } catch {
+        // Analytics must never block navigation.
+      }
+
       previousPathname.current = pathname;
     }
   }, [pathname, params]);
