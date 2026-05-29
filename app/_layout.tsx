@@ -34,6 +34,12 @@ import {
   SubscriptionProvider,
 } from "../context/SubscriptionContext";
 
+import CovenantIntro from "../components/CovenantIntro";
+
+import {
+  useCovenantIntro,
+} from "../hooks/useCovenantIntro";
+
 export default function Layout() {
   const router = useRouter();
   const segments = useSegments();
@@ -42,6 +48,7 @@ export default function Layout() {
   const rootNavigationState = useRootNavigationState();
   const previousPathname = useRef<string | undefined>(undefined);
   const previousToken = useRef<string | null>(null);
+  const covenantIntro = useCovenantIntro();
 
   const token = useAuthStore(
     (state) => state.token
@@ -172,6 +179,14 @@ export default function Layout() {
           <View style={styles.loadingOverlay}>
             <ActivityIndicator color="#D88C3A" />
           </View>
+        )}
+
+        {covenantIntro.visible && (
+          <CovenantIntro
+            mode={covenantIntro.mode}
+            phrase={covenantIntro.phrase}
+            onFinish={covenantIntro.completeIntro}
+          />
         )}
 
       </SubscriptionProvider>

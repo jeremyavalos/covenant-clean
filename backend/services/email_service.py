@@ -1,18 +1,42 @@
 import os
+from urllib.parse import urlencode
 
 import resend
 
 
-def _build_backend_url(path: str, token: str) -> str:
+SUPPORTED_LANGUAGES = {"en", "es"}
+DEFAULT_EMAIL_LANGUAGE = "en"
+
+
+def _normalize_language(language: str | None) -> str:
+    if language in SUPPORTED_LANGUAGES:
+        return language
+
+    return DEFAULT_EMAIL_LANGUAGE
+
+
+def _build_backend_url(path: str, token: str, language: str | None = None) -> str:
     backend_url = os.getenv(
         "COVENANT_BACKEND_URL",
         "https://covenant-clean-production.up.railway.app",
     )
     base_url = backend_url.rstrip("/")
-    return f"{base_url}/auth/{path}?token={token}"
+    query = urlencode(
+        {
+            "token": token,
+            "language": _normalize_language(language),
+        }
+    )
+    return f"{base_url}/auth/{path}?{query}"
 
 
-def _email_shell(title: str, body: str, button_text: str, button_url: str) -> str:
+def _email_shell(
+    title: str,
+    body: str,
+    button_text: str,
+    button_url: str,
+    link_help: str,
+) -> str:
     return f"""
     <!doctype html>
     <html>
@@ -39,7 +63,7 @@ def _email_shell(title: str, body: str, button_text: str, button_url: str) -> st
                 </tr>
                 <tr>
                   <td style="padding:22px 32px;background:#080808;text-align:center;border-top:1px solid rgba(216,140,58,0.18);">
-                    <p style="margin:0;color:#7f766d;font-size:12px;line-height:1.6;">If the button does not work, copy this link into your browser:<br>{button_url}</p>
+                    <p style="margin:0;color:#7f766d;font-size:12px;line-height:1.6;">{link_help}<br>{button_url}</p>
                   </td>
                 </tr>
               </table>
@@ -72,33 +96,71 @@ def send_email(to_email: str, subject: str, html: str) -> None:
     )
 
 
-def send_verification_email(to_email: str, token: str) -> None:
-    verify_url = _build_backend_url("verify-email", token)
+def send_verification_email(to_email: str, token: str, language: str | None = None) -> None:
+    language = _normalize_language(language)
+    verify_url = _build_backend_url("verify-email", token, language)
+    copy = {
+        "en": {
+            "subject": "Verify your Covenant account",
+            "title": "Verify your Covenant account.",
+            "body": "Tap the button below to verify your account. If you did not request this, you can ignore this email.",
+            "button": "VERIFY",
+            "link_help": "If the button does not work, copy this link into your browser:",
+        },
+        "es": {
+            "subject": "Verifica tu cuenta de Covenant",
+            "title": "Verifica tu cuenta de Covenant.",
+            "body": "Toca el botón de abajo para verificar tu cuenta. Si no solicitaste esto, puedes ignorar este correo.",
+            "button": "VERIFICAR",
+            "link_help": "Si el botón no funciona, copia este enlace en tu navegador:",
+        },
+    }[language]
+
     html = _email_shell(
-        title="Verify your covenant.",
-        body="Confirm your email to protect your account and keep your discipline tied to you alone.",
-        button_text="VERIFY",
+        title=copy["title"],
+        body=copy["body"],
+        button_text=copy["button"],
         button_url=verify_url,
+        link_help=copy["link_help"],
     )
 
     send_email(
         to_email=to_email,
-        subject="Verify your Covenant email",
+        subject=copy["subject"],
         html=html,
     )
 
 
-def send_password_reset_email(to_email: str, token: str) -> None:
-    reset_url = _build_backend_url("reset-password", token)
+def send_password_reset_email(to_email: str, token: str, language: str | None = None) -> None:
+    language = _normalize_language(language)
+    reset_url = _build_backend_url("reset-password", token, language)
+    copy = {
+        "en": {
+            "subject": "Reset your Covenant password",
+            "title": "Reset your password.",
+            "body": "Use this secure link to choose a new password. The link expires soon.",
+            "button": "RESET PASSWORD",
+            "link_help": "If the button does not work, copy this link into your browser:",
+        },
+        "es": {
+            "subject": "Restablece tu contraseña de Covenant",
+            "title": "Restablece tu contraseña.",
+            "body": "Usa este enlace seguro para elegir una nueva contraseña. El enlace vence pronto.",
+            "button": "RESTABLECER",
+            "link_help": "Si el botón no funciona, copia este enlace en tu navegador:",
+        },
+    }[language]
+
     html = _email_shell(
-        title="Reset your password.",
-        body="Use this secure link to choose a new password. The link expires soon.",
-        button_text="RESET PASSWORD",
+        title=copy["title"],
+        body=copy["body"],
+        button_text=copy["button"],
         button_url=reset_url,
+        link_help=copy["link_help"],
     )
 
     send_email(
         to_email=to_email,
-        subject="Reset your Covenant password",
+        subject=copy["subject"],
         html=html,
     )

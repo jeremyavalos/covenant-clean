@@ -18,10 +18,12 @@ import {
 type AuthModePayload = {
   email: string;
   password: string;
+  language?: "en" | "es";
 };
 
 type EmailPayload = {
   email: string;
+  language?: "en" | "es";
 };
 
 type ResetPasswordPayload = {

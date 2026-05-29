@@ -241,6 +241,7 @@ export default function AuthScreen() {
       const payload = {
         email: submittedEmail,
         password,
+        language,
       };
 
       if (mode === "login") {
@@ -259,6 +260,7 @@ export default function AuthScreen() {
 
       await forgotPassword({
         email: payload.email,
+        language,
       });
       setNotice(t.forgotSent);
     } catch (error) {
@@ -293,6 +295,7 @@ export default function AuthScreen() {
     try {
       await resendVerification({
         email: targetEmail,
+        language,
       });
       setNotice(t.resendSent);
     } catch (error) {

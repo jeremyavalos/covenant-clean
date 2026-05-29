@@ -164,34 +164,65 @@ def assign_reset_token(user: User):
     user.token_expires = reset_expires_at()
 
 
-def send_verification_for_user(user: User):
-    send_verification_email(user.email, user.verification_token)
+def normalize_language(language: str | None):
+    return language if language in {"en", "es"} else "en"
+
+
+def send_verification_for_user(user: User, language: str | None = None):
+    send_verification_email(
+        user.email,
+        user.verification_token,
+        normalize_language(language),
+    )
     print(f"[Covenant auth] Verification email sent to user {user.id}.")
 
 
-def send_reset_for_user(user: User):
-    send_password_reset_email(user.email, user.reset_token)
+def send_reset_for_user(user: User, language: str | None = None):
+    send_password_reset_email(
+        user.email,
+        user.reset_token,
+        normalize_language(language),
+    )
     print(f"[Covenant auth] Password reset email sent to user {user.id}.")
 
 
-def render_verification_page(success: bool) -> HTMLResponse:
-    title = "Email verified." if success else "Verification link expired."
-    message = (
-        "Email verified. You can now return to Covenant."
-        if success
-        else "This verification link is invalid or expired. Please request a new verification email."
-    )
-    secondary = (
-        "Correo verificado. Ya puedes volver a Covenant."
-        if success
-        else "Este enlace es invalido o expiro. Solicita un nuevo correo de verificacion."
-    )
+def render_verification_page(success: bool, language: str | None = None) -> HTMLResponse:
+    language = normalize_language(language)
+    copy = {
+        "en": {
+            "title": "Email verified." if success else "Verification link expired.",
+            "message": (
+                "Email verified. You can now return to Covenant."
+                if success
+                else "This verification link is invalid or expired. Please request a new verification email."
+            ),
+            "secondary": (
+                "Correo verificado. Ya puedes volver a Covenant."
+                if success
+                else "Este enlace es invalido o expiro. Solicita un nuevo correo de verificacion."
+            ),
+        },
+        "es": {
+            "title": "Correo verificado." if success else "El enlace expiro.",
+            "message": (
+                "Correo verificado. Ya puedes volver a Covenant."
+                if success
+                else "Este enlace es invalido o expiro. Solicita un nuevo correo de verificacion."
+            ),
+            "secondary": (
+                "Email verified. You can now return to Covenant."
+                if success
+                else "This verification link is invalid or expired. Please request a new verification email."
+            ),
+        },
+    }[language]
+    title = copy["title"]
     accent = "#d88c3a" if success else "#ffb08c"
 
     return HTMLResponse(
         content=f"""
         <!doctype html>
-        <html lang="en">
+        <html lang="{language}">
           <head>
             <meta charset="utf-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -201,8 +232,8 @@ def render_verification_page(success: bool) -> HTMLResponse:
             <main style="width:min(100%,560px);border:1px solid rgba(216,140,58,0.34);background:#0b0b0b;padding:36px 28px;text-align:center;">
               <p style="margin:0 0 18px;color:#d88c3a;font-size:12px;font-weight:800;letter-spacing:6px;">COVENANT</p>
               <h1 style="margin:0 0 16px;color:{accent};font-family:Georgia,'Times New Roman',serif;font-size:42px;line-height:1.05;font-weight:400;">{title}</h1>
-              <p style="margin:0 auto 12px;max-width:430px;color:#c9c0b4;font-size:17px;line-height:1.7;">{message}</p>
-              <p style="margin:0 auto;max-width:430px;color:#8f867c;font-size:14px;line-height:1.6;">{secondary}</p>
+              <p style="margin:0 auto 12px;max-width:430px;color:#c9c0b4;font-size:17px;line-height:1.7;">{copy["message"]}</p>
+              <p style="margin:0 auto;max-width:430px;color:#8f867c;font-size:14px;line-height:1.6;">{copy["secondary"]}</p>
             </main>
           </body>
         </html>
@@ -238,22 +269,54 @@ def has_valid_reset_token(token: str, db: Session) -> bool:
     return True
 
 
-def render_reset_password_page(token: str, valid: bool) -> HTMLResponse:
+def render_reset_password_page(
+    token: str,
+    valid: bool,
+    language: str | None = None,
+) -> HTMLResponse:
+    language = normalize_language(language)
+    copy = {
+        "en": {
+            "expired_title": "Reset link expired.",
+            "expired_message": "This password reset link is invalid or expired. Please request a new password reset email from Covenant.",
+            "title": "Reset your password.",
+            "subtitle": "Choose a new password to return to Covenant.",
+            "password": "New password",
+            "confirm": "Confirm password",
+            "button": "RESET PASSWORD",
+            "mismatch": "Passwords do not match.",
+            "generic": "Could not reset password.",
+            "success": "Password reset. You can now return to Covenant.",
+        },
+        "es": {
+            "expired_title": "El enlace expiro.",
+            "expired_message": "Este enlace para restablecer tu contraseña es invalido o expiro. Solicita un nuevo correo desde Covenant.",
+            "title": "Restablece tu contraseña.",
+            "subtitle": "Elige una nueva contraseña para volver a Covenant.",
+            "password": "Nueva contraseña",
+            "confirm": "Confirmar contraseña",
+            "button": "RESTABLECER",
+            "mismatch": "Las contraseñas no coinciden.",
+            "generic": "No se pudo restablecer la contraseña.",
+            "success": "Contraseña restablecida. Ya puedes volver a Covenant.",
+        },
+    }[language]
+
     if not valid:
         return HTMLResponse(
-            content="""
+            content=f"""
             <!doctype html>
-            <html lang="en">
+            <html lang="{language}">
               <head>
                 <meta charset="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <title>Covenant - Reset link expired</title>
+                <title>Covenant - {copy["expired_title"]}</title>
               </head>
               <body style="margin:0;min-height:100vh;background:#050505;color:#fff8ef;font-family:Inter,Arial,sans-serif;display:grid;place-items:center;padding:24px;">
                 <main style="width:min(100%,560px);border:1px solid rgba(216,140,58,0.34);background:#0b0b0b;padding:36px 28px;text-align:center;">
                   <p style="margin:0 0 18px;color:#d88c3a;font-size:12px;font-weight:800;letter-spacing:6px;">COVENANT</p>
-                  <h1 style="margin:0 0 16px;color:#ffb08c;font-family:Georgia,'Times New Roman',serif;font-size:42px;line-height:1.05;font-weight:400;">Reset link expired.</h1>
-                  <p style="margin:0 auto;max-width:430px;color:#c9c0b4;font-size:17px;line-height:1.7;">This password reset link is invalid or expired. Please request a new password reset email from Covenant.</p>
+                  <h1 style="margin:0 0 16px;color:#ffb08c;font-family:Georgia,'Times New Roman',serif;font-size:42px;line-height:1.05;font-weight:400;">{copy["expired_title"]}</h1>
+                  <p style="margin:0 auto;max-width:430px;color:#c9c0b4;font-size:17px;line-height:1.7;">{copy["expired_message"]}</p>
                 </main>
               </body>
             </html>
@@ -264,29 +327,29 @@ def render_reset_password_page(token: str, valid: bool) -> HTMLResponse:
     safe_token = escape(token, quote=True)
     content = """
     <!doctype html>
-    <html lang="en">
+    <html lang="__LANGUAGE__">
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Covenant - Reset password</title>
+        <title>Covenant - __TITLE__</title>
       </head>
       <body style="margin:0;min-height:100vh;background:#050505;color:#fff8ef;font-family:Inter,Arial,sans-serif;display:grid;place-items:center;padding:24px;">
         <main style="width:min(100%,560px);border:1px solid rgba(216,140,58,0.34);background:#0b0b0b;padding:34px 28px;text-align:center;">
           <p style="margin:0 0 18px;color:#d88c3a;font-size:12px;font-weight:800;letter-spacing:6px;">COVENANT</p>
-          <h1 style="margin:0 0 12px;color:#fff8ef;font-family:Georgia,'Times New Roman',serif;font-size:42px;line-height:1.05;font-weight:400;">Reset your password.</h1>
-          <p style="margin:0 auto 24px;max-width:430px;color:#c9c0b4;font-size:16px;line-height:1.6;">Choose a new password to return to Covenant.</p>
+          <h1 style="margin:0 0 12px;color:#fff8ef;font-family:Georgia,'Times New Roman',serif;font-size:42px;line-height:1.05;font-weight:400;">__TITLE__</h1>
+          <p style="margin:0 auto 24px;max-width:430px;color:#c9c0b4;font-size:16px;line-height:1.6;">__SUBTITLE__</p>
           <form id="reset-form" action="/auth/reset-password" method="post" style="display:grid;gap:14px;text-align:left;">
             <input id="token" name="token" type="hidden" value="__TOKEN__" />
             <label style="display:grid;gap:8px;color:#d8c2aa;font-size:13px;">
-              New password
+              __PASSWORD_LABEL__
               <input id="password" name="password" type="password" minlength="8" maxlength="72" required style="min-height:54px;border-radius:14px;border:1px solid rgba(255,255,255,0.12);background:#050505;color:#fff8ef;font-size:16px;padding:0 16px;" />
             </label>
             <label style="display:grid;gap:8px;color:#d8c2aa;font-size:13px;">
-              Confirm password
+              __CONFIRM_LABEL__
               <input id="confirm-password" name="confirm_password" type="password" minlength="8" maxlength="72" required style="min-height:54px;border-radius:14px;border:1px solid rgba(255,255,255,0.12);background:#050505;color:#fff8ef;font-size:16px;padding:0 16px;" />
             </label>
             <p id="message" style="min-height:22px;margin:0;color:#ffb08c;font-size:14px;line-height:1.5;text-align:center;"></p>
-            <button type="submit" style="min-height:56px;border-radius:16px;border:1px solid rgba(216,140,58,0.62);background:rgba(216,110,34,0.22);color:#ffd1a0;font-size:12px;font-weight:800;letter-spacing:4px;">RESET PASSWORD</button>
+            <button type="submit" style="min-height:56px;border-radius:16px;border:1px solid rgba(216,140,58,0.62);background:rgba(216,110,34,0.22);color:#ffd1a0;font-size:12px;font-weight:800;letter-spacing:4px;">__BUTTON__</button>
           </form>
         </main>
         <script>
@@ -302,7 +365,7 @@ def render_reset_password_page(token: str, valid: bool) -> HTMLResponse:
             const confirmPassword = document.getElementById("confirm-password").value;
 
             if (password !== confirmPassword) {
-              message.textContent = "Passwords do not match.";
+              message.textContent = "__MISMATCH__";
               return;
             }
 
@@ -320,20 +383,36 @@ def render_reset_password_page(token: str, valid: bool) -> HTMLResponse:
 
               if (!response.ok) {
                 const data = await response.json().catch(() => ({}));
-                throw new Error(data.detail || "Could not reset password.");
+                throw new Error(data.detail || "__GENERIC__");
               }
 
               form.reset();
               message.style.color = "#ffd1a0";
-              message.textContent = "Password reset. You can now return to Covenant.";
+              message.textContent = "__SUCCESS__";
             } catch (error) {
-              message.textContent = error.message || "Could not reset password.";
+              message.textContent = error.message || "__GENERIC__";
             }
           });
         </script>
       </body>
     </html>
-    """.replace("__TOKEN__", safe_token)
+    """
+
+    replacements = {
+        "__LANGUAGE__": language,
+        "__TITLE__": copy["title"],
+        "__SUBTITLE__": copy["subtitle"],
+        "__TOKEN__": safe_token,
+        "__PASSWORD_LABEL__": copy["password"],
+        "__CONFIRM_LABEL__": copy["confirm"],
+        "__BUTTON__": copy["button"],
+        "__MISMATCH__": copy["mismatch"],
+        "__GENERIC__": copy["generic"],
+        "__SUCCESS__": copy["success"],
+    }
+
+    for placeholder, value in replacements.items():
+        content = content.replace(placeholder, value)
 
     return HTMLResponse(content=content)
 
@@ -359,7 +438,7 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
     db.refresh(user)
 
     try:
-        send_verification_for_user(user)
+        send_verification_for_user(user, payload.language)
     except Exception as exc:
         print(
             f"[Covenant auth] Verification email failed for user {user.id}: {exc}"
@@ -412,7 +491,7 @@ def send_verification(payload: EmailRequest, db: Session = Depends(get_db)):
     db.refresh(user)
 
     try:
-        send_verification_for_user(user)
+        send_verification_for_user(user, payload.language)
     except Exception as exc:
         print(f"[Covenant auth] Verification email failed for user {user.id}: {exc}")
         raise HTTPException(
@@ -426,10 +505,11 @@ def send_verification(payload: EmailRequest, db: Session = Depends(get_db)):
 @app.get("/auth/verify-email", response_class=HTMLResponse)
 def verify_email_link(
     token: str = Query(..., min_length=16, max_length=512),
+    language: str | None = Query(None),
     db: Session = Depends(get_db),
 ):
     verified = verify_user_email_token(token, db)
-    return render_verification_page(verified)
+    return render_verification_page(verified, language)
 
 
 @app.post("/auth/verify-email", response_model=MessageResponse)
@@ -463,7 +543,7 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
     db.refresh(user)
 
     try:
-        send_reset_for_user(user)
+        send_reset_for_user(user, payload.language)
     except Exception as exc:
         print(f"[Covenant auth] Password reset email failed for user {user.id}: {exc}")
         raise HTTPException(
@@ -477,11 +557,13 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
 @app.get("/auth/reset-password", response_class=HTMLResponse)
 def reset_password_link(
     token: str = Query(..., min_length=16, max_length=512),
+    language: str | None = Query(None),
     db: Session = Depends(get_db),
 ):
     return render_reset_password_page(
         token,
         has_valid_reset_token(token, db),
+        language,
     )
 
 

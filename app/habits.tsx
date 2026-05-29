@@ -557,7 +557,9 @@ offering?.availablePackages.find(
 (item) =>
 item.identifier === "$rc_monthly" ||
 item.packageType === "MONTHLY"
-);
+) ??
+offering?.availablePackages[0] ??
+null;
 
 if (!packageToPurchase) {
 console.warn("[Paywall] No RevenueCat package available to purchase.", {
@@ -662,9 +664,7 @@ plan,
 
 Alert.alert(
 t.paywallPurchaseErrorTitle,
-error instanceof Error
-? error.message
-: t.paywallPurchaseErrorText
+t.paywallPurchaseErrorText
 );
 
 } finally {
@@ -796,13 +796,13 @@ paywallButton:
 "INICIAR PRO MENSUAL",
 
 paywallPurchaseUnavailableText:
-"No se encontró el paquete mensual de Covenant Pro. Revisa la configuración de RevenueCat e inténtalo de nuevo.",
+"Las compras no están disponibles temporalmente. Inténtalo de nuevo más tarde.",
 
 paywallPurchaseErrorTitle:
 "No se pudo iniciar la compra",
 
 paywallPurchaseErrorText:
-"Ocurrió un error al intentar comprar Covenant Pro. Inténtalo de nuevo.",
+"Las compras no están disponibles temporalmente. Inténtalo de nuevo más tarde.",
 
 paywallCancel:
 "VOLVER",
@@ -900,13 +900,13 @@ paywallButton:
 "START MONTHLY PRO",
 
 paywallPurchaseUnavailableText:
-"The monthly Covenant Pro package was not found. Check the RevenueCat setup and try again.",
+"Purchases are temporarily unavailable. Please try again later.",
 
 paywallPurchaseErrorTitle:
 "Could not start purchase",
 
 paywallPurchaseErrorText:
-"Something went wrong while trying to purchase Covenant Pro. Please try again.",
+"Purchases are temporarily unavailable. Please try again later.",
 
 paywallCancel:
 "RETURN",
