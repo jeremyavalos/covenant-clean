@@ -22,6 +22,18 @@ const REQUEST_TIMEOUT_MS =
 
 let authToken: string | null = null;
 
+export class ApiError extends Error {
+  status: number;
+  code?: string;
+
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
 export function setAuthToken(token: string | null) {
   authToken = token;
 }
@@ -95,10 +107,17 @@ export async function apiFetch<T>(
     const data = text ? JSON.parse(text) : null;
 
     if (!response.ok) {
+      const detail = data?.detail;
       const message =
-        data?.detail || data?.message || "Covenant request failed";
+        typeof detail === "string"
+          ? detail
+          : detail?.message || data?.message || "Covenant request failed";
+      const code =
+        typeof detail === "object" && detail !== null
+          ? detail.code
+          : data?.code;
 
-      throw new Error(message);
+      throw new ApiError(message, response.status, code);
     }
 
     return data as T;

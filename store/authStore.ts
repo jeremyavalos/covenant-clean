@@ -65,6 +65,29 @@ const AUTH_INITIALIZE_TIMEOUT_MS =
 let authInitializeAttempt =
   0;
 
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase();
+}
+
+function normalizePassword(password: string) {
+  return password.trim();
+}
+
+function normalizeAuthPayload<T extends AuthModePayload>(payload: T): T {
+  return {
+    ...payload,
+    email: normalizeEmail(payload.email),
+    password: normalizePassword(payload.password),
+  };
+}
+
+function normalizeEmailPayload<T extends EmailPayload>(payload: T): T {
+  return {
+    ...payload,
+    email: normalizeEmail(payload.email),
+  };
+}
+
 function timeoutAfter(
   timeoutMs: number
 ): Promise<never> {
@@ -179,10 +202,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ busy: true, error: null });
 
     try {
+      const normalizedPayload = normalizeAuthPayload(payload);
       const tokenResponse = await apiFetch<TokenResponse>("/login", {
         method: "POST",
         auth: false,
-        body: JSON.stringify(payload),
+        body: JSON.stringify(normalizedPayload),
       });
 
       await saveAuthToken(tokenResponse.access_token);
@@ -209,10 +233,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ busy: true, error: null });
 
     try {
-      await apiFetch<TokenResponse>("/register", {
+      const normalizedPayload = normalizeAuthPayload(payload);
+
+      await apiFetch("/register", {
         method: "POST",
         auth: false,
-        body: JSON.stringify(payload),
+        body: JSON.stringify(normalizedPayload),
       });
 
       set({
@@ -232,10 +258,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ busy: true, error: null });
 
     try {
+      const normalizedPayload = normalizeEmailPayload(payload);
+
       await apiFetch("/auth/send-verification", {
         method: "POST",
         auth: false,
-        body: JSON.stringify(payload),
+        body: JSON.stringify(normalizedPayload),
       });
 
       set({ busy: false });
@@ -256,10 +284,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ busy: true, error: null });
 
     try {
+      const normalizedPayload = normalizeEmailPayload(payload);
+
       await apiFetch("/auth/forgot-password", {
         method: "POST",
         auth: false,
-        body: JSON.stringify(payload),
+        body: JSON.stringify(normalizedPayload),
       });
 
       set({ busy: false });
@@ -280,10 +310,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ busy: true, error: null });
 
     try {
+      const normalizedPayload = {
+        ...payload,
+        password: normalizePassword(payload.password),
+      };
+
       await apiFetch("/auth/reset-password", {
         method: "POST",
         auth: false,
-        body: JSON.stringify(payload),
+        body: JSON.stringify(normalizedPayload),
       });
 
       set({ busy: false });

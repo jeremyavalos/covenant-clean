@@ -150,7 +150,7 @@ export default function AuthScreen() {
           genericError: "No se pudo abrir la sesión.",
           invalidError: "Email o contraseña incorrectos.",
           registeredError: "Ese email ya está registrado.",
-          unverifiedError: "Verifica tu correo antes de entrar.",
+          unverifiedError: "Verifica tu correo primero.",
           emailSendError:
             "No pudimos enviar el correo de verificación. Intenta reenviarlo en un momento.",
           verificationSent:
@@ -190,7 +190,7 @@ export default function AuthScreen() {
           genericError: "Could not open the session.",
           invalidError: "Invalid email or password.",
           registeredError: "That email is already registered.",
-          unverifiedError: "Please verify your email before entering.",
+          unverifiedError: "Please verify your email first.",
           emailSendError:
             "We could not send the verification email. Please try resending it in a moment.",
           verificationSent:
@@ -279,11 +279,13 @@ export default function AuthScreen() {
 
     const submittedEmail =
       email.trim().toLowerCase();
+    const submittedPassword =
+      password.trim();
 
     try {
       const payload = {
         email: submittedEmail,
-        password,
+        password: submittedPassword,
         language,
       };
 

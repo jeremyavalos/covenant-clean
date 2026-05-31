@@ -1,20 +1,30 @@
 from typing import Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
-class UserCreate(BaseModel):
+class EmailNormalizedModel(BaseModel):
+    @field_validator("email", mode="before", check_fields=False)
+    @classmethod
+    def normalize_email(cls, value):
+        if isinstance(value, str):
+            return value.strip().lower()
+
+        return value
+
+
+class UserCreate(EmailNormalizedModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=72)
     language: Optional[Literal["en", "es"]] = None
 
 
-class UserLogin(BaseModel):
+class UserLogin(EmailNormalizedModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=72)
 
 
-class EmailRequest(BaseModel):
+class EmailRequest(EmailNormalizedModel):
     email: EmailStr
     language: Optional[Literal["en", "es"]] = None
 
@@ -23,7 +33,7 @@ class VerifyEmailRequest(BaseModel):
     token: str = Field(min_length=16, max_length=512)
 
 
-class ForgotPasswordRequest(BaseModel):
+class ForgotPasswordRequest(EmailNormalizedModel):
     email: EmailStr
     language: Optional[Literal["en", "es"]] = None
 

@@ -7,10 +7,16 @@ from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
-from sqlalchemy import text
+from sqlalchemy import func, text
 from sqlalchemy.orm import Session
 
-from auth import create_access_token, get_current_user, hash_password, verify_password
+from auth import (
+    create_access_token,
+    get_current_user,
+    hash_password,
+    normalize_email,
+    verify_password,
+)
 from database import Base, engine, get_db
 from models import Progress, User
 from schemas import (
@@ -184,6 +190,11 @@ def send_reset_for_user(user: User, language: str | None = None):
         normalize_language(language),
     )
     print(f"[Covenant auth] Password reset email sent to user {user.id}.")
+
+
+def find_user_by_email(db: Session, email: str):
+    normalized_email = normalize_email(email)
+    return db.query(User).filter(func.lower(User.email) == normalized_email).first()
 
 
 def render_verification_page(success: bool, language: str | None = None) -> HTMLResponse:
@@ -417,10 +428,11 @@ def render_reset_password_page(
     return HTMLResponse(content=content)
 
 
-@app.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
+@app.post("/register", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
 def register(payload: UserCreate, db: Session = Depends(get_db)):
-    email = payload.email.lower()
-    existing_user = db.query(User).filter(User.email == email).first()
+    email = normalize_email(payload.email)
+    existing_user = find_user_by_email(db, email)
+
     if existing_user:
         if not existing_user.is_verified:
             assign_verification_token(existing_user)
@@ -438,12 +450,14 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
                     detail="Could not send verification email.",
                 ) from exc
 
-            access_token = create_access_token({"sub": str(existing_user.id)})
-            return Token(access_token=access_token)
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Please verify your email first.",
+            )
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered",
+            detail="That email is already registered.",
         )
 
     user = User(
@@ -467,16 +481,15 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
             detail="Could not send verification email.",
         ) from exc
 
-    access_token = create_access_token({"sub": str(user.id)})
-    return Token(access_token=access_token)
+    return MessageResponse(message="Verification email sent.")
 
 
 @app.post("/login", response_model=Token)
 def login(payload: UserLogin, db: Session = Depends(get_db)):
-    email = payload.email.lower()
-    user = db.query(User).filter(User.email == email).first()
+    email = normalize_email(payload.email)
+    user = find_user_by_email(db, email)
 
-    if not user or not verify_password(payload.password, user.password_hash):
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
@@ -487,7 +500,14 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
         print(f"[Covenant auth] Login blocked for unverified user {user.id}.")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Email not verified",
+            detail="Please verify your email first.",
+        )
+
+    if not verify_password(payload.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
     access_token = create_access_token({"sub": str(user.id)})
@@ -496,8 +516,8 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
 
 @app.post("/auth/send-verification", response_model=MessageResponse)
 def send_verification(payload: EmailRequest, db: Session = Depends(get_db)):
-    email = payload.email.lower()
-    user = db.query(User).filter(User.email == email).first()
+    email = normalize_email(payload.email)
+    user = find_user_by_email(db, email)
 
     if user is None:
         print("[Covenant auth] Verification requested for unknown email.")
@@ -550,8 +570,8 @@ def verify_email(payload: VerifyEmailRequest, db: Session = Depends(get_db)):
 
 @app.post("/auth/forgot-password", response_model=MessageResponse)
 def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
-    email = payload.email.lower()
-    user = db.query(User).filter(User.email == email).first()
+    email = normalize_email(payload.email)
+    user = find_user_by_email(db, email)
 
     generic_response = MessageResponse(
         message="If the account exists, a password reset email has been sent."

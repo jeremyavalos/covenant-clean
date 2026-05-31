@@ -21,16 +21,27 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1008
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
+def normalize_email(email: str) -> str:
+    return email.strip().lower()
+
+
+def normalize_password(password: str) -> str:
+    return password.strip()
+
+
 def hash_password(password: str) -> str:
-    password_bytes = password.encode("utf-8")
+    password_bytes = normalize_password(password).encode("utf-8")
     return bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(plain_password: str, password_hash: str) -> bool:
-    return bcrypt.checkpw(
-        plain_password.encode("utf-8"),
-        password_hash.encode("utf-8"),
-    )
+    try:
+        return bcrypt.checkpw(
+            normalize_password(plain_password).encode("utf-8"),
+            password_hash.encode("utf-8"),
+        )
+    except (TypeError, ValueError):
+        return False
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -63,5 +74,11 @@ def get_current_user(
     user = db.query(User).filter(User.id == int(user_id)).first()
     if user is None:
         raise credentials_exception
+
+    if not user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Please verify your email first.",
+        )
 
     return user
