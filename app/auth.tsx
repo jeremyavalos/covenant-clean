@@ -28,6 +28,8 @@ import { getLanguage, Language } from "../utils/language";
 
 type AuthMode = "login" | "register" | "forgot";
 
+const RESEND_COOLDOWN_SECONDS = 15;
+
 export default function AuthScreen() {
   const [language, setLanguage] = useState<Language>("es");
   const [mode, setMode] = useState<AuthMode>("login");
@@ -38,6 +40,7 @@ export default function AuthScreen() {
   const [verificationEmail, setVerificationEmail] = useState<string | null>(
     null
   );
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const login = useAuthStore((state) => state.login);
   const register = useAuthStore((state) => state.register);
@@ -108,6 +111,18 @@ export default function AuthScreen() {
     }
   }, [token]);
 
+  useEffect(() => {
+    if (resendCooldown <= 0) {
+      return undefined;
+    }
+
+    const interval = setInterval(() => {
+      setResendCooldown((current) => Math.max(0, current - 1));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [resendCooldown]);
+
   const t =
     language === "es"
       ? {
@@ -128,14 +143,20 @@ export default function AuthScreen() {
           backToLogin: "VOLVER A ENTRAR",
           createAccount: "CREAR CUENTA",
           haveAccount: "YA TENGO CUENTA",
+          checkEmailTitle: "Revisa tu correo.",
+          checkEmailBody:
+            "Para entrar a Covenant, abre el enlace de verificación que enviamos a tu email. Si tarda, revisa spam o reenvíalo aquí.",
           loading: "ABRIENDO",
           genericError: "No se pudo abrir la sesión.",
           invalidError: "Email o contraseña incorrectos.",
           registeredError: "Ese email ya está registrado.",
           unverifiedError: "Verifica tu correo antes de entrar.",
+          emailSendError:
+            "No pudimos enviar el correo de verificación. Intenta reenviarlo en un momento.",
           verificationSent:
             "Te enviamos un correo de verificación. Revisa tu bandeja de entrada y correo no deseado.",
           resendVerification: "REENVIAR CORREO DE VERIFICACIÓN",
+          resendCountdown: "REENVIAR EN",
           resendSent:
             "Te enviamos otro correo de verificación.",
           forgotSent:
@@ -162,14 +183,20 @@ export default function AuthScreen() {
           backToLogin: "RETURN TO LOGIN",
           createAccount: "CREATE ACCOUNT",
           haveAccount: "I HAVE AN ACCOUNT",
+          checkEmailTitle: "Check your email.",
+          checkEmailBody:
+            "To enter Covenant, open the verification link we sent to your email. If it takes a moment, check spam or resend it here.",
           loading: "OPENING",
           genericError: "Could not open the session.",
           invalidError: "Invalid email or password.",
           registeredError: "That email is already registered.",
           unverifiedError: "Please verify your email before entering.",
+          emailSendError:
+            "We could not send the verification email. Please try resending it in a moment.",
           verificationSent:
             "We sent you a verification email. Check your inbox and spam folder.",
           resendVerification: "RESEND VERIFICATION EMAIL",
+          resendCountdown: "RESEND IN",
           resendSent:
             "We sent another verification email.",
           forgotSent:
@@ -179,8 +206,12 @@ export default function AuthScreen() {
           support: "Support",
         };
 
+  const showingVerification = Boolean(verificationEmail);
+
   const title =
-    mode === "login"
+    showingVerification
+      ? t.checkEmailTitle
+      : mode === "login"
       ? t.loginTitle
       : mode === "register"
         ? t.registerTitle
@@ -192,6 +223,11 @@ export default function AuthScreen() {
       : mode === "register"
         ? t.registerAction
         : t.forgotAction;
+
+  const resendText =
+    resendCooldown > 0
+      ? `${t.resendCountdown} ${resendCooldown}s`
+      : t.resendVerification;
 
   const toggleText =
     mode === "login"
@@ -227,7 +263,14 @@ export default function AuthScreen() {
       return t.unverifiedError;
     }
 
-    return error.message || t.genericError;
+    if (
+      message.includes("verification email") ||
+      message.includes("send verification")
+    ) {
+      return t.emailSendError;
+    }
+
+    return t.genericError;
   }
 
   async function submit() {
@@ -255,6 +298,7 @@ export default function AuthScreen() {
         setVerificationEmail(payload.email);
         setPassword("");
         setNotice(t.verificationSent);
+        setResendCooldown(RESEND_COOLDOWN_SECONDS);
         return;
       }
 
@@ -264,12 +308,16 @@ export default function AuthScreen() {
       });
       setNotice(t.forgotSent);
     } catch (error) {
-      if (mode === "login" && error instanceof Error) {
+      if (
+        (mode === "login" || mode === "register") &&
+        error instanceof Error
+      ) {
         const message = error.message.toLowerCase();
 
         if (
           message.includes("verify") ||
-          message.includes("verified")
+          message.includes("verified") ||
+          message.includes("verification email")
         ) {
           setVerificationEmail(submittedEmail);
         }
@@ -289,6 +337,10 @@ export default function AuthScreen() {
       return;
     }
 
+    if (resendCooldown > 0) {
+      return;
+    }
+
     setLocalError(null);
     setNotice(null);
 
@@ -298,6 +350,7 @@ export default function AuthScreen() {
         language,
       });
       setNotice(t.resendSent);
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
     } catch (error) {
       setLocalError(
         getAuthErrorMessage(error)
@@ -309,6 +362,8 @@ export default function AuthScreen() {
     setMode(nextMode);
     setLocalError(null);
     setNotice(null);
+    setVerificationEmail(null);
+    setResendCooldown(0);
   }
 
   function openLegalUrl(url: string) {
@@ -357,127 +412,160 @@ export default function AuthScreen() {
           </Text>
 
           <BlurView intensity={24} tint="dark" style={styles.panel}>
-            <View style={styles.toggle}>
-              <Pressable
-                onPress={() => switchMode("login")}
-                style={[
-                  styles.toggleSide,
-                  mode === "login" && styles.toggleActive,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.toggleText,
-                    mode === "login" && styles.toggleTextActive,
+            {showingVerification ? (
+              <>
+                <Text style={styles.checkEmailBody}>
+                  {t.checkEmailBody}
+                </Text>
+
+                {localError ? (
+                  <Text style={styles.error}>{localError}</Text>
+                ) : null}
+
+                {notice ? (
+                  <Text style={styles.notice}>{notice}</Text>
+                ) : null}
+
+                <Pressable
+                  disabled={busy || resendCooldown > 0}
+                  onPress={handleResendVerification}
+                  style={({ pressed }) => [
+                    styles.button,
+                    pressed && styles.buttonPressed,
+                    (busy || resendCooldown > 0) && styles.buttonBusy,
                   ]}
                 >
-                  {t.loginTab}
-                </Text>
-              </Pressable>
+                  {busy ? (
+                    <View style={styles.loadingRow}>
+                      <ActivityIndicator color="#FFD1A0" />
+                      <Text style={styles.buttonText}>{t.loading}</Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.buttonText}>{resendText}</Text>
+                  )}
+                </Pressable>
 
-              <Pressable
-                onPress={() => switchMode("register")}
-                style={[
-                  styles.toggleSide,
-                  mode === "register" && styles.toggleActive,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.toggleText,
-                    mode === "register" && styles.toggleTextActive,
-                  ]}
+                <Pressable
+                  disabled={busy}
+                  onPress={() => switchMode("login")}
+                  style={styles.switchButton}
                 >
-                  {t.registerTab}
-                </Text>
-              </Pressable>
-            </View>
+                  <Text style={styles.switchText}>{t.backToLogin}</Text>
+                </Pressable>
+              </>
+            ) : (
+              <>
+                <View style={styles.toggle}>
+                  <Pressable
+                    onPress={() => switchMode("login")}
+                    style={[
+                      styles.toggleSide,
+                      mode === "login" && styles.toggleActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.toggleText,
+                        mode === "login" && styles.toggleTextActive,
+                      ]}
+                    >
+                      {t.loginTab}
+                    </Text>
+                  </Pressable>
 
-            <TextInput
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="email-address"
-              onChangeText={setEmail}
-              placeholder={t.emailPlaceholder}
-              placeholderTextColor="rgba(255,255,255,0.32)"
-              style={styles.input}
-              value={email}
-            />
-
-            {mode !== "forgot" ? (
-              <TextInput
-                autoCapitalize="none"
-                onChangeText={setPassword}
-                placeholder={t.passwordPlaceholder}
-                placeholderTextColor="rgba(255,255,255,0.32)"
-                secureTextEntry
-                style={styles.input}
-                value={password}
-              />
-            ) : null}
-
-            {localError ? (
-              <Text style={styles.error}>{localError}</Text>
-            ) : null}
-
-            {notice ? (
-              <Text style={styles.notice}>{notice}</Text>
-            ) : null}
-
-            <Pressable
-              disabled={busy}
-              onPress={submit}
-              style={({ pressed }) => [
-                styles.button,
-                pressed && styles.buttonPressed,
-                busy && styles.buttonBusy,
-              ]}
-            >
-              {busy ? (
-                <View style={styles.loadingRow}>
-                  <ActivityIndicator color="#FFD1A0" />
-                  <Text style={styles.buttonText}>{t.loading}</Text>
+                  <Pressable
+                    onPress={() => switchMode("register")}
+                    style={[
+                      styles.toggleSide,
+                      mode === "register" && styles.toggleActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.toggleText,
+                        mode === "register" && styles.toggleTextActive,
+                      ]}
+                    >
+                      {t.registerTab}
+                    </Text>
+                  </Pressable>
                 </View>
-              ) : (
-                <Text style={styles.buttonText}>{actionText}</Text>
-              )}
-            </Pressable>
 
-            {verificationEmail ? (
-              <Pressable
-                disabled={busy}
-                onPress={handleResendVerification}
-                style={styles.secondaryButton}
-              >
-                <Text style={styles.secondaryText}>
-                  {t.resendVerification}
-                </Text>
-              </Pressable>
-            ) : null}
+                <TextInput
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  onChangeText={setEmail}
+                  placeholder={t.emailPlaceholder}
+                  placeholderTextColor="rgba(255,255,255,0.32)"
+                  style={styles.input}
+                  value={email}
+                />
 
-            {mode === "login" ? (
-              <Pressable
-                disabled={busy}
-                onPress={() => switchMode("forgot")}
-                style={styles.secondaryButton}
-              >
-                <Text style={styles.secondaryText}>
-                  {t.forgotPassword}
-                </Text>
-              </Pressable>
-            ) : null}
+                {mode !== "forgot" ? (
+                  <TextInput
+                    autoCapitalize="none"
+                    onChangeText={setPassword}
+                    placeholder={t.passwordPlaceholder}
+                    placeholderTextColor="rgba(255,255,255,0.32)"
+                    secureTextEntry
+                    style={styles.input}
+                    value={password}
+                  />
+                ) : null}
 
-            <Pressable
-              disabled={busy}
-              onPress={() =>
-                switchMode(mode === "login" ? "register" : "login")
-              }
-              style={styles.switchButton}
-            >
-              <Text style={styles.switchText}>
-                {mode === "forgot" ? t.backToLogin : toggleText}
-              </Text>
-            </Pressable>
+                {localError ? (
+                  <Text style={styles.error}>{localError}</Text>
+                ) : null}
+
+                {notice ? (
+                  <Text style={styles.notice}>{notice}</Text>
+                ) : null}
+
+                <Pressable
+                  disabled={busy}
+                  onPress={submit}
+                  style={({ pressed }) => [
+                    styles.button,
+                    pressed && styles.buttonPressed,
+                    busy && styles.buttonBusy,
+                  ]}
+                >
+                  {busy ? (
+                    <View style={styles.loadingRow}>
+                      <ActivityIndicator color="#FFD1A0" />
+                      <Text style={styles.buttonText}>{t.loading}</Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.buttonText}>{actionText}</Text>
+                  )}
+                </Pressable>
+
+                {mode === "login" ? (
+                  <Pressable
+                    disabled={busy}
+                    onPress={() => switchMode("forgot")}
+                    style={styles.secondaryButton}
+                  >
+                    <Text style={styles.secondaryText}>
+                      {t.forgotPassword}
+                    </Text>
+                  </Pressable>
+                ) : null}
+
+                <Pressable
+                  disabled={busy}
+                  onPress={() =>
+                    switchMode(mode === "login" ? "register" : "login")
+                  }
+                  style={styles.switchButton}
+                >
+                  <Text style={styles.switchText}>
+                    {mode === "forgot" ? t.backToLogin : toggleText}
+                  </Text>
+                </Pressable>
+              </>
+            )}
 
             <View style={styles.legalLinks}>
               <Pressable onPress={() => openLegalUrl(PRIVACY_POLICY_URL)}>
@@ -623,6 +711,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 21,
     marginBottom: 14,
+    textAlign: "center",
+  },
+
+  checkEmailBody: {
+    color: "#D8C2AA",
+    fontSize: 15,
+    lineHeight: 24,
+    marginBottom: 18,
     textAlign: "center",
   },
 

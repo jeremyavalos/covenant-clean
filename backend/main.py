@@ -422,6 +422,25 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
     email = payload.email.lower()
     existing_user = db.query(User).filter(User.email == email).first()
     if existing_user:
+        if not existing_user.is_verified:
+            assign_verification_token(existing_user)
+            db.commit()
+            db.refresh(existing_user)
+
+            try:
+                send_verification_for_user(existing_user, payload.language)
+            except Exception as exc:
+                print(
+                    f"[Covenant auth] Verification email failed for existing unverified user {existing_user.id}: {exc}"
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail="Could not send verification email.",
+                ) from exc
+
+            access_token = create_access_token({"sub": str(existing_user.id)})
+            return Token(access_token=access_token)
+
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered",
@@ -443,6 +462,10 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
         print(
             f"[Covenant auth] Verification email failed for user {user.id}: {exc}"
         )
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Could not send verification email.",
+        ) from exc
 
     access_token = create_access_token({"sub": str(user.id)})
     return Token(access_token=access_token)

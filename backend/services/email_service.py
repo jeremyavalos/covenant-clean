@@ -81,18 +81,25 @@ def send_email(to_email: str, subject: str, html: str) -> None:
         "RESEND_FROM_EMAIL",
         "Covenant <noreply@joincovenantapp.com>",
     )
+    resend_reply_to_email = os.getenv("RESEND_REPLY_TO_EMAIL")
 
     if not resend_api_key:
         raise RuntimeError("RESEND_API_KEY is not configured.")
 
+    params = {
+        "from": resend_from_email,
+        "to": [to_email],
+        "subject": subject,
+        "html": html,
+    }
+
+    if resend_reply_to_email:
+        params["reply_to"] = resend_reply_to_email
+
     resend.api_key = resend_api_key
-    resend.Emails.send(
-        {
-            "from": resend_from_email,
-            "to": [to_email],
-            "subject": subject,
-            "html": html,
-        }
+    response = resend.Emails.send(params)
+    print(
+        f"[Covenant email] Resend accepted message to {to_email} with subject '{subject}': {response}"
     )
 
 
