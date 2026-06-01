@@ -27,8 +27,10 @@ declare const process:
 
 const IOS_API_KEY_PLACEHOLDER = "ios api key";
 const ANDROID_API_KEY_PLACEHOLDER = "android api key";
-const OFFERING_IDENTIFIER = "default";
-const PRO_ENTITLEMENT_IDS = ["covenant Pro", "covenant_pro"];
+export const DEFAULT_OFFERING_IDENTIFIER = "default";
+export const PRO_ENTITLEMENT_IDS = ["covenant Pro", "covenant_pro"];
+
+type RevenueCatOffering = NonNullable<PurchasesOfferings["current"]>;
 
 let initialized = false;
 let initPromise: Promise<boolean> | null = null;
@@ -238,10 +240,31 @@ export function hasProAccess(customerInfo: CustomerInfo | null): boolean {
   );
 }
 
+export function getDefaultOffering(offerings: PurchasesOfferings | null) {
+  return (
+    offerings?.all[DEFAULT_OFFERING_IDENTIFIER] ??
+    offerings?.current ??
+    null
+  );
+}
+
+export function getMonthlyPackageFromOffering(
+  offering: RevenueCatOffering | null
+): PurchasesPackage | null {
+  return (
+    offering?.monthly ??
+    offering?.availablePackages.find(
+      (item) =>
+        item.identifier === "$rc_monthly" ||
+        item.packageType === "MONTHLY"
+    ) ??
+    null
+  );
+}
+
 export async function getDefaultOfferingPackages() {
   const offerings = await getOfferings();
-  const offering =
-    offerings?.all[OFFERING_IDENTIFIER] ?? offerings?.current ?? null;
+  const offering = getDefaultOffering(offerings);
 
   return offering?.availablePackages ?? [];
 }

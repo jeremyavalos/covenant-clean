@@ -45,6 +45,9 @@ import {
 } from "../utils/language";
 
 import {
+  DEFAULT_OFFERING_IDENTIFIER,
+  getDefaultOffering,
+  getMonthlyPackageFromOffering,
   getOfferings,
   hasProAccess,
   purchasePackage,
@@ -628,9 +631,9 @@ const offerings =
 await getOfferings();
 
 const offering =
-offerings?.all.default ??
-offerings?.current ??
-null;
+getDefaultOffering(
+offerings
+);
 
 console.log("[Paywall] RevenueCat offering selected.", {
 plan,
@@ -642,18 +645,14 @@ describePurchasePackage(item)
 });
 
 const packageToPurchase =
-offering?.monthly ??
-offering?.availablePackages.find(
-(item) =>
-item.identifier === "$rc_monthly" ||
-item.packageType === "MONTHLY"
-) ??
-offering?.availablePackages[0] ??
-null;
+getMonthlyPackageFromOffering(
+offering
+);
 
 if (!packageToPurchase) {
 console.warn("[Paywall] No RevenueCat package available to purchase.", {
 plan,
+defaultOfferingIdentifier: DEFAULT_OFFERING_IDENTIFIER,
 offeringIdentifier: offering?.identifier ?? null,
 });
 
