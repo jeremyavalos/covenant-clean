@@ -18,8 +18,9 @@ from auth import (
     verify_password,
 )
 from database import Base, engine, get_db
-from models import Progress, User
+from models import GiftCodeRedemption, Progress, User
 from schemas import (
+    DeleteAccountRequest,
     EmailRequest,
     ForgotPasswordRequest,
     MessageResponse,
@@ -633,6 +634,42 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
 @app.get("/me", response_model=UserOut)
 def me(current_user: User = Depends(get_current_user)):
     return current_user
+
+
+@app.delete("/account", response_model=MessageResponse)
+def delete_account(
+    payload: DeleteAccountRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.id == current_user.id).first()
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Account not found.",
+        )
+
+    if not verify_password(payload.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid password.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    user_id = user.id
+
+    db.query(GiftCodeRedemption).filter(
+        GiftCodeRedemption.user_id == user_id
+    ).delete(synchronize_session=False)
+    db.query(Progress).filter(Progress.user_id == user_id).delete(
+        synchronize_session=False
+    )
+    db.delete(user)
+    db.commit()
+
+    print(f"[Covenant auth] User {user_id} deleted account.")
+    return MessageResponse(message="Account deleted.")
 
 
 @app.post("/progress/save", response_model=ProgressOut)

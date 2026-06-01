@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -254,6 +255,11 @@ useAuthStore(
 (state) => state.logout
 );
 
+const deleteAccount =
+useAuthStore(
+(state) => state.deleteAccount
+);
+
 const user =
 useAuthStore(
 (state) => state.user
@@ -296,6 +302,21 @@ setIsPurchasing,
 const [
 isRestoring,
 setIsRestoring,
+] = useState(false);
+
+const [
+deleteAccountVisible,
+setDeleteAccountVisible,
+] = useState(false);
+
+const [
+deleteAccountPassword,
+setDeleteAccountPassword,
+] = useState("");
+
+const [
+isDeletingAccount,
+setIsDeletingAccount,
 ] = useState(false);
 
 const [
@@ -524,6 +545,75 @@ await clearLegacyFreeHabit();
 router.replace(
 "/auth" as never
 );
+
+}
+
+function openSubscriptionReviewPath() {
+
+setSelectedLockedHabit(null);
+setSelectedPlan("monthly");
+setPaywallVisible(true);
+
+posthog.capture("paywall_shown", {
+source: "pro_card",
+is_pro: isPro,
+});
+
+}
+
+function openDeleteAccount() {
+
+setDeleteAccountPassword("");
+setDeleteAccountVisible(true);
+
+}
+
+async function confirmDeleteAccount() {
+
+const password =
+deleteAccountPassword.trim();
+
+if (!password) {
+Alert.alert(
+t.deleteAccountErrorTitle,
+t.deletePasswordRequired
+);
+return;
+}
+
+setIsDeletingAccount(true);
+
+try {
+await deleteAccount(password);
+await clearProgressUser();
+await clearLegacyFreeHabit();
+
+setSelectedFreeHabit(null);
+setIsFreeHabitReady(false);
+setDeleteAccountVisible(false);
+setDeleteAccountPassword("");
+
+Alert.alert(
+t.accountDeletedTitle,
+t.accountDeletedText,
+[
+{
+text: t.deleteAccountDone,
+onPress: () =>
+router.replace("/auth" as never),
+},
+]
+);
+} catch (error) {
+Alert.alert(
+t.deleteAccountErrorTitle,
+error instanceof Error
+? error.message
+: t.paywallPurchaseErrorText
+);
+} finally {
+setIsDeletingAccount(false);
+}
 
 }
 
@@ -822,6 +912,42 @@ support:
 creator:
 "EL CREADOR",
 
+subscriptionButton:
+"VER SUSCRIPCION MENSUAL",
+
+deleteAccount:
+"Eliminar cuenta",
+
+deleteAccountTitle:
+"Eliminar cuenta",
+
+deleteAccountText:
+"Esto eliminara permanentemente tu cuenta, progreso y datos asociados. Ingresa tu contrasena para confirmar.",
+
+deletePasswordPlaceholder:
+"Contrasena",
+
+deleteAccountCancel:
+"CANCELAR",
+
+deleteAccountConfirm:
+"ELIMINAR CUENTA",
+
+deleteAccountErrorTitle:
+"No se pudo eliminar la cuenta",
+
+deletePasswordRequired:
+"Ingresa tu contrasena para eliminar tu cuenta.",
+
+accountDeletedTitle:
+"Cuenta eliminada",
+
+accountDeletedText:
+"Tu cuenta y progreso fueron eliminados.",
+
+deleteAccountDone:
+"OK",
+
 processing:
 "PROCESANDO",
 
@@ -926,6 +1052,42 @@ support:
 creator:
 "EL CREADOR",
 
+subscriptionButton:
+"VIEW MONTHLY SUBSCRIPTION",
+
+deleteAccount:
+"Delete Account",
+
+deleteAccountTitle:
+"Delete Account",
+
+deleteAccountText:
+"This will permanently delete your account, progress, and associated data. Enter your password to confirm.",
+
+deletePasswordPlaceholder:
+"Password",
+
+deleteAccountCancel:
+"CANCEL",
+
+deleteAccountConfirm:
+"DELETE ACCOUNT",
+
+deleteAccountErrorTitle:
+"Could not delete account",
+
+deletePasswordRequired:
+"Enter your password to delete your account.",
+
+accountDeletedTitle:
+"Account deleted",
+
+accountDeletedText:
+"Your account and progress were deleted.",
+
+deleteAccountDone:
+"OK",
+
 processing:
 "PROCESSING",
 
@@ -1017,6 +1179,16 @@ COVENANT PRO
 	<Text style={styles.price}>
 	{t.price}
 	</Text>
+
+<TouchableOpacity
+activeOpacity={0.84}
+onPress={openSubscriptionReviewPath}
+style={styles.subscriptionButton}
+>
+<Text style={styles.subscriptionButtonText}>
+{t.subscriptionButton}
+</Text>
+</TouchableOpacity>
 
 </View>
 
@@ -1243,9 +1415,85 @@ style={styles.creatorLink}
 >
 <Text style={styles.creatorLinkText}>{t.creator}</Text>
 </TouchableOpacity>
+
+<TouchableOpacity
+activeOpacity={0.72}
+onPress={openDeleteAccount}
+style={styles.deleteAccountLink}
+>
+<Text style={styles.deleteAccountText}>{t.deleteAccount}</Text>
+</TouchableOpacity>
 </View>
 
 </ScrollView>
+
+<Modal
+visible={deleteAccountVisible}
+transparent
+animationType="fade"
+onRequestClose={() =>
+setDeleteAccountVisible(false)
+}
+>
+<View style={styles.deleteAccountOverlay}>
+<View style={styles.deleteAccountPanel}>
+<Text style={styles.deleteAccountTitle}>
+{t.deleteAccountTitle}
+</Text>
+
+<Text style={styles.deleteAccountBody}>
+{t.deleteAccountText}
+</Text>
+
+<TextInput
+value={deleteAccountPassword}
+onChangeText={setDeleteAccountPassword}
+placeholder={t.deletePasswordPlaceholder}
+placeholderTextColor="rgba(245,245,245,0.38)"
+secureTextEntry
+autoCapitalize="none"
+autoCorrect={false}
+editable={!isDeletingAccount}
+style={styles.deleteAccountInput}
+/>
+
+<TouchableOpacity
+activeOpacity={0.82}
+onPress={confirmDeleteAccount}
+disabled={isDeletingAccount}
+style={[
+styles.deleteAccountConfirm,
+isDeletingAccount && {
+opacity: 0.72,
+},
+]}
+>
+{isDeletingAccount ? (
+<ActivityIndicator color={COLORS.background} />
+) : (
+<Text style={styles.deleteAccountConfirmText}>
+{t.deleteAccountConfirm}
+</Text>
+)}
+</TouchableOpacity>
+
+<TouchableOpacity
+activeOpacity={0.72}
+onPress={() =>
+setDeleteAccountVisible(false)
+}
+disabled={isDeletingAccount}
+style={styles.deleteAccountCancel}
+>
+<Text style={styles.deleteAccountCancelText}>
+{isDeletingAccount
+? t.processing
+: t.deleteAccountCancel}
+</Text>
+</TouchableOpacity>
+</View>
+</View>
+</Modal>
 
 <Modal
 visible={
@@ -1585,6 +1833,28 @@ fontSize: 16,
 letterSpacing: 5,
 },
 
+subscriptionButton: {
+borderWidth: 1,
+borderColor:
+COLORS.border,
+borderRadius: 999,
+alignItems: "center",
+justifyContent: "center",
+paddingVertical: 13,
+paddingHorizontal: 16,
+marginTop: 22,
+backgroundColor:
+"rgba(184,115,51,0.10)",
+},
+
+subscriptionButtonText: {
+color: COLORS.bronze,
+fontSize: 10,
+letterSpacing: 2.4,
+fontWeight: "600",
+textAlign: "center",
+},
+
 freeCard: {
 alignItems: "center",
 marginBottom: 32,
@@ -1746,6 +2016,95 @@ creatorLinkText: {
 color: COLORS.bronze,
 fontSize: 10,
 letterSpacing: 3,
+},
+
+deleteAccountLink: {
+paddingVertical: 12,
+paddingHorizontal: 12,
+},
+
+deleteAccountText: {
+color: "#ffb08c",
+fontSize: 12,
+letterSpacing: 1.8,
+},
+
+deleteAccountOverlay: {
+flex: 1,
+backgroundColor:
+"rgba(0,0,0,0.82)",
+paddingHorizontal: 24,
+alignItems: "center",
+justifyContent: "center",
+},
+
+deleteAccountPanel: {
+width: "100%",
+backgroundColor:
+"#070707",
+borderWidth: 1,
+borderColor:
+"rgba(255,176,140,0.42)",
+borderRadius: 24,
+padding: 26,
+},
+
+deleteAccountTitle: {
+color: COLORS.text,
+fontSize: 28,
+lineHeight: 36,
+fontWeight: "300",
+marginBottom: 16,
+},
+
+deleteAccountBody: {
+color: COLORS.muted,
+fontSize: 15,
+lineHeight: 25,
+marginBottom: 20,
+},
+
+deleteAccountInput: {
+height: 54,
+borderWidth: 1,
+borderColor:
+"rgba(255,255,255,0.12)",
+borderRadius: 14,
+paddingHorizontal: 15,
+color: COLORS.text,
+backgroundColor:
+"rgba(255,255,255,0.03)",
+fontSize: 16,
+marginBottom: 16,
+},
+
+deleteAccountConfirm: {
+height: 56,
+borderRadius: 999,
+backgroundColor:
+"#ffb08c",
+alignItems: "center",
+justifyContent: "center",
+marginBottom: 12,
+},
+
+deleteAccountConfirmText: {
+color: COLORS.background,
+fontSize: 11,
+letterSpacing: 2.4,
+fontWeight: "700",
+textAlign: "center",
+},
+
+deleteAccountCancel: {
+alignItems: "center",
+paddingVertical: 12,
+},
+
+deleteAccountCancelText: {
+color: COLORS.muted,
+fontSize: 12,
+letterSpacing: 4,
 },
 
 paywallOverlay: {

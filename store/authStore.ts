@@ -55,6 +55,7 @@ type AuthState = {
   resendVerification: (payload: EmailPayload) => Promise<void>;
   forgotPassword: (payload: EmailPayload) => Promise<void>;
   resetPassword: (payload: ResetPasswordPayload) => Promise<void>;
+  deleteAccount: (password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshMe: () => Promise<void>;
 };
@@ -328,6 +329,39 @@ export const useAuthStore = create<AuthState>((set) => ({
           error instanceof Error
             ? error.message
             : "Could not reset password",
+        busy: false,
+      });
+
+      throw error;
+    }
+  },
+
+  deleteAccount: async (password) => {
+    set({ busy: true, error: null });
+
+    try {
+      await apiFetch("/account", {
+        method: "DELETE",
+        body: JSON.stringify({
+          password: normalizePassword(password),
+        }),
+      });
+
+      await clearAuthToken();
+      await clearProgressUser();
+
+      set({
+        token: null,
+        user: null,
+        busy: false,
+        error: null,
+      });
+    } catch (error) {
+      set({
+        error:
+          error instanceof Error
+            ? error.message
+            : "Could not delete account",
         busy: false,
       });
 
