@@ -34,6 +34,7 @@ type RevenueCatOffering = NonNullable<PurchasesOfferings["current"]>;
 
 let initialized = false;
 let initPromise: Promise<boolean> | null = null;
+let configuredPlatform: string | null = null;
 
 function warnRevenueCat(message: string, error?: unknown) {
   if (!__DEV__) {
@@ -91,6 +92,9 @@ function getRevenueCatApiKey() {
 
 export async function initRevenueCat(appUserID?: string): Promise<boolean> {
   if (initialized) {
+    console.log("[RevenueCat] SDK already configured.", {
+      platform: configuredPlatform ?? Platform.OS,
+    });
     return true;
   }
 
@@ -102,6 +106,19 @@ export async function initRevenueCat(appUserID?: string): Promise<boolean> {
     const apiKey = getRevenueCatApiKey();
 
     if (!apiKey) {
+      console.warn("[RevenueCat] Missing API key.", {
+        platform: Platform.OS,
+        hasProcessEnvKey: Boolean(
+          Platform.OS === "ios"
+            ? process?.env?.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY
+            : process?.env?.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY
+        ),
+        hasExpoExtraKey: Boolean(
+          Platform.OS === "ios"
+            ? getExpoExtra().revenueCatIosApiKey
+            : getExpoExtra().revenueCatAndroidApiKey
+        ),
+      });
       warnRevenueCat(
         "Missing RevenueCat API key. Set EXPO_PUBLIC_REVENUECAT_IOS_API_KEY and EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY."
       );
@@ -120,6 +137,11 @@ export async function initRevenueCat(appUserID?: string): Promise<boolean> {
       });
 
       initialized = true;
+      configuredPlatform = Platform.OS;
+
+      console.log("[RevenueCat] SDK configured.", {
+        platform: Platform.OS,
+      });
 
       return true;
     } catch (error) {
@@ -182,6 +204,7 @@ export async function purchasePackage(
 
   try {
     console.log("[RevenueCat] Calling Purchases.purchasePackage.", {
+      platform: Platform.OS,
       identifier: packageToPurchase.identifier,
       packageType: packageToPurchase.packageType,
       productIdentifier: packageToPurchase.product.identifier,

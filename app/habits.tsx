@@ -50,6 +50,7 @@ import {
   getMonthlyPackageFromOffering,
   getOfferings,
   hasProAccess,
+  initRevenueCat,
   purchasePackage,
   restorePurchases,
 } from "../services/revenuecat";
@@ -91,6 +92,26 @@ productIdentifier: packageToPurchase.product.identifier,
 priceString: packageToPurchase.product.priceString,
 title: packageToPurchase.product.title,
 };
+}
+
+function getPurchaseAlertMessage(
+error: unknown,
+fallbackMessage: string
+) {
+const purchaseError = error as {
+userCancelled?: boolean;
+message?: string;
+};
+
+if (purchaseError.userCancelled) {
+return null;
+}
+
+if (purchaseError.message === fallbackMessage) {
+return fallbackMessage;
+}
+
+return fallbackMessage;
 }
 
 const habits = {
@@ -474,6 +495,9 @@ return;
 }
 
 if (!canOpenHabit(slug)) {
+if (Platform.OS === "ios") {
+await initRevenueCat();
+}
 setSelectedLockedHabit(
 slug
 );
@@ -506,6 +530,9 @@ savedHabit
 );
 
 if (savedHabit !== slug) {
+if (Platform.OS === "ios") {
+await initRevenueCat();
+}
 setSelectedLockedHabit(
 slug
 );
@@ -551,10 +578,13 @@ router.replace(
 
 }
 
-function openSubscriptionReviewPath() {
+async function openSubscriptionReviewPath() {
 
 setSelectedLockedHabit(null);
 setSelectedPlan("monthly");
+if (Platform.OS === "ios") {
+await initRevenueCat();
+}
 setPaywallVisible(true);
 
 posthog.capture("paywall_shown", {
@@ -631,18 +661,34 @@ const offerings =
 await getOfferings();
 
 const offering =
-getDefaultOffering(
+Platform.OS === "ios"
+? offerings?.all[DEFAULT_OFFERING_IDENTIFIER] ?? null
+: getDefaultOffering(
 offerings
 );
 
-console.log("[Paywall] RevenueCat offering selected.", {
+console.log("[Paywall] RevenueCat offering lookup.", {
 plan,
+defaultOfferingIdentifier: DEFAULT_OFFERING_IDENTIFIER,
 offeringIdentifier: offering?.identifier ?? null,
+currentOfferingIdentifier: offerings?.current?.identifier ?? null,
+allOfferingIdentifiers: offerings ? Object.keys(offerings.all) : [],
 availablePackages:
 offering?.availablePackages.map((item) =>
 describePurchasePackage(item)
 ) ?? [],
 });
+
+if (!offering) {
+console.warn("[Paywall] RevenueCat default offering not found.", {
+plan,
+defaultOfferingIdentifier: DEFAULT_OFFERING_IDENTIFIER,
+currentOfferingIdentifier: offerings?.current?.identifier ?? null,
+allOfferingIdentifiers: offerings ? Object.keys(offerings.all) : [],
+});
+
+throw new Error(t.paywallPurchaseUnavailableText);
+}
 
 const packageToPurchase =
 getMonthlyPackageFromOffering(
@@ -650,18 +696,28 @@ offering
 );
 
 if (!packageToPurchase) {
-console.warn("[Paywall] No RevenueCat package available to purchase.", {
+console.warn("[Paywall] No monthly RevenueCat package available to purchase.", {
 plan,
 defaultOfferingIdentifier: DEFAULT_OFFERING_IDENTIFIER,
 offeringIdentifier: offering?.identifier ?? null,
+availablePackageIdentifiers:
+offering?.availablePackages.map((item) => item.identifier) ?? [],
+availablePackageTypes:
+offering?.availablePackages.map((item) => item.packageType) ?? [],
 });
 
 throw new Error(t.paywallPurchaseUnavailableText);
 }
 
-console.log("[Paywall] Attempting purchasePackage.", {
+console.log("[Paywall] Selected monthly RevenueCat package.", {
 plan,
-package: describePurchasePackage(packageToPurchase),
+offeringIdentifier: offering.identifier,
+availablePackageIdentifiers:
+offering.availablePackages.map((item) => item.identifier),
+selectedPackageIdentifier: packageToPurchase.identifier,
+selectedPackageType: packageToPurchase.packageType,
+selectedProductIdentifier: packageToPurchase.product.identifier,
+selectedProductPrice: packageToPurchase.product.priceString,
 });
 
 return purchasePackage(
@@ -734,6 +790,16 @@ selectedLockedHabit,
 } catch (error) {
 console.error("[Paywall] purchasePackage error.", error);
 
+const alertMessage =
+getPurchaseAlertMessage(
+error,
+t.paywallPurchaseErrorText
+);
+
+if (!alertMessage) {
+return;
+}
+
 if (error instanceof Error) {
 posthog.capture("$exception", {
 $exception_list: [
@@ -753,7 +819,7 @@ plan,
 
 Alert.alert(
 t.paywallPurchaseErrorTitle,
-t.paywallPurchaseErrorText
+alertMessage
 );
 
 } finally {
@@ -885,13 +951,19 @@ paywallButton:
 "INICIAR PRO MENSUAL",
 
 paywallPurchaseUnavailableText:
-"Las compras no están disponibles temporalmente. Inténtalo de nuevo más tarde.",
+Platform.OS === "ios"
+? "Monthly Pro is temporarily unavailable. Please try again later."
+: "Las compras no están disponibles temporalmente. Inténtalo de nuevo más tarde.",
 
 paywallPurchaseErrorTitle:
-"No se pudo iniciar la compra",
+Platform.OS === "ios"
+? "Monthly Pro unavailable"
+: "No se pudo iniciar la compra",
 
 paywallPurchaseErrorText:
-"Las compras no están disponibles temporalmente. Inténtalo de nuevo más tarde.",
+Platform.OS === "ios"
+? "Monthly Pro is temporarily unavailable. Please try again later."
+: "Las compras no están disponibles temporalmente. Inténtalo de nuevo más tarde.",
 
 paywallCancel:
 "VOLVER",
@@ -1025,13 +1097,19 @@ paywallButton:
 "START MONTHLY PRO",
 
 paywallPurchaseUnavailableText:
-"Purchases are temporarily unavailable. Please try again later.",
+Platform.OS === "ios"
+? "Monthly Pro is temporarily unavailable. Please try again later."
+: "Purchases are temporarily unavailable. Please try again later.",
 
 paywallPurchaseErrorTitle:
-"Could not start purchase",
+Platform.OS === "ios"
+? "Monthly Pro unavailable"
+: "Could not start purchase",
 
 paywallPurchaseErrorText:
-"Purchases are temporarily unavailable. Please try again later.",
+Platform.OS === "ios"
+? "Monthly Pro is temporarily unavailable. Please try again later."
+: "Purchases are temporarily unavailable. Please try again later.",
 
 paywallCancel:
 "RETURN",
