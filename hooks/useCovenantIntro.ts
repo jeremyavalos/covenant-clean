@@ -15,9 +15,9 @@ type CovenantIntroState = {
 };
 
 const DAILY_PHRASES = [
-  "Discipline over mood",
-  "What you repeat becomes you",
-  "Inner order. Outer transformation",
+  "Discipline over impulse",
+  "Repeat with intention",
+  "Inner order. Outer command",
 ];
 
 function getDailyPhrase() {

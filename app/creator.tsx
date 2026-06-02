@@ -12,10 +12,17 @@ import Screen from "../components/Screen";
 import { colors } from "../constants/theme";
 
 const INSTAGRAM_URL = "https://www.instagram.com/join.covenant.app";
+const CREATOR_EMAIL = "jeremy.avalos@protonmail.com";
+const BTC_ADDRESS = "bc1qpq6qqczzt93kk6wf4plw8763vc82hk2xrl3dg3";
+const CLABE = "722969013380554187";
 
 export default function CreatorScreen() {
   function openInstagram() {
     Linking.openURL(INSTAGRAM_URL).catch(() => undefined);
+  }
+
+  function openEmail() {
+    Linking.openURL(`mailto:${CREATOR_EMAIL}`).catch(() => undefined);
   }
 
   return (
@@ -54,6 +61,30 @@ export default function CreatorScreen() {
             el mundo recibe la forma de esa medida.
           </Text>
 
+          <Text style={styles.creatorCredit}>
+            Covenant fue creado por Jeremy Avalos.
+          </Text>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionKicker}>COLABORACIONES</Text>
+            <Text style={styles.sectionText}>
+              Para colaboraciones, desarrollo de apps, páginas web o proyectos
+              digitales:
+            </Text>
+            <Pressable
+              onPress={openEmail}
+              style={({ pressed }) => [
+                styles.valuePill,
+                pressed && styles.pressed,
+              ]}
+            >
+              <Text selectable style={styles.valueText}>
+                {CREATOR_EMAIL}
+              </Text>
+            </Pressable>
+            <Text style={styles.copyHint}>Mantén presionado para copiar.</Text>
+          </View>
+
           <Pressable
             onPress={openInstagram}
             style={({ pressed }) => [
@@ -67,6 +98,27 @@ export default function CreatorScreen() {
             <Text style={styles.instagramHandle}>@join.covenant.app</Text>
           </Pressable>
 
+          <View style={styles.section}>
+            <Text style={styles.sectionKicker}>APOYAR</Text>
+            <Text style={styles.sectionText}>
+              Si Covenant te aporta valor y deseas apoyar su desarrollo:
+            </Text>
+            <View style={styles.donationBlock}>
+              <Text style={styles.donationLabel}>BTC</Text>
+              <Text selectable style={styles.donationValue}>
+                {BTC_ADDRESS}
+              </Text>
+            </View>
+            <View style={styles.donationBlock}>
+              <Text style={styles.donationLabel}>CLABE</Text>
+              <Text selectable style={styles.donationValue}>
+                {CLABE}
+              </Text>
+              <Text style={styles.donationMeta}>Mercado Pago</Text>
+            </View>
+            <Text style={styles.copyHint}>Datos seleccionables para copiar.</Text>
+          </View>
+
           <Text style={styles.seal}>COVENANT</Text>
         </View>
       </ScrollView>
@@ -79,7 +131,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: 24,
     paddingTop: 58,
-    paddingBottom: 80,
+    paddingBottom: 96,
   },
 
   backButton: {
@@ -107,7 +159,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingTop: 70,
+    paddingTop: 58,
   },
 
   kicker: {
@@ -121,8 +173,8 @@ const styles = StyleSheet.create({
 
   title: {
     color: "#FFF8EF",
-    fontSize: 34,
-    lineHeight: 44,
+    fontSize: 32,
+    lineHeight: 42,
     fontWeight: "300",
     textAlign: "center",
     marginBottom: 32,
@@ -154,10 +206,77 @@ const styles = StyleSheet.create({
     marginTop: 22,
   },
 
+  creatorCredit: {
+    maxWidth: 320,
+    color: "#D1B18C",
+    fontSize: 13,
+    lineHeight: 22,
+    letterSpacing: 0.8,
+    fontWeight: "300",
+    textAlign: "center",
+    marginTop: 28,
+  },
+
+  section: {
+    width: "100%",
+    maxWidth: 360,
+    borderWidth: 1,
+    borderColor: "rgba(216,140,58,0.18)",
+    borderRadius: 18,
+    backgroundColor: "rgba(8,8,8,0.52)",
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+    marginTop: 28,
+  },
+
+  sectionKicker: {
+    color: "#A87442",
+    fontSize: 9,
+    letterSpacing: 4,
+    marginBottom: 12,
+    textAlign: "center",
+  },
+
+  sectionText: {
+    color: "#A79C90",
+    fontSize: 14,
+    lineHeight: 23,
+    fontWeight: "300",
+    textAlign: "center",
+    marginBottom: 14,
+  },
+
+  valuePill: {
+    alignSelf: "center",
+    maxWidth: "100%",
+    borderWidth: 1,
+    borderColor: "rgba(216,140,58,0.24)",
+    borderRadius: 999,
+    backgroundColor: "rgba(216,140,58,0.07)",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+
+  valueText: {
+    color: "#E0B178",
+    fontSize: 13,
+    lineHeight: 19,
+    textAlign: "center",
+  },
+
+  copyHint: {
+    color: "#625B54",
+    fontSize: 10,
+    lineHeight: 15,
+    letterSpacing: 1.1,
+    textAlign: "center",
+    marginTop: 12,
+  },
+
   instagramLink: {
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "rgba(216,140,58,0.2)",
+    borderColor: "rgba(216,140,58,0.24)",
     borderRadius: 18,
     backgroundColor: "rgba(10,10,10,0.58)",
     paddingHorizontal: 18,
@@ -178,6 +297,36 @@ const styles = StyleSheet.create({
     color: colors.accent,
     fontSize: 12,
     letterSpacing: 2,
+  },
+
+  donationBlock: {
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.06)",
+    paddingTop: 14,
+    marginTop: 12,
+  },
+
+  donationLabel: {
+    color: "#766D63",
+    fontSize: 9,
+    letterSpacing: 3,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+
+  donationValue: {
+    color: "#D8A060",
+    fontSize: 12,
+    lineHeight: 20,
+    textAlign: "center",
+  },
+
+  donationMeta: {
+    color: "#716960",
+    fontSize: 11,
+    lineHeight: 18,
+    textAlign: "center",
+    marginTop: 4,
   },
 
   seal: {

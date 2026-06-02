@@ -244,6 +244,17 @@ export default function CovenantIntro({
         style={StyleSheet.absoluteFill}
       />
 
+      <Pressable
+        accessibilityLabel="Skip intro"
+        onPress={finishOnce}
+        style={({ pressed }) => [
+          styles.skipButton,
+          pressed && styles.skipButtonPressed,
+        ]}
+      >
+        <Text style={styles.skipText}>SKIP</Text>
+      </Pressable>
+
       <Animated.View style={[styles.eclipseWrap, eclipseStyle]}>
         <View style={styles.eclipseOuter} />
         <View style={styles.eclipseInner} />
@@ -252,14 +263,14 @@ export default function CovenantIntro({
       {isFirstIntro ? (
         <View style={styles.firstContent}>
           <Animated.Text style={[styles.line, titleStyle]}>
-            Everything repeated...
+            What you repeat in silence...
           </Animated.Text>
           <Animated.Text style={[styles.line, secondStyle]}>
-            ...shapes who you become.
+            ...becomes the shape of your life.
           </Animated.Text>
           <Animated.View style={[styles.brandBlock, brandStyle]}>
             <Text style={styles.brand}>COVENANT</Text>
-            <Text style={styles.subtitle}>Inner Discipline</Text>
+            <Text style={styles.subtitle}>A ritual of inner command</Text>
           </Animated.View>
         </View>
       ) : (
@@ -283,8 +294,31 @@ const styles = StyleSheet.create({
 
   texture: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(216,140,58,0.018)",
-    opacity: 0.78,
+    backgroundColor: "rgba(216,140,58,0.026)",
+    opacity: 0.86,
+  },
+
+  skipButton: {
+    position: "absolute",
+    top: 58,
+    right: 24,
+    borderWidth: 1,
+    borderColor: "rgba(216,140,58,0.24)",
+    borderRadius: 999,
+    backgroundColor: "rgba(0,0,0,0.26)",
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+
+  skipButtonPressed: {
+    opacity: 0.66,
+  },
+
+  skipText: {
+    color: "rgba(255,209,160,0.78)",
+    fontSize: 10,
+    fontWeight: "600",
+    letterSpacing: 2.4,
   },
 
   eclipseWrap: {
@@ -302,10 +336,10 @@ const styles = StyleSheet.create({
     height: 154,
     borderRadius: 77,
     borderWidth: 1,
-    borderColor: "rgba(216,140,58,0.34)",
+    borderColor: "rgba(216,140,58,0.46)",
     shadowColor: "#D88C3A",
-    shadowOpacity: 0.24,
-    shadowRadius: 30,
+    shadowOpacity: 0.34,
+    shadowRadius: 38,
     shadowOffset: {
       width: 0,
       height: 0,
@@ -318,7 +352,7 @@ const styles = StyleSheet.create({
     borderRadius: 52,
     backgroundColor: "#020202",
     borderWidth: 1,
-    borderColor: "rgba(255,209,160,0.16)",
+    borderColor: "rgba(255,209,160,0.22)",
   },
 
   firstContent: {
@@ -330,9 +364,9 @@ const styles = StyleSheet.create({
   line: {
     color: "#F5F1EA",
     fontFamily: "Georgia",
-    fontSize: 34,
+    fontSize: 32,
     fontWeight: "300",
-    lineHeight: 43,
+    lineHeight: 42,
     marginBottom: 14,
     textAlign: "center",
   },
@@ -353,7 +387,7 @@ const styles = StyleSheet.create({
   subtitle: {
     color: "rgba(245,241,234,0.66)",
     fontSize: 13,
-    letterSpacing: 3,
+    letterSpacing: 2.4,
     marginTop: 14,
     textAlign: "center",
   },

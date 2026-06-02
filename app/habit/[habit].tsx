@@ -7,6 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import {
   ActivityIndicator,
   Alert,
+  AccessibilityInfo,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -32,6 +33,97 @@ import CovenantBackdrop from '../../components/CovenantBackdrop';
 import { getTodayHabitEntry } from '../../utils/habitEngine';
 import { getLanguage, Language } from '../../utils/language';
 import { completeHabit, getHabitProgress } from '../../utils/progress';
+
+const CELEBRATION_PARTICLES = [
+  { x: -126, y: -188, size: 5, color: 'rgba(255,209,160,0.92)', delay: 0 },
+  { x: -96, y: -232, size: 3, color: 'rgba(216,140,58,0.86)', delay: 35 },
+  { x: -68, y: -166, size: 4, color: 'rgba(168,116,66,0.84)', delay: 70 },
+  { x: -36, y: -252, size: 5, color: 'rgba(245,197,126,0.88)', delay: 20 },
+  { x: 0, y: -206, size: 3, color: 'rgba(255,238,210,0.82)', delay: 95 },
+  { x: 34, y: -244, size: 4, color: 'rgba(216,140,58,0.9)', delay: 50 },
+  { x: 72, y: -178, size: 5, color: 'rgba(180,112,52,0.86)', delay: 85 },
+  { x: 104, y: -222, size: 3, color: 'rgba(255,209,160,0.86)', delay: 30 },
+  { x: 132, y: -162, size: 4, color: 'rgba(196,122,50,0.82)', delay: 115 },
+  { x: -146, y: -112, size: 2, color: 'rgba(255,232,200,0.7)', delay: 130 },
+  { x: 148, y: -118, size: 2, color: 'rgba(255,232,200,0.7)', delay: 150 },
+  { x: 0, y: -286, size: 2, color: 'rgba(216,140,58,0.72)', delay: 160 },
+];
+
+type CelebrationParticle = (typeof CELEBRATION_PARTICLES)[number];
+
+function PremiumCelebrationParticle({
+  burstKey,
+  particle,
+}: {
+  burstKey: number;
+  particle: CelebrationParticle;
+}) {
+  const progress = useSharedValue(0);
+
+  useEffect(() => {
+    if (burstKey === 0) {
+      progress.value = 0;
+      return;
+    }
+
+    progress.value = 0;
+    progress.value = withDelay(
+      particle.delay,
+      withTiming(1, {
+        duration: 860,
+        easing: Easing.out(Easing.cubic),
+      })
+    );
+  }, [burstKey, particle.delay, progress]);
+
+  const particleStyle = useAnimatedStyle(() => ({
+    opacity:
+      progress.value < 0.12
+        ? progress.value / 0.12
+        : Math.max(0, 1 - progress.value),
+    transform: [
+      { translateX: progress.value * particle.x },
+      { translateY: progress.value * particle.y },
+      {
+        scale:
+          progress.value < 0.18
+            ? 0.75 + progress.value * 2.1
+            : Math.max(0.35, 1.08 - progress.value * 0.42),
+      },
+    ],
+  }));
+
+  return (
+    <Animated.View
+      style={[
+        styles.celebrationParticle,
+        {
+          width: particle.size,
+          height: particle.size,
+          borderRadius: particle.size / 2,
+          backgroundColor: particle.color,
+        },
+        particleStyle,
+      ]}
+    />
+  );
+}
+
+function PremiumCelebration({ burstKey }: { burstKey: number }) {
+  return (
+    <View pointerEvents="none" style={styles.celebrationOverlay}>
+      <View style={styles.celebrationOrigin}>
+        {CELEBRATION_PARTICLES.map((particle, index) => (
+          <PremiumCelebrationParticle
+            burstKey={burstKey}
+            key={`${index}-${particle.x}-${particle.y}`}
+            particle={particle}
+          />
+        ))}
+      </View>
+    </View>
+  );
+}
 
 const HABIT_INFO = {
   es: {
@@ -69,6 +161,8 @@ export default function HabitScreen() {
   const [streak, setStreak] = useState(0);
   const [completedToday, setCompletedToday] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [celebrationKey, setCelebrationKey] = useState(0);
+  const [reduceMotionEnabled, setReduceMotionEnabled] = useState(false);
 
   const glow = useSharedValue(0.015);
   const screenOpacity = useSharedValue(0);
@@ -106,6 +200,22 @@ export default function HabitScreen() {
   }, [loadLanguage, loadProgress]);
 
   useEffect(() => {
+    let active = true;
+
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((enabled) => {
+        if (active) {
+          setReduceMotionEnabled(enabled);
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
     screenOpacity.value = withTiming(1, {
       duration: 680,
       easing: Easing.out(Easing.cubic),
@@ -137,11 +247,11 @@ export default function HabitScreen() {
   useEffect(() => {
     glow.value = withRepeat(
       withSequence(
-        withTiming(isNight ? 0.03 : 0.055, {
+        withTiming(isNight ? 0.04 : 0.068, {
           duration: 4200,
           easing: Easing.inOut(Easing.ease),
         }),
-        withTiming(isNight ? 0.01 : 0.018, {
+        withTiming(isNight ? 0.014 : 0.024, {
           duration: 4200,
           easing: Easing.inOut(Easing.ease),
         })
@@ -299,6 +409,14 @@ export default function HabitScreen() {
       setStreak(updated.streak);
       setCompletedToday(true);
 
+      if (!reduceMotionEnabled) {
+        setCelebrationKey((currentKey) => currentKey + 1);
+      }
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
+        () => undefined
+      );
+
       posthog.capture('habit_completed', {
         habit_slug: String(habit),
         completed_days: updated.completedDays,
@@ -307,7 +425,6 @@ export default function HabitScreen() {
         language,
       });
 
-      Alert.alert(t.successTitle, t.successText);
     } finally {
       setIsCompleting(false);
     }
@@ -512,6 +629,7 @@ export default function HabitScreen() {
           </View>
         </Animated.View>
       </ScrollView>
+      <PremiumCelebration burstKey={celebrationKey} />
     </SafeAreaView>
   );
 }
@@ -525,6 +643,32 @@ const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     overflow: 'hidden',
+  },
+
+  celebrationOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 20,
+  },
+
+  celebrationOrigin: {
+    position: 'absolute',
+    left: '50%',
+    bottom: 132,
+    width: 1,
+    height: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  celebrationParticle: {
+    position: 'absolute',
+    shadowColor: '#D88C3A',
+    shadowOpacity: 0.38,
+    shadowRadius: 10,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
   },
 
   scroll: {
@@ -544,8 +688,8 @@ const styles = StyleSheet.create({
     height: 340,
     borderRadius: 170,
     shadowColor: '#D88C3A',
-    shadowOpacity: 0.18,
-    shadowRadius: 52,
+    shadowOpacity: 0.22,
+    shadowRadius: 58,
     shadowOffset: {
       width: 0,
       height: 0,
@@ -604,7 +748,7 @@ const styles = StyleSheet.create({
   streakShell: {
     minWidth: 104,
     borderWidth: 1,
-    borderColor: 'rgba(216,140,58,0.14)',
+    borderColor: 'rgba(216,140,58,0.18)',
     borderRadius: 22,
     overflow: 'hidden',
     paddingHorizontal: 14,
@@ -641,8 +785,8 @@ const styles = StyleSheet.create({
     marginBottom: 56,
     borderRadius: 24,
     shadowColor: '#D88C3A',
-    shadowOpacity: 0.08,
-    shadowRadius: 24,
+    shadowOpacity: 0.11,
+    shadowRadius: 28,
     shadowOffset: {
       width: 0,
       height: 18,
@@ -653,7 +797,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(216,140,58,0.13)',
+    borderColor: 'rgba(216,140,58,0.17)',
     backgroundColor: 'rgba(7,7,7,0.64)',
     padding: 20,
   },
@@ -688,14 +832,14 @@ const styles = StyleSheet.create({
 
   progressBar: {
     height: '100%',
-    backgroundColor: '#C77B32',
+    backgroundColor: '#D2873A',
     borderRadius: 999,
     overflow: 'hidden',
   },
 
   progressGlow: {
     flex: 1,
-    backgroundColor: 'rgba(255,232,200,0.22)',
+    backgroundColor: 'rgba(255,232,200,0.3)',
   },
 
   progressCaption: {
@@ -760,7 +904,7 @@ const styles = StyleSheet.create({
   scriptureBlock: {
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(216,140,58,0.13)',
+    borderColor: 'rgba(216,140,58,0.17)',
     borderRadius: 24,
     backgroundColor: 'rgba(8,8,8,0.68)',
     padding: 22,
@@ -770,7 +914,7 @@ const styles = StyleSheet.create({
   verseLine: {
     width: 42,
     height: 1,
-    backgroundColor: 'rgba(216,140,58,0.44)',
+    backgroundColor: 'rgba(216,140,58,0.52)',
     marginBottom: 26,
   },
 
@@ -830,15 +974,15 @@ const styles = StyleSheet.create({
     minHeight: 68,
     backgroundColor: '#11100F',
     borderWidth: 1,
-    borderColor: 'rgba(216,140,58,0.22)',
+    borderColor: 'rgba(216,140,58,0.3)',
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 18,
     overflow: 'hidden',
     shadowColor: '#D88C3A',
-    shadowOpacity: 0.16,
-    shadowRadius: 28,
+    shadowOpacity: 0.22,
+    shadowRadius: 34,
     shadowOffset: {
       width: 0,
       height: 16,
@@ -862,7 +1006,7 @@ const styles = StyleSheet.create({
     width: 180,
     height: 72,
     borderRadius: 90,
-    backgroundColor: 'rgba(216,140,58,0.12)',
+    backgroundColor: 'rgba(216,140,58,0.17)',
   },
 
   completeText: {
@@ -915,7 +1059,7 @@ const styles = StyleSheet.create({
   supportCard: {
     marginTop: 24,
     borderWidth: 1,
-    borderColor: 'rgba(216,140,58,0.11)',
+    borderColor: 'rgba(216,140,58,0.15)',
     borderRadius: 20,
     backgroundColor: 'rgba(7,7,7,0.48)',
     paddingHorizontal: 22,
