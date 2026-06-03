@@ -43,3 +43,30 @@ Promise<Language> {
   }
 
 }
+
+export async function getSavedLanguage():
+Promise<Language | null> {
+
+  try {
+
+    const language =
+      await AsyncStorage.getItem(
+        LANGUAGE_KEY
+      );
+
+    if (
+      language === 'en' ||
+      language === 'es'
+    ) {
+      return language;
+    }
+
+    return null;
+
+  } catch {
+
+    return null;
+
+  }
+
+}

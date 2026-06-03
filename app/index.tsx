@@ -3,8 +3,26 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import Screen from '../components/Screen';
 import { colors } from '../constants/theme';
+import { getSavedLanguage } from '../utils/language';
 
 export default function WelcomeScreen() {
+  async function enterCovenant() {
+    const savedLanguage =
+      await getSavedLanguage();
+
+    if (savedLanguage) {
+      router.push({
+        pathname: '/transition',
+        params: {
+          language: savedLanguage,
+        },
+      });
+      return;
+    }
+
+    router.push('/language');
+  }
+
   return (
     <Screen backdropIntensity="strong" backdropVariant="splash">
       <View style={styles.container}>
@@ -28,7 +46,7 @@ export default function WelcomeScreen() {
         </Text>
 
         <Pressable
-          onPress={() => router.push('/language')}
+          onPress={enterCovenant}
           style={({ pressed }) => [
             styles.button,
             pressed && styles.buttonPressed,

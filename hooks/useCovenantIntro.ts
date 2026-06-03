@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export const ENABLE_COVENANT_INTRO = false;
+export const ENABLE_COVENANT_INTRO = true;
 
 const FIRST_INTRO_STORAGE_KEY = "hasSeenFirstIntro";
 
@@ -38,12 +38,6 @@ export function useCovenantIntro(): CovenantIntroState {
     }
 
     let active = true;
-    const timeout = setTimeout(() => {
-      if (active) {
-        setVisible(false);
-      }
-    }, 5200);
-
     async function prepareIntro() {
       try {
         const hasSeenFirstIntro = await AsyncStorage.getItem(
@@ -54,11 +48,16 @@ export function useCovenantIntro(): CovenantIntroState {
           return;
         }
 
-        setMode(hasSeenFirstIntro === "true" ? "daily" : "first");
+        if (hasSeenFirstIntro === "true") {
+          setVisible(false);
+          return;
+        }
+
+        setMode("first");
         setVisible(true);
       } catch {
         if (active) {
-          setMode("daily");
+          setMode("first");
           setVisible(true);
         }
       }
@@ -68,7 +67,6 @@ export function useCovenantIntro(): CovenantIntroState {
 
     return () => {
       active = false;
-      clearTimeout(timeout);
     };
   }, []);
 

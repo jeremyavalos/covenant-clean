@@ -97,7 +97,13 @@ export default function Layout() {
       return;
     }
 
-    if (token && currentRoute === "auth") {
+    if (
+      token &&
+      (
+        currentRoute === "auth" ||
+        currentRoute === "index"
+      )
+    ) {
       router.replace("/habits");
     }
   }, [loading, rootNavigationState?.key, router, segments, token]);

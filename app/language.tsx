@@ -7,13 +7,10 @@ import {
 } from "react-native";
 
 import {
-  usePathname,
-  useRootNavigationState,
   useRouter,
 } from "expo-router";
 
 import {
-  useEffect,
   useRef,
   useState,
 } from "react";
@@ -33,9 +30,6 @@ import {
 
 const PERSISTENCE_TIMEOUT_MS =
   2000;
-
-const FALLBACK_NAVIGATION_DELAY_MS =
-  500;
 
 function withTimeout<T>(
   promise: Promise<T>,
@@ -62,15 +56,6 @@ export default function LanguageScreen() {
   const router =
     useRouter();
 
-  const pathname =
-    usePathname();
-
-  const rootNavigationState =
-    useRootNavigationState();
-
-  const pathnameRef =
-    useRef(pathname);
-
   const isSelectingRef =
     useRef(false);
 
@@ -78,11 +63,6 @@ export default function LanguageScreen() {
     selectedLanguage,
     setSelectedLanguage,
   ] = useState<Language | null>(null);
-
-  useEffect(() => {
-    pathnameRef.current =
-      pathname;
-  }, [pathname]);
 
   function navigateToTransition(
     language: Language
@@ -96,20 +76,7 @@ export default function LanguageScreen() {
     });
   }
 
-  function scheduleFallbackNavigation(
-    language: Language,
-    delayMs = FALLBACK_NAVIGATION_DELAY_MS
-  ) {
-    setTimeout(() => {
-      if (
-        pathnameRef.current === "/language"
-      ) {
-        navigateToTransition(language);
-      }
-    }, delayMs);
-  }
-
-  function selectLanguage(
+  async function selectLanguage(
     language: Language
   ) {
     if (
@@ -126,23 +93,19 @@ export default function LanguageScreen() {
       language
     );
 
-    withTimeout(
-      saveLanguage(language),
-      PERSISTENCE_TIMEOUT_MS
-    ).catch(() => undefined);
-
-    if (
-      rootNavigationState?.key
-    ) {
-      navigateToTransition(language);
-    } else {
-      setTimeout(
-        () => navigateToTransition(language),
-        0
+    try {
+      await withTimeout(
+        saveLanguage(language),
+        PERSISTENCE_TIMEOUT_MS
+      );
+    } catch (error) {
+      console.warn(
+        "[Language] Could not persist language before transition.",
+        error
       );
     }
 
-    scheduleFallbackNavigation(language);
+    navigateToTransition(language);
   }
 
   return (

@@ -1,13 +1,11 @@
 import {
   ActivityIndicator,
-  Alert,
   Linking,
   Modal,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -15,10 +13,14 @@ import {
 import {
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from "react";
 
-import { useRouter } from "expo-router";
+import {
+  useFocusEffect,
+  useRouter,
+} from "expo-router";
 import { usePostHog } from "posthog-react-native";
 
 import CovenantBackdrop from "../components/CovenantBackdrop";
@@ -328,11 +330,6 @@ useAuthStore(
 (state) => state.logout
 );
 
-const deleteAccount =
-useAuthStore(
-(state) => state.deleteAccount
-);
-
 const user =
 useAuthStore(
 (state) => state.user
@@ -386,21 +383,6 @@ setIsRestoring,
 ] = useState(false);
 
 const [
-deleteAccountVisible,
-setDeleteAccountVisible,
-] = useState(false);
-
-const [
-deleteAccountPassword,
-setDeleteAccountPassword,
-] = useState("");
-
-const [
-isDeletingAccount,
-setIsDeletingAccount,
-] = useState(false);
-
-const [
 selectedPlan,
 setSelectedPlan,
 ] = useState<CovenantProPlan>(
@@ -419,6 +401,14 @@ isSyncingProgress,
 setIsSyncingProgress,
 ] = useState(false);
 
+const mountedRef = useRef(true);
+
+useEffect(() => {
+return () => {
+mountedRef.current = false;
+};
+}, []);
+
 const getUserStorageKey = useCallback(() => {
 if (!user) {
 return null;
@@ -427,16 +417,30 @@ return null;
 return String(user.id || user.email);
 }, [user]);
 
+const loadLanguage = useCallback(async () => {
+const currentLanguage =
+await getLanguage();
+
+if (!mountedRef.current) {
+return;
+}
+
+setLanguage(
+currentLanguage
+);
+}, []);
+
 	const loadSelectedFreeHabit = useCallback(async () => {
 
 	setIsFreeHabitReady(false);
+
+	try {
 
 	const userStorageKey =
 	getUserStorageKey();
 
 	if (!userStorageKey) {
 	setSelectedFreeHabit(null);
-	setIsFreeHabitReady(true);
 	return;
 	}
 
@@ -457,15 +461,25 @@ return String(user.id || user.email);
 	validSlugs
 	);
 
+	if (!mountedRef.current) {
+	return;
+	}
+
 	setSelectedFreeHabit(
 	selectedHabit
 	);
 
+	} catch (error) {
+	console.warn("[Habits] Could not hydrate selected free habit.", error);
+	} finally {
+	if (mountedRef.current) {
 	setIsFreeHabitReady(true);
+	}
+	}
 
 	}, [getUserStorageKey]);
 
-	useEffect(() => {
+useEffect(() => {
 
 loadLanguage();
 
@@ -473,18 +487,16 @@ loadProgress();
 
 loadSelectedFreeHabit();
 
-	}, [loadSelectedFreeHabit]);
+	}, [loadLanguage, loadSelectedFreeHabit]);
 
-async function loadLanguage() {
-
-const currentLanguage =
-await getLanguage();
-
-setLanguage(
-currentLanguage
+useFocusEffect(
+useCallback(() => {
+loadLanguage()
+.catch((error) => {
+console.warn("[Habits] Could not refresh language on focus.", error);
+});
+}, [loadLanguage])
 );
-
-}
 
 async function loadProgress() {
 
@@ -521,11 +533,19 @@ sessions: 0,
 
 }
 
+if (!mountedRef.current) {
+return;
+}
+
 setProgressMap(
 allProgress
 );
 
 } finally {
+
+if (!mountedRef.current) {
+return;
+}
 
 setIsSyncingProgress(
 false
@@ -554,6 +574,19 @@ selectedFreeHabit ===
 slug
 );
 
+}
+
+function closePaywall() {
+setIsPurchasing(false);
+setIsRestoring(false);
+setPurchaseErrorModal(null);
+setPaywallVisible(false);
+}
+
+function closePurchaseError() {
+setIsPurchasing(false);
+setIsRestoring(false);
+setPurchaseErrorModal(null);
 }
 
 async function openHabit(
@@ -658,62 +691,6 @@ posthog.capture("paywall_shown", {
 source: "pro_card",
 is_pro: isPro,
 });
-
-}
-
-function openDeleteAccount() {
-
-setDeleteAccountPassword("");
-setDeleteAccountVisible(true);
-
-}
-
-async function confirmDeleteAccount() {
-
-const password =
-deleteAccountPassword.trim();
-
-if (!password) {
-Alert.alert(
-t.deleteAccountErrorTitle,
-t.deletePasswordRequired
-);
-return;
-}
-
-setIsDeletingAccount(true);
-
-try {
-await deleteAccount(password);
-await clearProgressUser();
-await clearLegacyFreeHabit();
-
-setSelectedFreeHabit(null);
-setIsFreeHabitReady(false);
-setDeleteAccountVisible(false);
-setDeleteAccountPassword("");
-
-Alert.alert(
-t.accountDeletedTitle,
-t.accountDeletedText,
-[
-{
-text: t.deleteAccountDone,
-onPress: () =>
-router.replace("/auth" as never),
-},
-]
-);
-} catch (error) {
-Alert.alert(
-t.deleteAccountErrorTitle,
-error instanceof Error
-? error.message
-: t.paywallPurchaseErrorText
-);
-} finally {
-setIsDeletingAccount(false);
-}
 
 }
 
@@ -959,12 +936,19 @@ plan,
 });
 }
 
+if (mountedRef.current) {
+setPaywallVisible(false);
 setPurchaseErrorModal({
 title: t.paywallPurchaseErrorTitle,
 message: alertMessage,
 });
+}
 
 } finally {
+
+if (!mountedRef.current) {
+return;
+}
 
 setIsPurchasing(
 false
@@ -998,6 +982,10 @@ false
 }
 
 } finally {
+
+if (!mountedRef.current) {
+return;
+}
 
 setIsRestoring(
 false
@@ -1092,6 +1080,9 @@ Platform.OS === "ios"
 paywallButton:
 "INICIAR PRO MENSUAL",
 
+paywallLoading:
+"CONECTANDO CON APPLE...",
+
 paywallPurchaseUnavailableText:
 Platform.OS === "ios"
 ? "Monthly Pro is temporarily unavailable. Please try again later."
@@ -1124,6 +1115,9 @@ support:
 
 creator:
 "EL CREADOR",
+
+settings:
+"CONFIGURACION",
 
 subscriptionButton:
 "VER SUSCRIPCION MENSUAL",
@@ -1166,6 +1160,39 @@ processing:
 
 syncing:
 "SINCRONIZANDO PROGRESO",
+
+dashboardProgress:
+"PROGRESO TOTAL",
+
+dashboardToday:
+"HOY",
+
+dashboardFocus:
+"ENFOQUE",
+
+dashboardPro:
+"TODOS",
+
+dashboardFree:
+"1 HABITO",
+
+dayUnit:
+"DIAS",
+
+todayPanelTitle:
+"PANEL DE HOY",
+
+todayPanelText:
+"Completa tu practica diaria y conserva la racha viva.",
+
+openAction:
+"ABRIR",
+
+proAction:
+"PRO",
+
+progressLabel:
+"AVANCE",
 
 }
 
@@ -1238,6 +1265,9 @@ Platform.OS === "ios"
 paywallButton:
 "START MONTHLY PRO",
 
+paywallLoading:
+"CONNECTING TO APPLE...",
+
 paywallPurchaseUnavailableText:
 Platform.OS === "ios"
 ? "Monthly Pro is temporarily unavailable. Please try again later."
@@ -1270,6 +1300,9 @@ support:
 
 creator:
 "THE CREATOR",
+
+settings:
+"SETTINGS",
 
 subscriptionButton:
 "VIEW MONTHLY SUBSCRIPTION",
@@ -1313,12 +1346,69 @@ processing:
 syncing:
 "SYNCING PROGRESS",
 
+dashboardProgress:
+"TOTAL PROGRESS",
+
+dashboardToday:
+"TODAY",
+
+dashboardFocus:
+"FOCUS",
+
+dashboardPro:
+"ALL",
+
+dashboardFree:
+"1 HABIT",
+
+dayUnit:
+"DAYS",
+
+todayPanelTitle:
+"TODAY PANEL",
+
+todayPanelText:
+"Complete your daily practice and keep the streak alive.",
+
+openAction:
+"OPEN",
+
+proAction:
+"PRO",
+
+progressLabel:
+"PROGRESS",
+
 };
 
 const today =
 new Date()
 .toISOString()
 .split("T")[0];
+
+const totalCompletedDays =
+currentHabits.reduce(
+(sum, habit) =>
+sum +
+(progressMap[habit.slug]?.completedDays || 0),
+0
+);
+
+const completedTodayCount =
+currentHabits.filter(
+(habit) =>
+progressMap[habit.slug]?.lastCompleted === today
+).length;
+
+const averageProgress =
+Math.min(
+Math.round(
+totalCompletedDays /
+Math.max(currentHabits.length * 30, 1) *
+100
+),
+100
+);
 
 return (
 
@@ -1362,6 +1452,39 @@ style={styles.logoutButton}
 <Text style={styles.subtitle}>
 {t.subtitle}
 </Text>
+
+<View style={styles.dashboardCard}>
+<View style={styles.dashboardMetric}>
+<Text style={styles.dashboardLabel}>
+{t.dashboardProgress}
+</Text>
+<Text style={styles.dashboardValue}>
+{averageProgress}%
+</Text>
+</View>
+
+<View style={styles.dashboardDivider} />
+
+<View style={styles.dashboardMetric}>
+<Text style={styles.dashboardLabel}>
+{t.dashboardToday}
+</Text>
+<Text style={styles.dashboardValue}>
+{completedTodayCount}/{currentHabits.length}
+</Text>
+</View>
+
+<View style={styles.dashboardDivider} />
+
+<View style={styles.dashboardMetric}>
+<Text style={styles.dashboardLabel}>
+{t.dashboardFocus}
+</Text>
+<Text style={styles.dashboardValue}>
+{isPro ? t.dashboardPro : t.dashboardFree}
+</Text>
+</View>
+</View>
 
 <View style={styles.proCard}>
 
@@ -1411,16 +1534,24 @@ style={styles.subscriptionButton}
 
 </View>
 
-<View style={styles.freeCard}>
-
-<Text style={styles.freeLabel}>
-FREE VERSION
+<View style={styles.todayPanel}>
+<View>
+<Text style={styles.todayPanelLabel}>
+{t.todayPanelTitle}
 </Text>
-
-<Text style={styles.freeText}>
-{t.free}
+<Text style={styles.todayPanelText}>
+{t.todayPanelText}
 </Text>
+</View>
 
+<View style={styles.todayPanelBadge}>
+<Text style={styles.todayPanelBadgeValue}>
+{completedTodayCount}
+</Text>
+<Text style={styles.todayPanelBadgeLabel}>
+{t.completed}
+</Text>
+</View>
 </View>
 
 {isSyncingProgress && (
@@ -1520,6 +1651,8 @@ styles.lockBadgeText
 
 )}
 
+<View style={styles.habitTopRow}>
+<View style={styles.habitIdentity}>
 <Text
 style={
 styles.habitTitle
@@ -1537,6 +1670,21 @@ styles.habitDescription
 habit.description
 }
 </Text>
+</View>
+
+<View style={[
+styles.actionBadge,
+locked && styles.actionBadgeLocked,
+completedToday && styles.actionBadgeComplete,
+]}>
+<Text style={[
+styles.actionBadgeText,
+locked && styles.actionBadgeTextLocked,
+]}>
+{locked ? t.proAction : t.openAction}
+</Text>
+</View>
+</View>
 
 <View
 style={
@@ -1577,6 +1725,15 @@ styles.streak
 
 </View>
 
+<View style={styles.progressHeaderRow}>
+<Text style={styles.progressLabel}>
+{t.progressLabel}
+</Text>
+<Text style={styles.progressPercentText}>
+{habitPercent}%
+</Text>
+</View>
+
 <View
 style={
 styles.progressContainer
@@ -1607,11 +1764,7 @@ style={
 styles.progressText
 }
 >
-{completedDays}/30
-</Text>
-
-<Text style={styles.progressPercentText}>
-{habitPercent}%
+{completedDays}/30 {t.dayUnit}
 </Text>
 
 </View>
@@ -1654,82 +1807,14 @@ style={styles.creatorLink}
 
 <TouchableOpacity
 activeOpacity={0.72}
-onPress={openDeleteAccount}
-style={styles.deleteAccountLink}
+onPress={() => router.push("/settings" as never)}
+style={styles.settingsLink}
 >
-<Text style={styles.deleteAccountText}>{t.deleteAccount}</Text>
+<Text style={styles.settingsLinkText}>{t.settings}</Text>
 </TouchableOpacity>
 </View>
 
 </ScrollView>
-
-<Modal
-visible={deleteAccountVisible}
-transparent
-animationType="fade"
-onRequestClose={() =>
-setDeleteAccountVisible(false)
-}
->
-<View style={styles.deleteAccountOverlay}>
-<View style={styles.deleteAccountPanel}>
-<Text style={styles.deleteAccountTitle}>
-{t.deleteAccountTitle}
-</Text>
-
-<Text style={styles.deleteAccountBody}>
-{t.deleteAccountText}
-</Text>
-
-<TextInput
-value={deleteAccountPassword}
-onChangeText={setDeleteAccountPassword}
-placeholder={t.deletePasswordPlaceholder}
-placeholderTextColor="rgba(245,245,245,0.38)"
-secureTextEntry
-autoCapitalize="none"
-autoCorrect={false}
-editable={!isDeletingAccount}
-style={styles.deleteAccountInput}
-/>
-
-<TouchableOpacity
-activeOpacity={0.82}
-onPress={confirmDeleteAccount}
-disabled={isDeletingAccount}
-style={[
-styles.deleteAccountConfirm,
-isDeletingAccount && {
-opacity: 0.72,
-},
-]}
->
-{isDeletingAccount ? (
-<ActivityIndicator color={COLORS.background} />
-) : (
-<Text style={styles.deleteAccountConfirmText}>
-{t.deleteAccountConfirm}
-</Text>
-)}
-</TouchableOpacity>
-
-<TouchableOpacity
-activeOpacity={0.72}
-onPress={() =>
-setDeleteAccountVisible(false)
-}
-disabled={isDeletingAccount}
-style={styles.deleteAccountCancel}
->
-<Text style={styles.deleteAccountCancelText}>
-{isDeletingAccount
-? t.processing
-: t.deleteAccountCancel}
-</Text>
-</TouchableOpacity>
-</View>
-</View>
-</Modal>
 
 <Modal
 visible={
@@ -1737,11 +1822,7 @@ paywallVisible
 }
 transparent
 animationType="fade"
-onRequestClose={() =>
-setPaywallVisible(
-false
-)
-}
+onRequestClose={closePaywall}
 >
 
 <View
@@ -1790,6 +1871,24 @@ styles.paywallText
 >
 {t.paywallText}
 </Text>
+
+<View style={styles.paywallFeatureGrid}>
+<View style={styles.paywallFeaturePill}>
+<Text style={styles.paywallFeatureText}>
+{t.pro1.replace("• ", "")}
+</Text>
+</View>
+<View style={styles.paywallFeaturePill}>
+<Text style={styles.paywallFeatureText}>
+{t.pro2.replace("• ", "")}
+</Text>
+</View>
+<View style={styles.paywallFeaturePill}>
+<Text style={styles.paywallFeatureText}>
+{t.pro5.replace("• ", "")}
+</Text>
+</View>
+</View>
 
 <View style={styles.planRow}>
 
@@ -1854,11 +1953,16 @@ opacity: 0.72,
 
 {isPurchasing ? (
 
+<View style={styles.paywallLoadingRow}>
 <ActivityIndicator
 color={
 COLORS.background
 }
 />
+<Text style={styles.paywallLoadingText}>
+{t.paywallLoading}
+</Text>
+</View>
 
 ) : (
 
@@ -1923,11 +2027,7 @@ onPress={() => openLegalUrl(SUPPORT_URL)}
 
 <TouchableOpacity
 activeOpacity={0.72}
-onPress={() =>
-setPaywallVisible(
-false
-)
-}
+onPress={closePaywall}
 style={
 styles.paywallCancel
 }
@@ -1938,9 +2038,7 @@ style={
 styles.paywallCancelText
 }
 >
-{isPurchasing
-? t.processing
-: t.paywallCancel}
+{t.paywallCancel}
 </Text>
 
 </TouchableOpacity>
@@ -1957,9 +2055,7 @@ styles.paywallCancelText
 visible={Boolean(purchaseErrorModal)}
 transparent
 animationType="fade"
-onRequestClose={() =>
-setPurchaseErrorModal(null)
-}
+onRequestClose={closePurchaseError}
 >
 <View style={styles.purchaseErrorOverlay}>
 <View style={styles.purchaseErrorPanel}>
@@ -1980,7 +2076,7 @@ COVENANT PRO
 <TouchableOpacity
 activeOpacity={0.82}
 onPress={() =>
-setPurchaseErrorModal(null)
+closePurchaseError()
 }
 style={styles.purchaseErrorButton}
 >
@@ -2064,13 +2160,66 @@ color: COLORS.muted,
 fontSize: 18,
 lineHeight: 31,
 textAlign: "center",
-marginBottom: 42,
+marginBottom: 24,
 paddingHorizontal: 4,
+},
+
+dashboardCard: {
+flexDirection: "row",
+alignItems: "center",
+justifyContent: "space-between",
+backgroundColor:
+"rgba(9,8,7,0.72)",
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.30)",
+borderRadius: 24,
+paddingVertical: 18,
+paddingHorizontal: 16,
+marginBottom: 26,
+shadowColor:
+COLORS.bronze,
+shadowOpacity: 0.2,
+shadowRadius: 30,
+shadowOffset: {
+width: 0,
+height: 16,
+},
+elevation: 7,
+},
+
+dashboardMetric: {
+flex: 1,
+alignItems: "center",
+gap: 8,
+},
+
+dashboardLabel: {
+color: COLORS.quiet,
+fontSize: 9,
+letterSpacing: 2.2,
+fontWeight: "700",
+textAlign: "center",
+},
+
+dashboardValue: {
+color: COLORS.text,
+fontSize: 18,
+lineHeight: 24,
+fontWeight: "600",
+textAlign: "center",
+},
+
+dashboardDivider: {
+width: 1,
+height: 38,
+backgroundColor:
+"rgba(255,232,200,0.12)",
 },
 
 proCard: {
 backgroundColor:
-COLORS.panel,
+"rgba(13,10,8,0.80)",
 borderWidth: 1,
 borderColor:
 COLORS.border,
@@ -2080,7 +2229,7 @@ marginBottom: 30,
 shadowColor:
 COLORS.bronze,
 shadowOpacity: 0.18,
-shadowRadius: 34,
+shadowRadius: 42,
 shadowOffset: {
 width: 0,
 height: 18,
@@ -2155,43 +2304,140 @@ fontWeight: "600",
 textAlign: "center",
 },
 
-freeCard: {
+todayPanel: {
+flexDirection: "row",
 alignItems: "center",
-marginBottom: 32,
-},
-
-freeLabel: {
-color: COLORS.bronze,
-letterSpacing: 9,
-fontSize: 10,
-marginBottom: 14,
-},
-
-freeText: {
-color: "#D2C7BA",
-fontSize: 16,
-letterSpacing: 2,
-},
-
-habitCard: {
+justifyContent: "space-between",
+gap: 18,
 backgroundColor:
-COLORS.card,
-borderRadius: 22,
-padding: 22,
-marginBottom: 18,
+"rgba(16,13,10,0.78)",
 borderWidth: 1,
 borderColor:
-COLORS.borderSoft,
-position: "relative",
+"rgba(255,232,200,0.13)",
+borderRadius: 22,
+padding: 20,
+marginBottom: 24,
 shadowColor:
-"#000",
-shadowOpacity: 0.28,
-shadowRadius: 22,
+COLORS.bronze,
+shadowOpacity: 0.14,
+shadowRadius: 26,
 shadowOffset: {
 width: 0,
 height: 14,
 },
 elevation: 5,
+},
+
+todayPanelLabel: {
+color: COLORS.bronze,
+fontSize: 10,
+letterSpacing: 3,
+fontWeight: "800",
+marginBottom: 8,
+},
+
+todayPanelText: {
+color: "#D5C9BD",
+fontSize: 15,
+lineHeight: 23,
+maxWidth: 220,
+},
+
+todayPanelBadge: {
+width: 72,
+height: 72,
+borderRadius: 36,
+alignItems: "center",
+justifyContent: "center",
+borderWidth: 1,
+borderColor:
+COLORS.border,
+backgroundColor:
+"rgba(216,140,58,0.13)",
+},
+
+todayPanelBadgeValue: {
+color: COLORS.text,
+fontSize: 24,
+fontWeight: "700",
+lineHeight: 29,
+},
+
+todayPanelBadgeLabel: {
+color: COLORS.bronze,
+fontSize: 8,
+letterSpacing: 1.4,
+fontWeight: "700",
+},
+
+habitCard: {
+backgroundColor:
+"rgba(12,11,10,0.82)",
+borderRadius: 22,
+padding: 22,
+marginBottom: 18,
+borderWidth: 1,
+borderColor:
+"rgba(255,232,200,0.14)",
+position: "relative",
+shadowColor:
+COLORS.bronze,
+shadowOpacity: 0.12,
+shadowRadius: 28,
+shadowOffset: {
+width: 0,
+height: 14,
+},
+elevation: 5,
+},
+
+habitTopRow: {
+flexDirection: "row",
+alignItems: "flex-start",
+justifyContent: "space-between",
+gap: 14,
+},
+
+habitIdentity: {
+flex: 1,
+},
+
+actionBadge: {
+minWidth: 58,
+borderRadius: 999,
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.52)",
+backgroundColor:
+"rgba(216,140,58,0.16)",
+paddingHorizontal: 12,
+paddingVertical: 8,
+alignItems: "center",
+},
+
+actionBadgeLocked: {
+borderColor:
+"rgba(255,232,200,0.16)",
+backgroundColor:
+"rgba(255,255,255,0.045)",
+},
+
+actionBadgeComplete: {
+backgroundColor:
+"rgba(63,175,98,0.16)",
+borderColor:
+"rgba(111,222,145,0.42)",
+},
+
+actionBadgeText: {
+color: COLORS.bronze,
+fontSize: 9,
+letterSpacing: 1.8,
+fontWeight: "800",
+},
+
+actionBadgeTextLocked: {
+color: COLORS.quiet,
 },
 
 lockBadge: {
@@ -2219,7 +2465,7 @@ color: COLORS.text,
 fontSize: 25,
 marginBottom: 14,
 fontWeight: "300",
-paddingRight: 94,
+paddingRight: 0,
 },
 
 habitDescription: {
@@ -2234,7 +2480,7 @@ flexDirection: "row",
 justifyContent:
 "space-between",
 alignItems: "center",
-marginBottom: 24,
+marginBottom: 16,
 gap: 12,
 },
 
@@ -2253,12 +2499,27 @@ flexShrink: 0,
 },
 
 progressContainer: {
-height: 6,
+height: 8,
 backgroundColor:
-"rgba(255,255,255,0.075)",
+"rgba(255,255,255,0.10)",
 borderRadius: 999,
 overflow: "hidden",
 marginBottom: 14,
+},
+
+progressHeaderRow: {
+flexDirection: "row",
+alignItems: "center",
+justifyContent: "space-between",
+gap: 12,
+marginBottom: 10,
+},
+
+progressLabel: {
+color: COLORS.quiet,
+fontSize: 10,
+letterSpacing: 2.6,
+fontWeight: "700",
 },
 
 progressBar: {
@@ -2357,93 +2618,22 @@ fontSize: 10,
 letterSpacing: 3,
 },
 
-deleteAccountLink: {
+settingsLink: {
 paddingVertical: 12,
-paddingHorizontal: 12,
-},
-
-deleteAccountText: {
-color: "#ffb08c",
-fontSize: 12,
-letterSpacing: 1.8,
-},
-
-deleteAccountOverlay: {
-flex: 1,
-backgroundColor:
-"rgba(0,0,0,0.82)",
-paddingHorizontal: 24,
-alignItems: "center",
-justifyContent: "center",
-},
-
-deleteAccountPanel: {
-width: "100%",
-backgroundColor:
-"#070707",
+paddingHorizontal: 18,
 borderWidth: 1,
 borderColor:
-"rgba(255,176,140,0.42)",
-borderRadius: 24,
-padding: 26,
-},
-
-deleteAccountTitle: {
-color: COLORS.text,
-fontSize: 28,
-lineHeight: 36,
-fontWeight: "300",
-marginBottom: 16,
-},
-
-deleteAccountBody: {
-color: COLORS.muted,
-fontSize: 15,
-lineHeight: 25,
-marginBottom: 20,
-},
-
-deleteAccountInput: {
-height: 54,
-borderWidth: 1,
-borderColor:
-"rgba(255,255,255,0.12)",
-borderRadius: 14,
-paddingHorizontal: 15,
-color: COLORS.text,
-backgroundColor:
-"rgba(255,255,255,0.03)",
-fontSize: 16,
-marginBottom: 16,
-},
-
-deleteAccountConfirm: {
-height: 56,
+COLORS.border,
 borderRadius: 999,
 backgroundColor:
-"#ffb08c",
-alignItems: "center",
-justifyContent: "center",
-marginBottom: 12,
+"rgba(216,140,58,0.10)",
 },
 
-deleteAccountConfirmText: {
-color: COLORS.background,
-fontSize: 11,
-letterSpacing: 2.4,
+settingsLinkText: {
+color: COLORS.bronze,
+fontSize: 10,
+letterSpacing: 3,
 fontWeight: "700",
-textAlign: "center",
-},
-
-deleteAccountCancel: {
-alignItems: "center",
-paddingVertical: 12,
-},
-
-deleteAccountCancelText: {
-color: COLORS.muted,
-fontSize: 12,
-letterSpacing: 4,
 },
 
 purchaseErrorOverlay: {
@@ -2587,7 +2777,32 @@ paywallText: {
 color: "#C4B8AC",
 fontSize: 15,
 lineHeight: 26,
-marginBottom: 24,
+marginBottom: 18,
+},
+
+paywallFeatureGrid: {
+flexDirection: "row",
+flexWrap: "wrap",
+gap: 10,
+marginBottom: 22,
+},
+
+paywallFeaturePill: {
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.28)",
+borderRadius: 999,
+paddingHorizontal: 12,
+paddingVertical: 8,
+backgroundColor:
+"rgba(216,140,58,0.08)",
+},
+
+paywallFeatureText: {
+color: "#E7D7C6",
+fontSize: 11,
+letterSpacing: 1,
+fontWeight: "600",
 },
 
 planRow: {
@@ -2662,6 +2877,20 @@ letterSpacing: 2.4,
 fontWeight: "600",
 textAlign: "center",
 paddingHorizontal: 16,
+},
+
+paywallLoadingRow: {
+flexDirection: "row",
+alignItems: "center",
+justifyContent: "center",
+gap: 10,
+},
+
+paywallLoadingText: {
+color: COLORS.background,
+fontSize: 10,
+letterSpacing: 1.8,
+fontWeight: "800",
 },
 
 restoreButton: {

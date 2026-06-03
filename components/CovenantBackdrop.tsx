@@ -13,9 +13,9 @@ type Props = {
 };
 
 const overlayOpacity = {
-  subtle: 0.68,
-  medium: 0.62,
-  strong: 0.56,
+  subtle: 0.54,
+  medium: 0.48,
+  strong: 0.42,
 };
 
 const sources: Record<NonNullable<Props['variant']>, ImageSourcePropType> = {
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   },
 
   imageLayer: {
-    opacity: 0.88,
+    opacity: 0.96,
   },
 
   darkVeil: {
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
 
   copperVeil: {
     ...StyleSheet.absoluteFillObject,
-    opacity: 0.72,
+    opacity: 0.62,
   },
 
   ambientHalo: {
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     height: 340,
     borderRadius: 170,
     backgroundColor: 'rgba(216,140,58,0.10)',
-    opacity: 0.72,
+    opacity: 0.84,
     shadowColor: '#D88C3A',
     shadowOpacity: 0.34,
     shadowRadius: 80,
@@ -157,6 +157,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    height: 460,
+    height: 390,
   },
 });
