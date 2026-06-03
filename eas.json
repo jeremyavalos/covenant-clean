@@ -35,9 +35,9 @@
       "android": {},
       "ios": {
         "ascAppId": "6773019036",
-        "ascApiKeyId": "5XZ6SB4LVX",
+        "ascApiKeyId": "D6GVHL2K89",
         "ascApiKeyIssuerId": "d2288037-ac8a-4638-ba12-7a4487bd1ef0",
-        "ascApiKeyPath": "credentials/AuthKey_5XZ6SB4LVX.p8"
+        "ascApiKeyPath": "credentials/AuthKey_D6GVHL2K89.p8"
       }
     }
   }

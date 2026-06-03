@@ -9,7 +9,7 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "bundleIdentifier": "com.joincovenantapp.covenant",
-      "buildNumber": "17",
+      "buildNumber": "18",
       "supportsTablet": false,
       "icon": "./assets/ios-icon.png",
       "infoPlist": {
