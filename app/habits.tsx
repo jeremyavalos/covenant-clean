@@ -35,7 +35,7 @@ import {
 
 import {
   clearLegacyFreeHabit,
-  getSelectedFreeHabit,
+  getOrCreateSelectedFreeHabit,
   saveSelectedFreeHabit,
 } from "../utils/freeHabit";
 
@@ -45,6 +45,7 @@ import {
 } from "../utils/language";
 
 import {
+  ANDROID_MONTHLY_PRODUCT_IDENTIFIER,
   DEFAULT_OFFERING_IDENTIFIER,
   getDefaultOffering,
   getOfferings,
@@ -80,8 +81,6 @@ borderSoft: "rgba(255,232,200,0.10)",
 panel: "rgba(8,7,6,0.74)",
 panelStrong: "rgba(8,7,6,0.9)",
 	};
-
-const PRO_HABIT_LIMIT = 4;
 
 type CovenantProPlan = "monthly";
 
@@ -271,6 +270,51 @@ description:
 
 };
 
+function getFallbackFreeHabitSlugs(
+progress: Record<string, any>
+) {
+return habits.es
+.map((habit, index) => ({
+slug: habit.slug,
+index,
+progress:
+progress[habit.slug],
+}))
+.filter(({ progress }) =>
+Boolean(
+progress &&
+(
+(progress.completedDays || 0) > 0 ||
+(progress.streak || 0) > 0 ||
+(progress.sessions || 0) > 0 ||
+progress.lastCompleted
+)
+)
+)
+.sort((a, b) => {
+const completedDelta =
+(b.progress?.completedDays || 0) -
+(a.progress?.completedDays || 0);
+
+if (completedDelta !== 0) {
+return completedDelta;
+}
+
+const lastCompletedDelta =
+String(b.progress?.lastCompleted || "")
+.localeCompare(
+String(a.progress?.lastCompleted || "")
+);
+
+if (lastCompletedDelta !== 0) {
+return lastCompletedDelta;
+}
+
+return a.index - b.index;
+})
+.map(({ slug }) => slug);
+}
+
 export default function HabitsScreen() {
 
 const router = useRouter();
@@ -329,6 +373,14 @@ setIsPurchasing,
 ] = useState(false);
 
 const [
+purchaseErrorModal,
+setPurchaseErrorModal,
+] = useState<{
+title: string;
+message: string;
+} | null>(null);
+
+const [
 isRestoring,
 setIsRestoring,
 ] = useState(false);
@@ -367,19 +419,42 @@ isSyncingProgress,
 setIsSyncingProgress,
 ] = useState(false);
 
+const getUserStorageKey = useCallback(() => {
+if (!user) {
+return null;
+}
+
+return String(user.id || user.email);
+}, [user]);
+
 	const loadSelectedFreeHabit = useCallback(async () => {
 
 	setIsFreeHabitReady(false);
 
-	if (!user) {
+	const userStorageKey =
+	getUserStorageKey();
+
+	if (!userStorageKey) {
 	setSelectedFreeHabit(null);
 	setIsFreeHabitReady(true);
 	return;
 	}
 
+	const remoteOrCachedProgress =
+	await getProgress();
+
+	const validSlugs =
+	habits.es.map(
+	(habit) => habit.slug
+	);
+
 	const selectedHabit =
-	await getSelectedFreeHabit(
-	String(user.id || user.id)
+	await getOrCreateSelectedFreeHabit(
+	userStorageKey,
+	getFallbackFreeHabitSlugs(
+	remoteOrCachedProgress
+	),
+	validSlugs
 	);
 
 	setSelectedFreeHabit(
@@ -388,7 +463,7 @@ setIsSyncingProgress,
 
 	setIsFreeHabitReady(true);
 
-	}, [user]);
+	}, [getUserStorageKey]);
 
 	useEffect(() => {
 
@@ -465,23 +540,13 @@ slug: string
 ) {
 
 if (isPro) {
-const index =
-currentHabits.findIndex(
+return currentHabits.some(
 (habit) => habit.slug === slug
-);
-
-return (
-index >= 0 &&
-index < PRO_HABIT_LIMIT
 );
 }
 
 if (!isFreeHabitReady) {
 return false;
-}
-
-if (!selectedFreeHabit) {
-return true;
 }
 
 return (
@@ -500,9 +565,7 @@ return;
 }
 
 if (!canOpenHabit(slug)) {
-if (Platform.OS === "ios") {
 await initRevenueCat();
-}
 setSelectedLockedHabit(
 slug
 );
@@ -520,13 +583,16 @@ if (
 !isPro &&
 !selectedFreeHabit
 ) {
-if (!user) {
+const userStorageKey =
+getUserStorageKey();
+
+if (!userStorageKey) {
 return;
 }
 
 const savedHabit =
 await saveSelectedFreeHabit(
-String(user.id || user.id),
+userStorageKey,
 slug
 );
 
@@ -535,9 +601,7 @@ savedHabit
 );
 
 if (savedHabit !== slug) {
-if (Platform.OS === "ios") {
 await initRevenueCat();
-}
 setSelectedLockedHabit(
 slug
 );
@@ -587,9 +651,7 @@ async function openSubscriptionReviewPath() {
 
 setSelectedLockedHabit(null);
 setSelectedPlan("monthly");
-if (Platform.OS === "ios") {
 await initRevenueCat();
-}
 setPaywallVisible(true);
 
 posthog.capture("paywall_shown", {
@@ -663,6 +725,8 @@ plan,
 platform: Platform.OS,
 iOSRevenueCatApiKeyPresent:
 Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
+androidRevenueCatApiKeyPresent:
+Platform.OS === "android" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
 revenueCatConfigured: isRevenueCatConfigured(),
 });
 
@@ -673,16 +737,14 @@ const defaultOffering =
 offerings?.all[DEFAULT_OFFERING_IDENTIFIER] ?? null;
 
 const offering =
-Platform.OS === "ios"
-? defaultOffering
-: getDefaultOffering(
+getDefaultOffering(
 offerings
 );
 
 const monthlyFromOfferingProperty =
 offering?.monthly ?? null;
 
-const monthlyByIdentifier =
+const monthlyByRevenueCatIdentifier =
 offering?.availablePackages.find(
 (item) => item.identifier === "$rc_monthly"
 ) ?? null;
@@ -692,9 +754,19 @@ offering?.availablePackages.find(
 (item) => item.packageType === "MONTHLY"
 ) ?? null;
 
+const androidMonthlyByProductIdentifier =
+offering?.availablePackages.find(
+(item) =>
+item.product.identifier ===
+ANDROID_MONTHLY_PRODUCT_IDENTIFIER
+) ?? null;
+
 const packageToPurchase =
+Platform.OS === "android"
+? androidMonthlyByProductIdentifier
+:
 monthlyFromOfferingProperty ??
-monthlyByIdentifier ??
+monthlyByRevenueCatIdentifier ??
 monthlyByPackageType ??
 null;
 
@@ -703,8 +775,12 @@ plan,
 platform: Platform.OS,
 iOSRevenueCatApiKeyPresent:
 Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
+androidRevenueCatApiKeyPresent:
+Platform.OS === "android" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
 revenueCatConfigured: isRevenueCatConfigured(),
 defaultOfferingIdentifier: DEFAULT_OFFERING_IDENTIFIER,
+expectedAndroidMonthlyProductIdentifier:
+ANDROID_MONTHLY_PRODUCT_IDENTIFIER,
 offeringsAllKeys: offerings ? Object.keys(offerings.all) : [],
 offeringsCurrentIdentifier: offerings?.current?.identifier ?? null,
 offeringsAllDefaultExists: Boolean(defaultOffering),
@@ -717,8 +793,9 @@ describePurchasePackage(item)
 ) ?? [],
 defaultMonthlyExists: Boolean(defaultOffering?.monthly),
 offeringMonthlyExists: Boolean(monthlyFromOfferingProperty),
-rcMonthlyPackageExists: Boolean(monthlyByIdentifier),
+rcMonthlyPackageExists: Boolean(monthlyByRevenueCatIdentifier),
 monthlyPackageTypeExists: Boolean(monthlyByPackageType),
+androidMonthlyProductExists: Boolean(androidMonthlyByProductIdentifier),
 selectedMonthlyPackageIdentifier: packageToPurchase?.identifier ?? null,
 selectedProductIdentifier: packageToPurchase?.product.identifier ?? null,
 });
@@ -727,10 +804,12 @@ if (!offering) {
 console.warn("[Paywall] RevenueCat default offering not found.", {
 plan,
 platform: Platform.OS,
-reason: "offerings.all.default was not found, so no iOS monthly package can be selected.",
+reason: "offerings.all.default was not found, so no default monthly package can be selected.",
 defaultOfferingIdentifier: DEFAULT_OFFERING_IDENTIFIER,
 iOSRevenueCatApiKeyPresent:
 Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
+androidRevenueCatApiKeyPresent:
+Platform.OS === "android" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
 revenueCatConfigured: isRevenueCatConfigured(),
 offeringsAllKeys: offerings ? Object.keys(offerings.all) : [],
 offeringsCurrentIdentifier: offerings?.current?.identifier ?? null,
@@ -745,8 +824,12 @@ console.warn("[Paywall] No monthly RevenueCat package available to purchase.", {
 plan,
 platform: Platform.OS,
 reason:
-"No package was found through offering.monthly, identifier $rc_monthly, or packageType MONTHLY. Purchase sheet will not open.",
+Platform.OS === "android"
+? "No package matched the required Android product identifier. Purchase sheet will not open."
+: "No package was found through offering.monthly, identifier $rc_monthly, or packageType MONTHLY. Purchase sheet will not open.",
 defaultOfferingIdentifier: DEFAULT_OFFERING_IDENTIFIER,
+expectedAndroidMonthlyProductIdentifier:
+ANDROID_MONTHLY_PRODUCT_IDENTIFIER,
 offeringIdentifier: offering?.identifier ?? null,
 offeringsAllKeys: offerings ? Object.keys(offerings.all) : [],
 offeringsCurrentIdentifier: offerings?.current?.identifier ?? null,
@@ -758,6 +841,10 @@ availablePackageTypes:
 offering?.availablePackages.map((item) => item.packageType) ?? [],
 availableProductIdentifiers:
 offering?.availablePackages.map((item) => item.product.identifier) ?? [],
+availablePackages:
+offering?.availablePackages.map((item) =>
+describePurchasePackage(item)
+) ?? [],
 });
 
 throw new Error(t.paywallPurchaseUnavailableText);
@@ -789,6 +876,7 @@ plan,
 setIsPurchasing(
 true
 );
+setPurchaseErrorModal(null);
 
 try {
 
@@ -871,10 +959,10 @@ plan,
 });
 }
 
-Alert.alert(
-t.paywallPurchaseErrorTitle,
-alertMessage
-);
+setPurchaseErrorModal({
+title: t.paywallPurchaseErrorTitle,
+message: alertMessage,
+});
 
 } finally {
 
@@ -1865,6 +1953,45 @@ styles.paywallCancelText
 
 </Modal>
 
+<Modal
+visible={Boolean(purchaseErrorModal)}
+transparent
+animationType="fade"
+onRequestClose={() =>
+setPurchaseErrorModal(null)
+}
+>
+<View style={styles.purchaseErrorOverlay}>
+<View style={styles.purchaseErrorPanel}>
+<Text style={styles.purchaseErrorLabel}>
+COVENANT PRO
+</Text>
+
+<Text style={styles.purchaseErrorTitle}>
+{purchaseErrorModal?.title}
+</Text>
+
+<View style={styles.purchaseErrorLine} />
+
+<Text style={styles.purchaseErrorBody}>
+{purchaseErrorModal?.message}
+</Text>
+
+<TouchableOpacity
+activeOpacity={0.82}
+onPress={() =>
+setPurchaseErrorModal(null)
+}
+style={styles.purchaseErrorButton}
+>
+<Text style={styles.purchaseErrorButtonText}>
+{t.paywallCancel}
+</Text>
+</TouchableOpacity>
+</View>
+</View>
+</Modal>
+
 </View>
 
 );
@@ -2317,6 +2444,88 @@ deleteAccountCancelText: {
 color: COLORS.muted,
 fontSize: 12,
 letterSpacing: 4,
+},
+
+purchaseErrorOverlay: {
+flex: 1,
+backgroundColor:
+"rgba(0,0,0,0.8)",
+paddingHorizontal: 24,
+alignItems: "center",
+justifyContent: "center",
+},
+
+purchaseErrorPanel: {
+width: "100%",
+backgroundColor:
+COLORS.panelStrong,
+borderWidth: 1,
+borderColor:
+COLORS.border,
+borderRadius: 24,
+padding: 28,
+shadowColor:
+COLORS.bronze,
+shadowOpacity: 0.22,
+shadowRadius: 34,
+shadowOffset: {
+width: 0,
+height: 18,
+},
+elevation: 10,
+},
+
+purchaseErrorLabel: {
+color: COLORS.bronze,
+letterSpacing: 7,
+fontSize: 10,
+marginBottom: 20,
+},
+
+purchaseErrorTitle: {
+color: COLORS.text,
+fontSize: 25,
+lineHeight: 34,
+fontWeight: "300",
+marginBottom: 18,
+},
+
+purchaseErrorLine: {
+height: 1,
+backgroundColor:
+COLORS.border,
+marginBottom: 20,
+},
+
+purchaseErrorBody: {
+color: COLORS.muted,
+fontSize: 15,
+lineHeight: 25,
+marginBottom: 24,
+},
+
+purchaseErrorButton: {
+height: 54,
+borderRadius: 999,
+backgroundColor:
+COLORS.bronze,
+alignItems: "center",
+justifyContent: "center",
+shadowColor:
+COLORS.bronze,
+shadowOpacity: 0.2,
+shadowRadius: 18,
+shadowOffset: {
+width: 0,
+height: 10,
+},
+},
+
+purchaseErrorButtonText: {
+color: COLORS.background,
+fontSize: 11,
+letterSpacing: 3,
+fontWeight: "700",
 },
 
 paywallOverlay: {

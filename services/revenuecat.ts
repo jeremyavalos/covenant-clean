@@ -28,6 +28,8 @@ declare const process:
 const IOS_API_KEY_PLACEHOLDER = "ios api key";
 const ANDROID_API_KEY_PLACEHOLDER = "android api key";
 export const DEFAULT_OFFERING_IDENTIFIER = "default";
+export const ANDROID_MONTHLY_PRODUCT_IDENTIFIER =
+  "com.joincovenantapp.covenant.pro.monthly:monthly";
 export const PRO_ENTITLEMENT_IDS = ["covenant Pro", "covenant_pro"];
 
 type RevenueCatOffering = NonNullable<PurchasesOfferings["current"]>;
@@ -186,12 +188,16 @@ export async function getOfferings(): Promise<PurchasesOfferings | null> {
   const ready = await ensureRevenueCat();
 
   if (!ready) {
-    console.warn("[RevenueCat] getOfferings skipped because SDK is not ready.", {
-      platform: Platform.OS,
-      iosApiKeyPresent:
-        Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
-      configured: initialized,
-    });
+      console.warn("[RevenueCat] getOfferings skipped because SDK is not ready.", {
+        platform: Platform.OS,
+        iosApiKeyPresent:
+          Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
+        androidApiKeyPresent:
+          Platform.OS === "android"
+            ? hasRevenueCatApiKeyForCurrentPlatform()
+            : null,
+        configured: initialized,
+      });
     return null;
   }
 
@@ -281,7 +287,6 @@ export function hasProAccess(customerInfo: CustomerInfo | null): boolean {
 export function getDefaultOffering(offerings: PurchasesOfferings | null) {
   return (
     offerings?.all[DEFAULT_OFFERING_IDENTIFIER] ??
-    offerings?.current ??
     null
   );
 }

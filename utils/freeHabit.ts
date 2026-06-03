@@ -83,6 +83,46 @@ export async function getSelectedFreeHabit(
   return null;
 }
 
+export async function getOrCreateSelectedFreeHabit(
+  userIdOrEmail: string,
+  fallbackSlugs: string[],
+  validSlugs: string[]
+) {
+  const selectedHabit =
+    await getSelectedFreeHabit(
+      userIdOrEmail
+    );
+
+  if (
+    selectedHabit &&
+    validSlugs.includes(selectedHabit)
+  ) {
+    return selectedHabit;
+  }
+
+  const fallbackHabit =
+    fallbackSlugs.find((slug) =>
+      validSlugs.includes(slug)
+    ) ?? validSlugs[0] ?? null;
+
+  if (!fallbackHabit) {
+    return null;
+  }
+
+  const key =
+    getSelectedFreeHabitKey(
+      userIdOrEmail
+    );
+
+  await AsyncStorage.setItem(
+    key,
+    fallbackHabit
+  );
+  await clearLegacyFreeHabit();
+
+  return fallbackHabit;
+}
+
 export async function saveSelectedFreeHabit(
   userIdOrEmail: string,
   slug: string
