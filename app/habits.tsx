@@ -57,7 +57,6 @@ import {
   restorePurchases,
 } from "../services/revenuecat";
 import type {
-  PurchasesOfferings,
   PurchasesPackage,
 } from "react-native-purchases";
 
@@ -84,22 +83,6 @@ panelStrong: "rgba(8,7,6,0.9)",
 	};
 
 type CovenantProPlan = "monthly";
-
-declare const __DEV__: boolean;
-
-const SHOW_TESTFLIGHT_PAYWALL_DEBUG_PANEL =
-Platform.OS === "ios" && !__DEV__;
-
-type PaywallDebugDiagnostics = {
-platform: string;
-revenueCatConfigured: boolean;
-iOSRevenueCatApiKeyPresent: boolean | null;
-offeringsAllKeys: string[];
-defaultOfferingExists: boolean;
-defaultAvailablePackageIdentifiers: string[];
-defaultMonthlyExists: boolean;
-selectedProductIdentifier: string | null;
-};
 
 function describePurchasePackage(packageToPurchase: PurchasesPackage | null) {
 if (!packageToPurchase) {
@@ -398,24 +381,6 @@ message: string;
 } | null>(null);
 
 const [
-paywallDebugDiagnostics,
-setPaywallDebugDiagnostics,
-] = useState<PaywallDebugDiagnostics>({
-platform: Platform.OS,
-revenueCatConfigured:
-isRevenueCatConfigured(),
-iOSRevenueCatApiKeyPresent:
-Platform.OS === "ios"
-? hasRevenueCatApiKeyForCurrentPlatform()
-: null,
-offeringsAllKeys: [],
-defaultOfferingExists: false,
-defaultAvailablePackageIdentifiers: [],
-defaultMonthlyExists: false,
-selectedProductIdentifier: null,
-});
-
-const [
 isRestoring,
 setIsRestoring,
 ] = useState(false);
@@ -461,52 +426,6 @@ return null;
 
 return String(user.id || user.email);
 }, [user]);
-
-function getPaywallDebugDiagnostics(
-offerings: PurchasesOfferings | null,
-selectedProductIdentifier: string | null
-): PaywallDebugDiagnostics {
-const defaultOffering =
-offerings?.all[DEFAULT_OFFERING_IDENTIFIER] ?? null;
-
-return {
-platform: Platform.OS,
-revenueCatConfigured:
-isRevenueCatConfigured(),
-iOSRevenueCatApiKeyPresent:
-Platform.OS === "ios"
-? hasRevenueCatApiKeyForCurrentPlatform()
-: null,
-offeringsAllKeys:
-offerings ? Object.keys(offerings.all) : [],
-defaultOfferingExists:
-Boolean(defaultOffering),
-defaultAvailablePackageIdentifiers:
-defaultOffering?.availablePackages.map(
-(item) => item.identifier
-) ?? [],
-defaultMonthlyExists:
-Boolean(defaultOffering?.monthly),
-selectedProductIdentifier,
-};
-}
-
-const refreshPaywallDebugDiagnostics =
-useCallback(async () => {
-if (!SHOW_TESTFLIGHT_PAYWALL_DEBUG_PANEL) {
-return;
-}
-
-const offerings =
-await getOfferings();
-
-setPaywallDebugDiagnostics(
-getPaywallDebugDiagnostics(
-offerings,
-null
-)
-);
-}, []);
 
 	const loadSelectedFreeHabit = useCallback(async () => {
 
@@ -555,20 +474,6 @@ loadProgress();
 loadSelectedFreeHabit();
 
 	}, [loadSelectedFreeHabit]);
-
-useEffect(() => {
-if (!paywallVisible) {
-return;
-}
-
-refreshPaywallDebugDiagnostics()
-.catch((error) => {
-console.warn(
-"[Paywall] Could not refresh visible RevenueCat diagnostics.",
-error
-);
-});
-}, [paywallVisible, refreshPaywallDebugDiagnostics]);
 
 async function loadLanguage() {
 
@@ -894,15 +799,6 @@ androidMonthlyProductExists: Boolean(androidMonthlyByProductIdentifier),
 selectedMonthlyPackageIdentifier: packageToPurchase?.identifier ?? null,
 selectedProductIdentifier: packageToPurchase?.product.identifier ?? null,
 });
-
-if (SHOW_TESTFLIGHT_PAYWALL_DEBUG_PANEL) {
-setPaywallDebugDiagnostics(
-getPaywallDebugDiagnostics(
-offerings,
-packageToPurchase?.product.identifier ?? null
-)
-);
-}
 
 if (!offering) {
 console.warn("[Paywall] RevenueCat default offering not found.", {
@@ -1895,46 +1791,6 @@ styles.paywallText
 {t.paywallText}
 </Text>
 
-{SHOW_TESTFLIGHT_PAYWALL_DEBUG_PANEL && (
-<View style={styles.paywallDebugPanel}>
-<Text style={styles.paywallDebugTitle}>
-REVENUECAT DEBUG
-</Text>
-
-<Text style={styles.paywallDebugText}>
-platform: {paywallDebugDiagnostics.platform}
-</Text>
-
-<Text style={styles.paywallDebugText}>
-RevenueCat configured: {String(paywallDebugDiagnostics.revenueCatConfigured)}
-</Text>
-
-<Text style={styles.paywallDebugText}>
-iOS key present: {String(paywallDebugDiagnostics.iOSRevenueCatApiKeyPresent)}
-</Text>
-
-<Text style={styles.paywallDebugText}>
-offerings.all keys: {paywallDebugDiagnostics.offeringsAllKeys.join(", ") || "[]"}
-</Text>
-
-<Text style={styles.paywallDebugText}>
-default offering exists: {String(paywallDebugDiagnostics.defaultOfferingExists)}
-</Text>
-
-<Text style={styles.paywallDebugText}>
-default package ids: {paywallDebugDiagnostics.defaultAvailablePackageIdentifiers.join(", ") || "[]"}
-</Text>
-
-<Text style={styles.paywallDebugText}>
-default monthly exists: {String(paywallDebugDiagnostics.defaultMonthlyExists)}
-</Text>
-
-<Text style={styles.paywallDebugText}>
-selected product id: {paywallDebugDiagnostics.selectedProductIdentifier ?? "null"}
-</Text>
-</View>
-)}
-
 <View style={styles.planRow}>
 
 <TouchableOpacity
@@ -2732,31 +2588,6 @@ color: "#C4B8AC",
 fontSize: 15,
 lineHeight: 26,
 marginBottom: 24,
-},
-
-paywallDebugPanel: {
-borderWidth: 1,
-borderColor:
-"rgba(216,140,58,0.34)",
-borderRadius: 14,
-padding: 14,
-backgroundColor:
-"rgba(216,140,58,0.08)",
-marginBottom: 22,
-},
-
-paywallDebugTitle: {
-color: COLORS.bronze,
-fontSize: 10,
-letterSpacing: 2,
-fontWeight: "700",
-marginBottom: 10,
-},
-
-paywallDebugText: {
-color: "#D6C8B8",
-fontSize: 11,
-lineHeight: 18,
 },
 
 planRow: {
