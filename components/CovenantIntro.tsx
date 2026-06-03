@@ -232,7 +232,7 @@ export default function CovenantIntro({
       ]}
     >
       <LinearGradient
-        colors={["#020202", "#050505", "#000000"]}
+        colors={["#020202", "#090604", "#000000"]}
         style={StyleSheet.absoluteFill}
       />
 
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
 
   texture: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(216,140,58,0.026)",
+    backgroundColor: "rgba(216,140,58,0.04)",
     opacity: 0.86,
   },
 
@@ -303,9 +303,9 @@ const styles = StyleSheet.create({
     top: 58,
     right: 24,
     borderWidth: 1,
-    borderColor: "rgba(216,140,58,0.24)",
+    borderColor: "rgba(216,140,58,0.34)",
     borderRadius: 999,
-    backgroundColor: "rgba(0,0,0,0.26)",
+    backgroundColor: "rgba(12,8,5,0.44)",
     paddingHorizontal: 14,
     paddingVertical: 9,
   },
@@ -336,10 +336,10 @@ const styles = StyleSheet.create({
     height: 154,
     borderRadius: 77,
     borderWidth: 1,
-    borderColor: "rgba(216,140,58,0.46)",
+    borderColor: "rgba(216,140,58,0.58)",
     shadowColor: "#D88C3A",
-    shadowOpacity: 0.34,
-    shadowRadius: 38,
+    shadowOpacity: 0.46,
+    shadowRadius: 54,
     shadowOffset: {
       width: 0,
       height: 0,
@@ -350,9 +350,9 @@ const styles = StyleSheet.create({
     width: 104,
     height: 104,
     borderRadius: 52,
-    backgroundColor: "#020202",
+    backgroundColor: "#050302",
     borderWidth: 1,
-    borderColor: "rgba(255,209,160,0.22)",
+    borderColor: "rgba(255,209,160,0.30)",
   },
 
   firstContent: {

@@ -1,5 +1,9 @@
 import { router } from "expo-router";
 import {
+  useEffect,
+  useState,
+} from "react";
+import {
   Linking,
   Pressable,
   ScrollView,
@@ -10,6 +14,10 @@ import {
 
 import Screen from "../components/Screen";
 import { colors } from "../constants/theme";
+import {
+  getLanguage,
+  Language,
+} from "../utils/language";
 
 const INSTAGRAM_URL = "https://www.instagram.com/join.covenant.app";
 const CREATOR_EMAIL = "jeremy.avalos@protonmail.com";
@@ -17,6 +25,13 @@ const BTC_ADDRESS = "bc1qpq6qqczzt93kk6wf4plw8763vc82hk2xrl3dg3";
 const CLABE = "722969013380554187";
 
 export default function CreatorScreen() {
+  const [language, setLanguage] =
+    useState<Language>("es");
+
+  useEffect(() => {
+    getLanguage().then(setLanguage).catch(() => undefined);
+  }, []);
+
   function openInstagram() {
     Linking.openURL(INSTAGRAM_URL).catch(() => undefined);
   }
@@ -24,6 +39,47 @@ export default function CreatorScreen() {
   function openEmail() {
     Linking.openURL(`mailto:${CREATOR_EMAIL}`).catch(() => undefined);
   }
+
+  const t =
+    language === "es"
+      ? {
+          back: "VOLVER",
+          kicker: "EL CREADOR",
+          title: "Lo visible comienza donde nadie mira.",
+          body:
+            "Covenant nace para sostener el trabajo silencioso: decirse la verdad, ordenar el impulso y reconstruir el carácter hasta que el cuerpo, la mente y la vida exterior respondan a la misma medida.",
+          bodySecondary:
+            "No todo cambio empieza afuera. Primero se ordena lo invisible; luego el mundo recibe la forma de esa medida.",
+          creatorCredit: "Covenant fue creado por Jeremy Avalos.",
+          collaborations: "COLABORACIONES",
+          collaborationText:
+            "Para colaboraciones, desarrollo de apps, páginas web o proyectos digitales:",
+          copyHint: "Mantén presionado para copiar.",
+          instagramKicker: "ACTUALIZACIONES, REFLEXIONES Y LANZAMIENTOS",
+          support: "APOYAR",
+          supportText:
+            "Si Covenant te aporta valor y deseas apoyar su desarrollo:",
+          selectableHint: "Datos seleccionables para copiar.",
+        }
+      : {
+          back: "RETURN",
+          kicker: "THE CREATOR",
+          title: "Visible change begins where no one is looking.",
+          body:
+            "Covenant was built to hold the quiet work: telling the truth, ordering impulse, and rebuilding character until the body, the mind, and the life outside answer to the same measure.",
+          bodySecondary:
+            "Not every change begins outside. First the invisible is ordered; then the world receives the shape of that measure.",
+          creatorCredit: "Covenant was created by Jeremy Avalos.",
+          collaborations: "COLLABORATIONS",
+          collaborationText:
+            "For collaborations, app development, websites, or digital projects:",
+          copyHint: "Press and hold to copy.",
+          instagramKicker: "UPDATES, REFLECTIONS, AND RELEASES",
+          support: "SUPPORT",
+          supportText:
+            "If Covenant brings you value and you want to support its development:",
+          selectableHint: "Selectable details for copying.",
+        };
 
   return (
     <Screen backdropIntensity="subtle" backdropVariant="deeper">
@@ -38,38 +94,34 @@ export default function CreatorScreen() {
             pressed && styles.pressed,
           ]}
         >
-          <Text style={styles.backText}>VOLVER</Text>
+          <Text style={styles.backText}>{t.back}</Text>
         </Pressable>
 
         <View style={styles.center}>
-          <Text style={styles.kicker}>EL CREADOR</Text>
+          <Text style={styles.kicker}>{t.kicker}</Text>
 
           <Text style={styles.title}>
-            Lo visible comienza donde nadie mira.
+            {t.title}
           </Text>
 
           <View style={styles.line} />
 
           <Text style={styles.body}>
-            Covenant nace para sostener el trabajo silencioso: decirse la
-            verdad, ordenar el impulso y reconstruir el carácter hasta que el
-            cuerpo, la mente y la vida exterior respondan a la misma medida.
+            {t.body}
           </Text>
 
           <Text style={styles.bodySecondary}>
-            No todo cambio empieza afuera. Primero se ordena lo invisible; luego
-            el mundo recibe la forma de esa medida.
+            {t.bodySecondary}
           </Text>
 
           <Text style={styles.creatorCredit}>
-            Covenant fue creado por Jeremy Avalos.
+            {t.creatorCredit}
           </Text>
 
           <View style={styles.section}>
-            <Text style={styles.sectionKicker}>COLABORACIONES</Text>
+            <Text style={styles.sectionKicker}>{t.collaborations}</Text>
             <Text style={styles.sectionText}>
-              Para colaboraciones, desarrollo de apps, páginas web o proyectos
-              digitales:
+              {t.collaborationText}
             </Text>
             <Pressable
               onPress={openEmail}
@@ -82,7 +134,7 @@ export default function CreatorScreen() {
                 {CREATOR_EMAIL}
               </Text>
             </Pressable>
-            <Text style={styles.copyHint}>Mantén presionado para copiar.</Text>
+            <Text style={styles.copyHint}>{t.copyHint}</Text>
           </View>
 
           <Pressable
@@ -93,15 +145,15 @@ export default function CreatorScreen() {
             ]}
           >
             <Text style={styles.instagramKicker}>
-              ACTUALIZACIONES, REFLEXIONES Y LANZAMIENTOS
+              {t.instagramKicker}
             </Text>
             <Text style={styles.instagramHandle}>@join.covenant.app</Text>
           </Pressable>
 
           <View style={styles.section}>
-            <Text style={styles.sectionKicker}>APOYAR</Text>
+            <Text style={styles.sectionKicker}>{t.support}</Text>
             <Text style={styles.sectionText}>
-              Si Covenant te aporta valor y deseas apoyar su desarrollo:
+              {t.supportText}
             </Text>
             <View style={styles.donationBlock}>
               <Text style={styles.donationLabel}>BTC</Text>
@@ -116,7 +168,7 @@ export default function CreatorScreen() {
               </Text>
               <Text style={styles.donationMeta}>Mercado Pago</Text>
             </View>
-            <Text style={styles.copyHint}>Datos seleccionables para copiar.</Text>
+            <Text style={styles.copyHint}>{t.selectableHint}</Text>
           </View>
 
           <Text style={styles.seal}>COVENANT</Text>
@@ -137,11 +189,18 @@ const styles = StyleSheet.create({
   backButton: {
     alignSelf: "flex-start",
     borderWidth: 1,
-    borderColor: "rgba(216,140,58,0.28)",
+    borderColor: "rgba(216,140,58,0.36)",
     borderRadius: 999,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: "rgba(5,5,5,0.62)",
+    backgroundColor: "rgba(10,8,6,0.66)",
+    shadowColor: "#D88C3A",
+    shadowOpacity: 0.14,
+    shadowRadius: 18,
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
   },
 
   pressed: {
@@ -167,7 +226,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     letterSpacing: 7,
     marginBottom: 30,
-    opacity: 0.82,
+    opacity: 0.94,
     textAlign: "center",
   },
 
@@ -189,7 +248,7 @@ const styles = StyleSheet.create({
 
   body: {
     maxWidth: 340,
-    color: "#B9AFA3",
+    color: "#D1C5B7",
     fontSize: 16,
     lineHeight: 28,
     fontWeight: "300",
@@ -198,7 +257,7 @@ const styles = StyleSheet.create({
 
   bodySecondary: {
     maxWidth: 326,
-    color: "#8F867E",
+    color: "#AAA096",
     fontSize: 14,
     lineHeight: 24,
     fontWeight: "300",
@@ -221,16 +280,23 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 360,
     borderWidth: 1,
-    borderColor: "rgba(216,140,58,0.18)",
+    borderColor: "rgba(216,140,58,0.28)",
     borderRadius: 18,
-    backgroundColor: "rgba(8,8,8,0.52)",
+    backgroundColor: "rgba(9,8,7,0.70)",
     paddingHorizontal: 18,
     paddingVertical: 18,
     marginTop: 28,
+    shadowColor: "#D88C3A",
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    shadowOffset: {
+      width: 0,
+      height: 14,
+    },
   },
 
   sectionKicker: {
-    color: "#A87442",
+    color: "#D8A060",
     fontSize: 9,
     letterSpacing: 4,
     marginBottom: 12,
@@ -238,7 +304,7 @@ const styles = StyleSheet.create({
   },
 
   sectionText: {
-    color: "#A79C90",
+    color: "#BDB2A7",
     fontSize: 14,
     lineHeight: 23,
     fontWeight: "300",
@@ -250,9 +316,9 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     maxWidth: "100%",
     borderWidth: 1,
-    borderColor: "rgba(216,140,58,0.24)",
+    borderColor: "rgba(216,140,58,0.34)",
     borderRadius: 999,
-    backgroundColor: "rgba(216,140,58,0.07)",
+    backgroundColor: "rgba(216,140,58,0.12)",
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
@@ -265,7 +331,7 @@ const styles = StyleSheet.create({
   },
 
   copyHint: {
-    color: "#625B54",
+    color: "#8A8178",
     fontSize: 10,
     lineHeight: 15,
     letterSpacing: 1.1,
@@ -276,16 +342,16 @@ const styles = StyleSheet.create({
   instagramLink: {
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "rgba(216,140,58,0.24)",
+    borderColor: "rgba(216,140,58,0.34)",
     borderRadius: 18,
-    backgroundColor: "rgba(10,10,10,0.58)",
+    backgroundColor: "rgba(10,8,6,0.72)",
     paddingHorizontal: 18,
     paddingVertical: 16,
     marginTop: 34,
   },
 
   instagramKicker: {
-    color: "#716960",
+    color: "#A79C90",
     fontSize: 9,
     letterSpacing: 2.2,
     lineHeight: 15,
@@ -301,7 +367,7 @@ const styles = StyleSheet.create({
 
   donationBlock: {
     borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.06)",
+    borderTopColor: "rgba(255,232,200,0.10)",
     paddingTop: 14,
     marginTop: 12,
   },

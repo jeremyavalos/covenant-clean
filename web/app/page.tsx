@@ -85,6 +85,7 @@ export default function Home() {
           <a href="#what">What</a>
           <a href="#how">How</a>
           <a href="#plans">Plans</a>
+          <a href="#creator">Creator</a>
           <a href="#faq">FAQ</a>
         </nav>
       </header>
@@ -328,6 +329,42 @@ export default function Home() {
               and the strength to let the inner order become visible through
               the body, the mind, and the life one constructs.
             </p>
+          </div>
+        </section>
+
+        <section id="creator" className="section creator-section">
+          <div className="creator-inner">
+            <div>
+              <p className="eyebrow">The Creator</p>
+              <h2>Built by the same quiet work it asks for.</h2>
+            </div>
+            <div className="creator-copy">
+              <p>
+                Covenant was created by Jeremy Avalos to hold the discipline
+                that happens before anyone sees the result: telling the truth,
+                ordering impulse, and returning to the work without turning it
+                into performance.
+              </p>
+              <p>
+                For collaborations, app development, websites, or digital
+                projects, contact{" "}
+                <a href="mailto:jeremy.avalos@protonmail.com">
+                  jeremy.avalos@protonmail.com
+                </a>
+                .
+              </p>
+              <p>
+                Updates, reflections, and releases live on Instagram at{" "}
+                <a
+                  href="https://www.instagram.com/join.covenant.app"
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  @join.covenant.app
+                </a>
+                .
+              </p>
+            </div>
           </div>
         </section>
 

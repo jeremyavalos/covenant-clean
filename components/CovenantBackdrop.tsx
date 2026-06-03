@@ -4,16 +4,18 @@ import {
   View,
 } from 'react-native';
 import { Image, type ImageContentPosition } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type Props = {
   intensity?: 'subtle' | 'medium' | 'strong';
   variant?: 'splash' | 'language' | 'transition' | 'habits' | 'habit' | 'deeper';
+  habitSlug?: string | null;
 };
 
 const overlayOpacity = {
-  subtle: 0.8,
-  medium: 0.7,
-  strong: 0.6,
+  subtle: 0.68,
+  medium: 0.62,
+  strong: 0.56,
 };
 
 const sources: Record<NonNullable<Props['variant']>, ImageSourcePropType> = {
@@ -23,6 +25,19 @@ const sources: Record<NonNullable<Props['variant']>, ImageSourcePropType> = {
   habits: require('../assets/images/covenant-ritual-bg.png'),
   habit: require('../assets/images/covenant-habit-bg.png'),
   deeper: require('../assets/images/covenant-deeper-bg.png'),
+};
+
+const habitSources: Record<string, ImageSourcePropType> = {
+  coldShower: require('../assets/images/habits/coldShower-bg.png'),
+  exercise: require('../assets/images/habits/exercise-bg.png'),
+  dominateMind: require('../assets/images/habits/dominateMind-bg.png'),
+  mentalStrength: require('../assets/images/habits/mentalStrength-bg.png'),
+  noVices: require('../assets/images/habits/noVices-bg.png'),
+  writing: require('../assets/images/habits/writing-bg.png'),
+  gratitude: require('../assets/images/habits/gratitude-bg.png'),
+  silence: require('../assets/images/habits/silence-bg.png'),
+  meditation: require('../assets/images/habits/meditation-bg.png'),
+  discipline: require('../assets/images/habits/discipline-bg.png'),
 };
 
 const imageFocus: Record<NonNullable<Props['variant']>, ImageContentPosition> = {
@@ -37,14 +52,29 @@ const imageFocus: Record<NonNullable<Props['variant']>, ImageContentPosition> = 
 export default function CovenantBackdrop({
   intensity = 'medium',
   variant = 'splash',
+  habitSlug,
 }: Props) {
+  const source =
+    habitSlug && habitSources[habitSlug]
+      ? habitSources[habitSlug]
+      : sources[variant];
+
   return (
     <View pointerEvents="none" style={styles.container}>
       <Image
-        source={sources[variant]}
-        contentFit="cover"
+        source={source}
+        contentFit="contain"
         contentPosition={imageFocus[variant]}
         style={[StyleSheet.absoluteFill, styles.imageLayer]}
+      />
+      <LinearGradient
+        colors={[
+          'rgba(3,3,3,0.38)',
+          'rgba(3,3,3,0.08)',
+          'rgba(3,3,3,0.42)',
+        ]}
+        locations={[0, 0.48, 1]}
+        style={StyleSheet.absoluteFill}
       />
       <View
         style={[
@@ -54,9 +84,25 @@ export default function CovenantBackdrop({
           },
         ]}
       />
-      <View style={styles.copperVeil} />
-      <View style={styles.topVignette} />
-      <View style={styles.bottomVignette} />
+      <LinearGradient
+        colors={[
+          'rgba(216,140,58,0.18)',
+          'rgba(216,140,58,0.035)',
+          'rgba(22,10,4,0.34)',
+        ]}
+        start={{ x: 0.18, y: 0 }}
+        end={{ x: 0.92, y: 1 }}
+        style={styles.copperVeil}
+      />
+      <View style={styles.ambientHalo} />
+      <LinearGradient
+        colors={['rgba(0,0,0,0.72)', 'rgba(0,0,0,0)']}
+        style={styles.topVignette}
+      />
+      <LinearGradient
+        colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.9)']}
+        style={styles.bottomVignette}
+      />
     </View>
   );
 }
@@ -64,11 +110,11 @@ export default function CovenantBackdrop({
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#030303',
+    backgroundColor: '#040302',
   },
 
   imageLayer: {
-    opacity: 0.92,
+    opacity: 0.88,
   },
 
   darkVeil: {
@@ -77,7 +123,25 @@ const styles = StyleSheet.create({
 
   copperVeil: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(216,110,34,0.065)',
+    opacity: 0.72,
+  },
+
+  ambientHalo: {
+    position: 'absolute',
+    top: '12%',
+    alignSelf: 'center',
+    width: 340,
+    height: 340,
+    borderRadius: 170,
+    backgroundColor: 'rgba(216,140,58,0.10)',
+    opacity: 0.72,
+    shadowColor: '#D88C3A',
+    shadowOpacity: 0.34,
+    shadowRadius: 80,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
   },
 
   topVignette: {
@@ -85,8 +149,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 260,
-    backgroundColor: 'rgba(0,0,0,0.44)',
+    height: 280,
   },
 
   bottomVignette: {
@@ -94,7 +157,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    height: 420,
-    backgroundColor: 'rgba(0,0,0,0.78)',
+    height: 460,
   },
 });

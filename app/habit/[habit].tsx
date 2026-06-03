@@ -154,6 +154,7 @@ const HABIT_INFO = {
 
 export default function HabitScreen() {
   const { habit } = useLocalSearchParams();
+  const habitSlug = String(habit);
   const posthog = usePostHog();
 
   const [language, setLanguage] = useState<Language>('es');
@@ -184,7 +185,7 @@ export default function HabitScreen() {
   }, []);
 
   const loadProgress = useCallback(async () => {
-    const progress = await getHabitProgress(String(habit));
+    const progress = await getHabitProgress(habitSlug);
 
     setCompletedDays(progress.completedDays);
     setStreak(progress.streak);
@@ -192,7 +193,7 @@ export default function HabitScreen() {
     const today = new Date().toISOString().split('T')[0];
 
     setCompletedToday(progress.lastCompleted === today);
-  }, [habit]);
+  }, [habitSlug]);
 
   useEffect(() => {
     loadLanguage();
@@ -322,7 +323,7 @@ export default function HabitScreen() {
 
   const currentDay = completedDays + 1;
   const covenantPercent = Math.min(Math.round((completedDays / 30) * 100), 100);
-  const entries = getTodayHabitEntry(String(habit), currentDay);
+  const entries = getTodayHabitEntry(habitSlug, currentDay);
   const current = isNight ? entries.night : entries.morning;
 
   if (!current) {
@@ -331,8 +332,8 @@ export default function HabitScreen() {
 
   const info =
     language === 'es'
-      ? HABIT_INFO.es[habit as keyof typeof HABIT_INFO.es]
-      : HABIT_INFO.en[habit as keyof typeof HABIT_INFO.en];
+      ? HABIT_INFO.es[habitSlug as keyof typeof HABIT_INFO.es]
+      : HABIT_INFO.en[habitSlug as keyof typeof HABIT_INFO.en];
 
   const t =
     language === 'es'
@@ -403,7 +404,7 @@ export default function HabitScreen() {
     setIsCompleting(true);
 
     try {
-      const updated = await completeHabit(String(habit));
+      const updated = await completeHabit(habitSlug);
 
       setCompletedDays(updated.completedDays);
       setStreak(updated.streak);
@@ -418,7 +419,7 @@ export default function HabitScreen() {
       );
 
       posthog.capture('habit_completed', {
-        habit_slug: String(habit),
+        habit_slug: habitSlug,
         completed_days: updated.completedDays,
         streak: updated.streak,
         period: isNight ? 'night' : 'morning',
@@ -462,7 +463,7 @@ export default function HabitScreen() {
     await Haptics.selectionAsync();
 
     posthog.capture('deeper_entered', {
-      habit_slug: String(habit),
+      habit_slug: habitSlug,
       day: currentDay,
       period: current.period,
       language,
@@ -471,7 +472,7 @@ export default function HabitScreen() {
     router.push({
       pathname: '/deeper',
       params: {
-        habit: String(habit),
+        habit: habitSlug,
         day: String(currentDay),
         period: current.period,
       },
@@ -481,7 +482,11 @@ export default function HabitScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.backdrop}>
-        <CovenantBackdrop intensity="subtle" variant="habit" />
+        <CovenantBackdrop
+          habitSlug={habitSlug}
+          intensity="subtle"
+          variant="habit"
+        />
         <Animated.View
           style={[
             styles.backgroundGlow,
@@ -748,13 +753,20 @@ const styles = StyleSheet.create({
   streakShell: {
     minWidth: 104,
     borderWidth: 1,
-    borderColor: 'rgba(216,140,58,0.18)',
+    borderColor: 'rgba(216,140,58,0.28)',
     borderRadius: 22,
     overflow: 'hidden',
     paddingHorizontal: 14,
     paddingVertical: 12,
     alignItems: 'flex-end',
-    backgroundColor: 'rgba(8,8,8,0.42)',
+    backgroundColor: 'rgba(8,7,6,0.58)',
+    shadowColor: '#D88C3A',
+    shadowOpacity: 0.14,
+    shadowRadius: 22,
+    shadowOffset: {
+      width: 0,
+      height: 12,
+    },
   },
 
   streakLabel: {
@@ -771,7 +783,7 @@ const styles = StyleSheet.create({
   },
 
   streakMeta: {
-    color: '#625C56',
+    color: '#8E847B',
     fontSize: 9,
     letterSpacing: 1,
     marginTop: 5,
@@ -785,8 +797,8 @@ const styles = StyleSheet.create({
     marginBottom: 56,
     borderRadius: 24,
     shadowColor: '#D88C3A',
-    shadowOpacity: 0.11,
-    shadowRadius: 28,
+    shadowOpacity: 0.18,
+    shadowRadius: 36,
     shadowOffset: {
       width: 0,
       height: 18,
@@ -797,8 +809,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(216,140,58,0.17)',
-    backgroundColor: 'rgba(7,7,7,0.64)',
+    borderColor: 'rgba(216,140,58,0.28)',
+    backgroundColor: 'rgba(9,8,7,0.72)',
     padding: 20,
   },
 
@@ -810,21 +822,21 @@ const styles = StyleSheet.create({
   },
 
   progressLabel: {
-    color: '#746A62',
+    color: '#A99A8A',
     fontSize: 10,
     letterSpacing: 5,
   },
 
   progressValue: {
-    color: '#D6B086',
+    color: '#F1C58E',
     fontSize: 11,
     letterSpacing: 2,
     fontWeight: '600',
   },
 
   progressTrack: {
-    height: 7,
-    backgroundColor: 'rgba(255,255,255,0.055)',
+    height: 9,
+    backgroundColor: 'rgba(255,255,255,0.075)',
     borderRadius: 999,
     overflow: 'hidden',
     marginBottom: 16,
@@ -832,9 +844,16 @@ const styles = StyleSheet.create({
 
   progressBar: {
     height: '100%',
-    backgroundColor: '#D2873A',
+    backgroundColor: '#D88C3A',
     borderRadius: 999,
     overflow: 'hidden',
+    shadowColor: '#D88C3A',
+    shadowOpacity: 0.32,
+    shadowRadius: 14,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
   },
 
   progressGlow: {
@@ -843,7 +862,7 @@ const styles = StyleSheet.create({
   },
 
   progressCaption: {
-    color: '#827A72',
+    color: '#AFA49A',
     fontSize: 11,
     letterSpacing: 2,
     lineHeight: 18,

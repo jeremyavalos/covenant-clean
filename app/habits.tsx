@@ -47,10 +47,11 @@ import {
 import {
   DEFAULT_OFFERING_IDENTIFIER,
   getDefaultOffering,
-  getMonthlyPackageFromOffering,
   getOfferings,
   hasProAccess,
+  hasRevenueCatApiKeyForCurrentPlatform,
   initRevenueCat,
+  isRevenueCatConfigured,
   purchasePackage,
   restorePurchases,
 } from "../services/revenuecat";
@@ -68,12 +69,16 @@ import {
 
 const COLORS = {
 background: "#050505",
-card: "#0b0b0b",
+card: "rgba(11,10,8,0.84)",
 bronze: "#b87333",
-bronzeSoft: "rgba(184,115,51,0.10)",
+bronzeSoft: "rgba(216,140,58,0.13)",
 text: "#f5f5f5",
-muted: "#8e8e93",
-border: "rgba(184,115,51,0.38)",
+muted: "#B8AEA4",
+quiet: "#867D74",
+border: "rgba(216,140,58,0.42)",
+borderSoft: "rgba(255,232,200,0.10)",
+panel: "rgba(8,7,6,0.74)",
+panelStrong: "rgba(8,7,6,0.9)",
 	};
 
 const PRO_HABIT_LIMIT = 4;
@@ -655,55 +660,104 @@ plan: CovenantProPlan
 ) {
 console.log("[Paywall] Loading RevenueCat offerings for selected plan.", {
 plan,
+platform: Platform.OS,
+iOSRevenueCatApiKeyPresent:
+Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
+revenueCatConfigured: isRevenueCatConfigured(),
 });
 
 const offerings =
 await getOfferings();
 
+const defaultOffering =
+offerings?.all[DEFAULT_OFFERING_IDENTIFIER] ?? null;
+
 const offering =
 Platform.OS === "ios"
-? offerings?.all[DEFAULT_OFFERING_IDENTIFIER] ?? null
+? defaultOffering
 : getDefaultOffering(
 offerings
 );
 
-console.log("[Paywall] RevenueCat offering lookup.", {
+const monthlyFromOfferingProperty =
+offering?.monthly ?? null;
+
+const monthlyByIdentifier =
+offering?.availablePackages.find(
+(item) => item.identifier === "$rc_monthly"
+) ?? null;
+
+const monthlyByPackageType =
+offering?.availablePackages.find(
+(item) => item.packageType === "MONTHLY"
+) ?? null;
+
+const packageToPurchase =
+monthlyFromOfferingProperty ??
+monthlyByIdentifier ??
+monthlyByPackageType ??
+null;
+
+console.log("[Paywall] RevenueCat diagnostics.", {
 plan,
+platform: Platform.OS,
+iOSRevenueCatApiKeyPresent:
+Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
+revenueCatConfigured: isRevenueCatConfigured(),
 defaultOfferingIdentifier: DEFAULT_OFFERING_IDENTIFIER,
-offeringIdentifier: offering?.identifier ?? null,
-currentOfferingIdentifier: offerings?.current?.identifier ?? null,
-allOfferingIdentifiers: offerings ? Object.keys(offerings.all) : [],
-availablePackages:
-offering?.availablePackages.map((item) =>
+offeringsAllKeys: offerings ? Object.keys(offerings.all) : [],
+offeringsCurrentIdentifier: offerings?.current?.identifier ?? null,
+offeringsAllDefaultExists: Boolean(defaultOffering),
+selectedOfferingIdentifier: offering?.identifier ?? null,
+defaultAvailablePackageIdentifiers:
+defaultOffering?.availablePackages.map((item) => item.identifier) ?? [],
+defaultAvailablePackages:
+defaultOffering?.availablePackages.map((item) =>
 describePurchasePackage(item)
 ) ?? [],
+defaultMonthlyExists: Boolean(defaultOffering?.monthly),
+offeringMonthlyExists: Boolean(monthlyFromOfferingProperty),
+rcMonthlyPackageExists: Boolean(monthlyByIdentifier),
+monthlyPackageTypeExists: Boolean(monthlyByPackageType),
+selectedMonthlyPackageIdentifier: packageToPurchase?.identifier ?? null,
+selectedProductIdentifier: packageToPurchase?.product.identifier ?? null,
 });
 
 if (!offering) {
 console.warn("[Paywall] RevenueCat default offering not found.", {
 plan,
+platform: Platform.OS,
+reason: "offerings.all.default was not found, so no iOS monthly package can be selected.",
 defaultOfferingIdentifier: DEFAULT_OFFERING_IDENTIFIER,
-currentOfferingIdentifier: offerings?.current?.identifier ?? null,
-allOfferingIdentifiers: offerings ? Object.keys(offerings.all) : [],
+iOSRevenueCatApiKeyPresent:
+Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
+revenueCatConfigured: isRevenueCatConfigured(),
+offeringsAllKeys: offerings ? Object.keys(offerings.all) : [],
+offeringsCurrentIdentifier: offerings?.current?.identifier ?? null,
+offeringsAllDefaultExists: Boolean(defaultOffering),
 });
 
 throw new Error(t.paywallPurchaseUnavailableText);
 }
 
-const packageToPurchase =
-getMonthlyPackageFromOffering(
-offering
-);
-
 if (!packageToPurchase) {
 console.warn("[Paywall] No monthly RevenueCat package available to purchase.", {
 plan,
+platform: Platform.OS,
+reason:
+"No package was found through offering.monthly, identifier $rc_monthly, or packageType MONTHLY. Purchase sheet will not open.",
 defaultOfferingIdentifier: DEFAULT_OFFERING_IDENTIFIER,
 offeringIdentifier: offering?.identifier ?? null,
+offeringsAllKeys: offerings ? Object.keys(offerings.all) : [],
+offeringsCurrentIdentifier: offerings?.current?.identifier ?? null,
+offeringsAllDefaultExists: Boolean(defaultOffering),
+defaultMonthlyExists: Boolean(defaultOffering?.monthly),
 availablePackageIdentifiers:
 offering?.availablePackages.map((item) => item.identifier) ?? [],
 availablePackageTypes:
 offering?.availablePackages.map((item) => item.packageType) ?? [],
+availableProductIdentifiers:
+offering?.availablePackages.map((item) => item.product.identifier) ?? [],
 });
 
 throw new Error(t.paywallPurchaseUnavailableText);
@@ -1127,7 +1181,7 @@ support:
 "Support",
 
 creator:
-"EL CREADOR",
+"THE CREATOR",
 
 subscriptionButton:
 "VIEW MONTHLY SUBSCRIPTION",
@@ -1315,6 +1369,15 @@ const completedToday =
 progress?.lastCompleted ===
 today;
 
+const habitPercent =
+Math.min(
+Math.round(
+(completedDays / 30) *
+100
+),
+100
+);
+
 const locked =
 !canOpenHabit(
 habit.slug
@@ -1438,16 +1501,18 @@ styles.progressBar,
 
 {
 width: `${
-(completedDays /
-30) *
-100
+habitPercent
 }%`,
+shadowOpacity:
+0.16 + habitPercent / 260,
 },
 
 ]}
 />
 
 </View>
+
+<View style={styles.progressMetaRow}>
 
 <Text
 style={
@@ -1456,6 +1521,12 @@ styles.progressText
 >
 {completedDays}/30
 </Text>
+
+<Text style={styles.progressPercentText}>
+{habitPercent}%
+</Text>
+
+</View>
 
 </TouchableOpacity>
 
@@ -1834,7 +1905,15 @@ borderRadius: 999,
 paddingHorizontal: 14,
 paddingVertical: 10,
 backgroundColor:
-"rgba(5,5,5,0.72)",
+"rgba(10,8,6,0.64)",
+shadowColor:
+COLORS.bronze,
+shadowOpacity: 0.12,
+shadowRadius: 18,
+shadowOffset: {
+width: 0,
+height: 8,
+},
 },
 
 logoutText: {
@@ -1864,13 +1943,22 @@ paddingHorizontal: 4,
 
 proCard: {
 backgroundColor:
-COLORS.bronzeSoft,
+COLORS.panel,
 borderWidth: 1,
 borderColor:
 COLORS.border,
 borderRadius: 24,
 padding: 24,
 marginBottom: 30,
+shadowColor:
+COLORS.bronze,
+shadowOpacity: 0.18,
+shadowRadius: 34,
+shadowOffset: {
+width: 0,
+height: 18,
+},
+elevation: 8,
 },
 
 proMini: {
@@ -1891,7 +1979,7 @@ marginBottom: 26,
 divider: {
 height: 1,
 backgroundColor:
-COLORS.border,
+"rgba(255,232,200,0.14)",
 marginBottom: 26,
 },
 
@@ -1921,7 +2009,15 @@ paddingVertical: 13,
 paddingHorizontal: 16,
 marginTop: 22,
 backgroundColor:
-"rgba(184,115,51,0.10)",
+"rgba(216,140,58,0.16)",
+shadowColor:
+COLORS.bronze,
+shadowOpacity: 0.16,
+shadowRadius: 18,
+shadowOffset: {
+width: 0,
+height: 10,
+},
 },
 
 subscriptionButtonText: {
@@ -1945,7 +2041,7 @@ marginBottom: 14,
 },
 
 freeText: {
-color: COLORS.muted,
+color: "#D2C7BA",
 fontSize: 16,
 letterSpacing: 2,
 },
@@ -1953,13 +2049,22 @@ letterSpacing: 2,
 habitCard: {
 backgroundColor:
 COLORS.card,
-borderRadius: 24,
+borderRadius: 22,
 padding: 22,
 marginBottom: 18,
 borderWidth: 1,
 borderColor:
-"rgba(255,255,255,0.04)",
+COLORS.borderSoft,
 position: "relative",
+shadowColor:
+"#000",
+shadowOpacity: 0.28,
+shadowRadius: 22,
+shadowOffset: {
+width: 0,
+height: 14,
+},
+elevation: 5,
 },
 
 lockBadge: {
@@ -1973,7 +2078,7 @@ borderRadius: 999,
 paddingHorizontal: 12,
 paddingVertical: 7,
 backgroundColor:
-"rgba(5,5,5,0.78)",
+"rgba(12,10,8,0.84)",
 },
 
 lockBadgeText: {
@@ -1991,7 +2096,7 @@ paddingRight: 94,
 },
 
 habitDescription: {
-color: COLORS.muted,
+color: "#BDB2A8",
 fontSize: 16,
 lineHeight: 27,
 marginBottom: 22,
@@ -2023,7 +2128,7 @@ flexShrink: 0,
 progressContainer: {
 height: 6,
 backgroundColor:
-"rgba(255,255,255,0.05)",
+"rgba(255,255,255,0.075)",
 borderRadius: 999,
 overflow: "hidden",
 marginBottom: 14,
@@ -2032,14 +2137,36 @@ marginBottom: 14,
 progressBar: {
 height: "100%",
 backgroundColor:
-COLORS.bronze,
+"#D88C3A",
 borderRadius: 999,
+shadowColor:
+"#D88C3A",
+shadowRadius: 12,
+shadowOffset: {
+width: 0,
+height: 0,
+},
+elevation: 3,
+},
+
+progressMetaRow: {
+flexDirection: "row",
+alignItems: "center",
+justifyContent: "space-between",
+gap: 12,
 },
 
 progressText: {
-color: COLORS.muted,
+color: "#D4C8BB",
 fontSize: 13,
 letterSpacing: 3,
+},
+
+progressPercentText: {
+color: COLORS.bronze,
+fontSize: 12,
+letterSpacing: 2.6,
+fontWeight: "600",
 },
 
 syncStrip: {
@@ -2055,7 +2182,7 @@ paddingHorizontal: 16,
 paddingVertical: 10,
 marginBottom: 26,
 backgroundColor:
-"rgba(5,5,5,0.72)",
+"rgba(10,8,6,0.72)",
 },
 
 syncText: {
@@ -2072,7 +2199,7 @@ paddingBottom: 8,
 },
 
 accountLinkText: {
-color: COLORS.muted,
+color: COLORS.quiet,
 fontSize: 12,
 letterSpacing: 2,
 },
@@ -2086,7 +2213,15 @@ paddingHorizontal: 18,
 paddingVertical: 12,
 marginTop: 8,
 backgroundColor:
-"rgba(184,115,51,0.06)",
+"rgba(216,140,58,0.10)",
+shadowColor:
+COLORS.bronze,
+shadowOpacity: 0.12,
+shadowRadius: 16,
+shadowOffset: {
+width: 0,
+height: 8,
+},
 },
 
 creatorLinkText: {
@@ -2187,7 +2322,7 @@ letterSpacing: 4,
 paywallOverlay: {
 flex: 1,
 backgroundColor:
-"rgba(0,0,0,0.82)",
+"rgba(0,0,0,0.76)",
 paddingHorizontal: 24,
 },
 
@@ -2200,7 +2335,7 @@ paddingVertical: 32,
 paywallPanel: {
 width: "100%",
 backgroundColor:
-"#070707",
+COLORS.panelStrong,
 borderWidth: 1,
 borderColor:
 COLORS.border,
@@ -2208,12 +2343,13 @@ borderRadius: 28,
 padding: 30,
 shadowColor:
 COLORS.bronze,
-shadowOpacity: 0.12,
-shadowRadius: 24,
+shadowOpacity: 0.24,
+shadowRadius: 42,
 shadowOffset: {
 width: 0,
 height: 18,
 },
+elevation: 10,
 },
 
 paywallLabel: {
@@ -2239,7 +2375,7 @@ marginBottom: 26,
 },
 
 paywallText: {
-color: COLORS.muted,
+color: "#C4B8AC",
 fontSize: 15,
 lineHeight: 26,
 marginBottom: 24,
@@ -2255,12 +2391,12 @@ planOption: {
 flex: 1,
 borderWidth: 1,
 borderColor:
-"rgba(255,255,255,0.08)",
+"rgba(255,232,200,0.12)",
 borderRadius: 16,
 paddingVertical: 16,
 paddingHorizontal: 12,
 backgroundColor:
-"rgba(255,255,255,0.03)",
+"rgba(255,255,255,0.045)",
 },
 
 planOptionActive: {
@@ -2296,10 +2432,18 @@ paywallButton: {
 height: 58,
 borderRadius: 999,
 backgroundColor:
-COLORS.bronze,
+"#D88C3A",
 alignItems: "center",
 justifyContent: "center",
 marginBottom: 18,
+shadowColor:
+"#D88C3A",
+shadowOpacity: 0.34,
+shadowRadius: 22,
+shadowOffset: {
+width: 0,
+height: 12,
+},
 },
 
 paywallButtonText: {
@@ -2331,7 +2475,7 @@ paddingVertical: 8,
 },
 
 paywallLegalText: {
-color: COLORS.muted,
+color: COLORS.quiet,
 fontSize: 11,
 letterSpacing: 1.4,
 },

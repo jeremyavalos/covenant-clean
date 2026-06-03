@@ -97,6 +97,7 @@ const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
 export default function DeeperScreen() {
   const { habit, day, period } = useLocalSearchParams();
+  const habitSlug = String(habit);
   const [language, setLanguage] = useState<Language>('es');
 
   const glow = useSharedValue(0.018);
@@ -149,7 +150,7 @@ export default function DeeperScreen() {
   }, [glow]);
 
   const entry = getHabitEntry(
-    String(habit),
+    habitSlug,
     Number(day),
     period === 'night' ? 'night' : 'morning'
   );
@@ -172,7 +173,7 @@ export default function DeeperScreen() {
     return null;
   }
 
-  const info = HABIT_INFO[String(habit)] || HABIT_INFO.coldShower;
+  const info = HABIT_INFO[habitSlug] || HABIT_INFO.coldShower;
 
   const t =
     language === 'es'
@@ -198,7 +199,11 @@ export default function DeeperScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.backdrop}>
-        <CovenantBackdrop intensity="subtle" variant="deeper" />
+        <CovenantBackdrop
+          habitSlug={habitSlug}
+          intensity="subtle"
+          variant="deeper"
+        />
         <Animated.View style={[styles.backgroundGlow, glowStyle]} />
         <View style={styles.topVeil} />
         <View style={styles.bottomVeil} />

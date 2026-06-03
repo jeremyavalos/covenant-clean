@@ -90,6 +90,14 @@ function getRevenueCatApiKey() {
   return null;
 }
 
+export function hasRevenueCatApiKeyForCurrentPlatform() {
+  return Boolean(getRevenueCatApiKey());
+}
+
+export function isRevenueCatConfigured() {
+  return initialized;
+}
+
 export async function initRevenueCat(appUserID?: string): Promise<boolean> {
   if (initialized) {
     console.log("[RevenueCat] SDK already configured.", {
@@ -178,6 +186,12 @@ export async function getOfferings(): Promise<PurchasesOfferings | null> {
   const ready = await ensureRevenueCat();
 
   if (!ready) {
+    console.warn("[RevenueCat] getOfferings skipped because SDK is not ready.", {
+      platform: Platform.OS,
+      iosApiKeyPresent:
+        Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
+      configured: initialized,
+    });
     return null;
   }
 
@@ -185,6 +199,7 @@ export async function getOfferings(): Promise<PurchasesOfferings | null> {
     const offerings = await Purchases.getOfferings();
     return offerings;
   } catch (error) {
+    console.error("[RevenueCat] Full getOfferings error object.", error);
     warnRevenueCat("Could not load offerings.", error);
     return null;
   }
