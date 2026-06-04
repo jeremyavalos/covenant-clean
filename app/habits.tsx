@@ -684,7 +684,18 @@ async function openSubscriptionReviewPath() {
 
 setSelectedLockedHabit(null);
 setSelectedPlan("monthly");
+const revenueCatReady =
 await initRevenueCat();
+
+console.log("[Paywall] RevenueCat preflight before paywall.", {
+source: "pro_card",
+platform: Platform.OS,
+revenueCatReady,
+revenueCatConfigured: isRevenueCatConfigured(),
+iOSRevenueCatApiKeyPresent:
+Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
+});
+
 setPaywallVisible(true);
 
 posthog.capture("paywall_shown", {
@@ -1631,26 +1642,6 @@ opacity: 0.62,
 ]}
 >
 
-{locked && (
-
-<View
-style={
-styles.lockBadge
-}
->
-
-<Text
-style={
-styles.lockBadgeText
-}
->
-{t.locked}
-</Text>
-
-</View>
-
-)}
-
 <View style={styles.habitTopRow}>
 <View style={styles.habitIdentity}>
 <Text
@@ -1681,7 +1672,7 @@ completedToday && styles.actionBadgeComplete,
 styles.actionBadgeText,
 locked && styles.actionBadgeTextLocked,
 ]}>
-{locked ? t.proAction : t.openAction}
+{locked ? t.locked : t.openAction}
 </Text>
 </View>
 </View>
@@ -2403,16 +2394,19 @@ flex: 1,
 },
 
 actionBadge: {
-minWidth: 58,
+minWidth: 82,
+maxWidth: 96,
 borderRadius: 999,
 borderWidth: 1,
 borderColor:
 "rgba(216,140,58,0.52)",
 backgroundColor:
 "rgba(216,140,58,0.16)",
-paddingHorizontal: 12,
+paddingHorizontal: 14,
 paddingVertical: 8,
 alignItems: "center",
+justifyContent: "center",
+flexShrink: 0,
 },
 
 actionBadgeLocked: {
@@ -2432,32 +2426,13 @@ borderColor:
 actionBadgeText: {
 color: COLORS.bronze,
 fontSize: 9,
-letterSpacing: 1.8,
+letterSpacing: 1.2,
 fontWeight: "800",
+textAlign: "center",
 },
 
 actionBadgeTextLocked: {
 color: COLORS.quiet,
-},
-
-lockBadge: {
-position: "absolute",
-top: 24,
-right: 18,
-borderWidth: 1,
-borderColor:
-COLORS.border,
-borderRadius: 999,
-paddingHorizontal: 12,
-paddingVertical: 7,
-backgroundColor:
-"rgba(12,10,8,0.84)",
-},
-
-lockBadgeText: {
-color: COLORS.bronze,
-fontSize: 10,
-letterSpacing: 2,
 },
 
 habitTitle: {

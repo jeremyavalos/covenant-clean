@@ -225,6 +225,12 @@ export async function getOfferings(): Promise<PurchasesOfferings | null> {
   }
 
   try {
+    console.log("[RevenueCat] Calling Purchases.getOfferings.", {
+      configured: initialized,
+      configuredPlatform,
+      ...getRevenueCatApiKeyDiagnostics(),
+    });
+
     const offerings = await withTimeout(
       Purchases.getOfferings(),
       OFFERINGS_TIMEOUT_MS,
