@@ -420,11 +420,6 @@ setIsPaywallLoading,
 ] = useState(false);
 
 const [
-lastPurchaseError,
-setLastPurchaseError,
-] = useState<string | null>(null);
-
-const [
 purchaseErrorModal,
 setPurchaseErrorModal,
 ] = useState<{
@@ -700,7 +695,6 @@ setIsPurchasing(false);
 setIsPaywallLoading(false);
 setIsRestoring(false);
 setPurchaseErrorModal(null);
-setLastPurchaseError(null);
 setPaywallPackage(null);
 setPaywallVisible(false);
 }
@@ -806,20 +800,7 @@ async function openSubscriptionReviewPath() {
 
 setSelectedLockedHabit(null);
 setSelectedPlan("monthly");
-setLastPurchaseError(null);
-const revenueCatReady =
 await initRevenueCat();
-
-console.log("[Paywall] RevenueCat preflight before paywall.", {
-source: "pro_card",
-platform: Platform.OS,
-revenueCatReady,
-revenueCatConfigured: isRevenueCatConfigured(),
-iosKeyPresent:
-Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
-iOSRevenueCatApiKeyPresent:
-Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
-});
 
 setPaywallVisible(true);
 
@@ -832,21 +813,8 @@ is_pro: isPro,
 
 const loadSelectedMonthlyPackage = useCallback(async () => {
 setIsPaywallLoading(true);
-setLastPurchaseError(null);
 
 try {
-console.log("[Paywall] Loading RevenueCat offerings for monthly package.", {
-platform: Platform.OS,
-revenueCatReady: isRevenueCatConfigured(),
-iosKeyPresent:
-Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
-iOSRevenueCatApiKeyPresent:
-Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
-androidRevenueCatApiKeyPresent:
-Platform.OS === "android" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
-revenueCatConfigured: isRevenueCatConfigured(),
-});
-
 const offerings =
 await getOfferings();
 
@@ -869,47 +837,7 @@ resolvedMonthlyPackage
 );
 }
 
-console.log("[Paywall] RevenueCat monthly package resolved.", {
-platform: Platform.OS,
-revenueCatReady: isRevenueCatConfigured(),
-iosKeyPresent:
-Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
-iOSRevenueCatApiKeyPresent:
-Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
-androidRevenueCatApiKeyPresent:
-Platform.OS === "android" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
-revenueCatConfigured: isRevenueCatConfigured(),
-defaultOfferingIdentifier: DEFAULT_OFFERING_IDENTIFIER,
-expectedAndroidMonthlyProductIdentifier:
-ANDROID_MONTHLY_PRODUCT_IDENTIFIER,
-expectedIosMonthlyProductIdentifier:
-IOS_MONTHLY_PRODUCT_IDENTIFIER,
-offeringsAllKeys: offerings ? Object.keys(offerings.all) : [],
-offeringsKeys: offerings ? Object.keys(offerings.all) : [],
-offeringsCurrentIdentifier: offerings?.current?.identifier ?? null,
-offeringsAllDefaultExists: Boolean(defaultOffering),
-selectedOfferingIdentifier: offering?.identifier ?? null,
-defaultAvailablePackageIdentifiers:
-defaultOffering?.availablePackages.map((item) => item.identifier) ?? [],
-defaultAvailablePackages:
-defaultOffering?.availablePackages.map((item) =>
-describePurchasePackage(item)
-) ?? [],
-defaultMonthlyExists: Boolean(defaultOffering?.monthly),
-selectedMonthlyPackageExists: Boolean(resolvedMonthlyPackage),
-selectedMonthlyPackageIdentifier: resolvedMonthlyPackage?.identifier ?? null,
-selectedMonthlyPackageType: resolvedMonthlyPackage?.packageType ?? null,
-selectedProductIdentifier:
-resolvedMonthlyPackage?.product.identifier ?? null,
-selectedProductId: resolvedMonthlyPackage?.product.identifier ?? null,
-selectedProductPrice: resolvedMonthlyPackage?.product.priceString ?? null,
-});
-
 if (!offering) {
-if (mountedRef.current) {
-setLastPurchaseError("RevenueCat default offering not found.");
-}
-
 console.warn("[Paywall] RevenueCat default offering not found.", {
 platform: Platform.OS,
 reason: "offerings.all.default was not found, so no default monthly package can be selected.",
@@ -931,10 +859,6 @@ return null;
 }
 
 if (!resolvedMonthlyPackage) {
-if (mountedRef.current) {
-setLastPurchaseError("Selected monthly package is null.");
-}
-
 console.warn("[Paywall] No monthly RevenueCat package available to purchase.", {
 platform: Platform.OS,
 reason:
@@ -969,15 +893,6 @@ return null;
 }
 
 return resolvedMonthlyPackage;
-} catch (error) {
-const errorMessage =
-error instanceof Error ? error.message : String(error);
-
-if (mountedRef.current) {
-setLastPurchaseError(errorMessage);
-}
-
-throw error;
 } finally {
 if (mountedRef.current) {
 setIsPaywallLoading(false);
@@ -1000,28 +915,12 @@ console.warn("[Paywall] Could not load selected monthly package.", error);
 async function activateCovenantPro(
 packageToPurchase: PurchasesPackage | null
 ) {
-console.log("[PAYWALL CLICKED]");
-console.log("selectedMonthlyPackage", !!packageToPurchase);
-console.log("selectedMonthlyPackage full", packageToPurchase);
-
-if (packageToPurchase) {
-console.log("identifier", packageToPurchase.identifier);
-console.log("packageType", packageToPurchase.packageType);
-console.log("productId", packageToPurchase.product.identifier);
-console.log("priceString", packageToPurchase.product.priceString);
-}
-
-console.log("[Paywall] Purchase button pressed.", {
-packagePresent: Boolean(packageToPurchase),
-});
-
 if (!packageToPurchase) {
 console.warn("[Paywall] Purchase clicked with null package.", {
 paywallPackageExists: Boolean(paywallPackage),
 priceVisible: Boolean(paywallPackage?.product.priceString),
 isPaywallLoading,
 });
-setLastPurchaseError(t.paywallPurchaseUnavailableText);
 return;
 }
 
@@ -1029,7 +928,6 @@ setIsPurchasing(
 true
 );
 setPurchaseErrorModal(null);
-setLastPurchaseError(null);
 
 try {
 
@@ -1040,17 +938,7 @@ await purchasePackage(
 packageToPurchase
 );
 
-console.log("[Paywall] purchasePackage responded.", {
-hasCustomerInfo: Boolean(customerInfo),
-activeEntitlements: customerInfo
-? Object.keys(customerInfo.entitlements.active)
-: [],
-});
-
 if (!customerInfo) {
-console.log("[Paywall] Purchase finished without customerInfo.", {
-plan: selectedPlan,
-});
 return;
 }
 
@@ -1091,11 +979,6 @@ getPurchaseAlertMessage(
 error,
 t.paywallPurchaseErrorText
 );
-
-const errorMessage =
-error instanceof Error ? error.message : String(error);
-
-setLastPurchaseError(alertMessage ?? errorMessage);
 
 if (!alertMessage) {
 return;
@@ -1276,7 +1159,7 @@ paywallLoading:
 
 paywallPurchaseUnavailableText:
 Platform.OS === "ios"
-? "Monthly Pro is temporarily unavailable. Please try again later."
+? "No pudimos cargar la suscripción mensual. Inténtalo de nuevo."
 : "Las compras no están disponibles temporalmente. Inténtalo de nuevo más tarde.",
 
 paywallPurchaseErrorTitle:
@@ -1497,7 +1380,7 @@ paywallLoading:
 
 paywallPurchaseUnavailableText:
 Platform.OS === "ios"
-? "Monthly Pro is temporarily unavailable. Please try again later."
+? "We could not load the monthly subscription. Please try again."
 : "Purchases are temporarily unavailable. Please try again later.",
 
 paywallPurchaseErrorTitle:
@@ -2293,6 +2176,8 @@ styles.paywallText
 
 <View style={styles.planRow}>
 
+{paywallPackage ? (
+
 <TouchableOpacity
 activeOpacity={0.84}
 onPress={() =>
@@ -2332,7 +2217,17 @@ styles.planPriceActive,
 
 </TouchableOpacity>
 
+) : null}
+
 </View>
+
+{!isPaywallLoading && !paywallPackage ? (
+
+<Text style={styles.paywallUnavailableText}>
+{t.paywallPurchaseUnavailableText}
+</Text>
+
+) : null}
 
 <TouchableOpacity
 activeOpacity={0.86}
@@ -2384,23 +2279,6 @@ styles.paywallButtonText
 )}
 
 </TouchableOpacity>
-
-{Platform.OS === "ios" && !__DEV__ ? (
-
-<View style={styles.paywallDebugBox}>
-<Text style={styles.paywallDebugText}>
-{`selectedMonthlyPackage exists: ${Boolean(paywallPackage)}
-identifier: ${paywallPackage?.identifier ?? ""}
-packageType: ${paywallPackage?.packageType ?? ""}
-productId: ${paywallPackage?.product.identifier ?? ""}
-priceString: ${paywallPackage?.product.priceString ?? ""}
-isPurchasing: ${isPurchasing}
-isPaywallLoading: ${isPaywallLoading}
-lastPurchaseError: ${lastPurchaseError ?? ""}`}
-</Text>
-</View>
-
-) : null}
 
 <TouchableOpacity
 activeOpacity={0.72}
@@ -3604,20 +3482,12 @@ letterSpacing: 1.8,
 fontWeight: "800",
 },
 
-paywallDebugBox: {
-borderWidth: 1,
-borderColor:
-"rgba(255,232,200,0.22)",
-backgroundColor:
-"rgba(0,0,0,0.36)",
-padding: 10,
+paywallUnavailableText: {
+color: COLORS.muted,
+fontSize: 12,
+lineHeight: 18,
+textAlign: "center",
 marginBottom: 14,
-},
-
-paywallDebugText: {
-color: COLORS.text,
-fontSize: 11,
-lineHeight: 16,
 },
 
 restoreButton: {

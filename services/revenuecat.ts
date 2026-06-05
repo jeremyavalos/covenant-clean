@@ -84,6 +84,10 @@ function firstCleanApiKey(...values: Array<string | null | undefined>) {
   return null;
 }
 
+function getApiKeyPrefix(value?: string | null) {
+  return cleanApiKey(value)?.slice(0, 10) ?? null;
+}
+
 function getRevenueCatApiKey() {
   const extra = getExpoExtra();
 
@@ -102,6 +106,32 @@ function getRevenueCatApiKey() {
   }
 
   warnRevenueCat(`Unsupported platform: ${Platform.OS}.`);
+  return null;
+}
+
+function getRevenueCatApiKeySource() {
+  const extra = getExpoExtra();
+
+  if (Platform.OS === "ios") {
+    if (cleanApiKey(process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY)) {
+      return "process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY";
+    }
+
+    if (cleanApiKey(extra.revenueCatIosApiKey)) {
+      return "Constants.expoConfig.extra.revenueCatIosApiKey";
+    }
+  }
+
+  if (Platform.OS === "android") {
+    if (cleanApiKey(process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY)) {
+      return "process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY";
+    }
+
+    if (cleanApiKey(extra.revenueCatAndroidApiKey)) {
+      return "Constants.expoConfig.extra.revenueCatAndroidApiKey";
+    }
+  }
+
   return null;
 }
 
@@ -128,14 +158,24 @@ function getRevenueCatApiKeyDiagnostics() {
     iOSProcessEnvKeyPresent: Boolean(
       cleanApiKey(process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY)
     ),
+    iOSProcessEnvKeyPrefix: getApiKeyPrefix(
+      process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY
+    ),
     iOSExpoExtraKeyPresent: Boolean(cleanApiKey(extra.revenueCatIosApiKey)),
+    iOSExpoExtraKeyPrefix: getApiKeyPrefix(extra.revenueCatIosApiKey),
     androidProcessEnvKeyPresent: Boolean(
       cleanApiKey(process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY)
+    ),
+    androidProcessEnvKeyPrefix: getApiKeyPrefix(
+      process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY
     ),
     androidExpoExtraKeyPresent: Boolean(
       cleanApiKey(extra.revenueCatAndroidApiKey)
     ),
+    androidExpoExtraKeyPrefix: getApiKeyPrefix(extra.revenueCatAndroidApiKey),
     currentPlatformKeyPresent: Boolean(getRevenueCatApiKey()),
+    currentPlatformKeyPrefix: getApiKeyPrefix(getRevenueCatApiKey()),
+    currentPlatformKeySource: getRevenueCatApiKeySource(),
   };
 }
 
@@ -149,11 +189,6 @@ export function isRevenueCatConfigured() {
 
 export async function initRevenueCat(appUserID?: string): Promise<boolean> {
   if (initialized) {
-    console.log("[RevenueCat] SDK already configured.", {
-      ...getRevenueCatApiKeyDiagnostics(),
-      configuredPlatform: configuredPlatform ?? Platform.OS,
-      requestedPlatform: Platform.OS,
-    });
     return true;
   }
 
@@ -180,6 +215,18 @@ export async function initRevenueCat(appUserID?: string): Promise<boolean> {
         await Purchases.setLogLevel(LOG_LEVEL.DEBUG);
       }
 
+      console.log("[RC CONFIGURE]", {
+        apiKeyUsedPrefix: getApiKeyPrefix(apiKey),
+        apiKeySource: getRevenueCatApiKeySource(),
+        iosKeyExists: Boolean(
+          cleanApiKey(process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY)
+        ),
+        iosKeyPrefix: getApiKeyPrefix(
+          process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY
+        ),
+        ...getRevenueCatApiKeyDiagnostics(),
+      });
+
       Purchases.configure({
         apiKey,
         appUserID,
@@ -187,11 +234,6 @@ export async function initRevenueCat(appUserID?: string): Promise<boolean> {
 
       initialized = true;
       configuredPlatform = Platform.OS;
-
-      console.log("[RevenueCat] SDK configured.", {
-        appUserIDPresent: Boolean(appUserID),
-        ...getRevenueCatApiKeyDiagnostics(),
-      });
 
       return true;
     } catch (error) {
@@ -253,36 +295,17 @@ export async function getOfferings(): Promise<PurchasesOfferings | null> {
   }
 
   try {
-    console.log("[RevenueCat] Calling Purchases.getOfferings.", {
-      configuredPlatform,
-      ...getRevenueCatApiKeyDiagnostics(),
-    });
-
     const offerings = await withTimeout(
       Purchases.getOfferings(),
       OFFERINGS_TIMEOUT_MS,
       "Purchases.getOfferings"
     );
 
-    console.log("[RevenueCat] getOfferings responded.", {
-      offeringsKeys: Object.keys(offerings.all),
-      offeringsCurrentIdentifier: offerings.current?.identifier ?? null,
-      defaultOfferingExists: Boolean(
-        offerings.all[DEFAULT_OFFERING_IDENTIFIER]
-      ),
-      defaultAvailablePackageIdentifiers:
-        offerings.all[DEFAULT_OFFERING_IDENTIFIER]?.availablePackages.map(
-          (item) => item.identifier
-        ) ?? [],
-      defaultAvailableProductIdentifiers:
-        offerings.all[DEFAULT_OFFERING_IDENTIFIER]?.availablePackages.map(
-          (item) => item.product.identifier
-        ) ?? [],
-      defaultMonthlyExists: Boolean(
-        offerings.all[DEFAULT_OFFERING_IDENTIFIER]?.monthly
-      ),
-      ...getRevenueCatApiKeyDiagnostics(),
-    });
+    console.log("[RC OFFERINGS]");
+    console.log("current", offerings.current?.identifier);
+    console.log("all keys", Object.keys(offerings.all || {}));
+    console.log("default exists", Boolean(offerings.all?.default));
+    console.log("default offering", offerings.all?.default);
 
     return offerings;
   } catch (error) {
@@ -312,21 +335,8 @@ export async function purchasePackage(
   }
 
   try {
-    console.log("[RevenueCat] Calling Purchases.purchasePackage.", {
-      platform: Platform.OS,
-      identifier: packageToPurchase.identifier,
-      packageType: packageToPurchase.packageType,
-      productIdentifier: packageToPurchase.product.identifier,
-      priceString: packageToPurchase.product.priceString,
-      title: packageToPurchase.product.title,
-    });
-
     const { customerInfo } =
       await Purchases.purchasePackage(packageToPurchase);
-
-    console.log("[RevenueCat] Purchases.purchasePackage responded.", {
-      activeEntitlements: Object.keys(customerInfo.entitlements.active),
-    });
 
     return customerInfo;
   } catch (error) {
@@ -335,7 +345,6 @@ export async function purchasePackage(
     };
 
     if (purchaseError.userCancelled) {
-      console.log("[RevenueCat] Purchases.purchasePackage cancelled by user.");
       return null;
     }
 
