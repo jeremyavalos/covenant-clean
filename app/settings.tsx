@@ -155,7 +155,7 @@ loadLanguage().catch(() => undefined);
 const t =
 language === "es"
 ? {
-title: "Configuracion",
+title: "Configuración",
 subtitle: "Ajusta Covenant sin romper tu progreso.",
 language: "Idioma",
 spanish: "Español",
@@ -165,18 +165,18 @@ support: "Soporte / contacto",
 deleteAccount: "Eliminar cuenta",
 deleteTitle: "Eliminar cuenta",
 deleteText:
-"Esto eliminara permanentemente tu cuenta, progreso y datos asociados. Ingresa tu contrasena para confirmar.",
-password: "Contrasena",
+"Esto eliminará permanentemente tu cuenta, progreso y datos asociados. Ingresa tu contraseña para confirmar.",
+password: "Contraseña",
 cancel: "Cancelar",
 deleteConfirm: "Eliminar cuenta",
 deleteError: "No se pudo eliminar la cuenta",
 passwordRequired:
-"Ingresa tu contrasena para eliminar tu cuenta.",
+"Ingresa tu contraseña para eliminar tu cuenta.",
 deletedTitle: "Cuenta eliminada",
 deletedText: "Tu cuenta y progreso fueron eliminados.",
 restoreActive: "Tus compras fueron restauradas.",
 restoreInactive:
-"No encontramos una suscripcion Pro activa para restaurar.",
+"No encontramos una suscripción Pro activa para restaurar.",
 restoreError:
 "No se pudieron restaurar las compras. Intenta de nuevo.",
 done: "OK",

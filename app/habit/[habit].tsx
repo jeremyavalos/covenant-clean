@@ -30,8 +30,22 @@ import Animated, {
 import { usePostHog } from 'posthog-react-native';
 
 import CovenantBackdrop from '../../components/CovenantBackdrop';
+import { useSubscription } from '../../context/SubscriptionContext';
+import { TarotVisualSymbol } from '../../data/oracle';
+import { useAuthStore } from '../../store/authStore';
 import { getTodayHabitEntry } from '../../utils/habitEngine';
+import { getLocalDateKey } from '../../utils/dates';
 import { getLanguage, Language } from '../../utils/language';
+import {
+  getDailyNumberDraw,
+  getDailyTarotDraw,
+  getHabitTarotReflection,
+  getOracleUserKey,
+  OracleNumberDraw,
+  OracleTarotDraw,
+  revealDailyNumberDraw,
+  revealDailyTarotDraw,
+} from '../../utils/oracle';
 import { completeHabit, getHabitProgress } from '../../utils/progress';
 
 const CELEBRATION_PARTICLES = [
@@ -125,6 +139,263 @@ function PremiumCelebration({ burstKey }: { burstKey: number }) {
   );
 }
 
+function SealOfDayIcon({
+  active,
+  number,
+}: {
+  active: boolean;
+  number?: number;
+}) {
+  const pulse = useSharedValue(1);
+
+  useEffect(() => {
+    if (active) {
+      pulse.value = withRepeat(
+        withSequence(
+          withTiming(1.035, {
+            duration: 1150,
+            easing: Easing.inOut(Easing.ease),
+          }),
+          withTiming(1, {
+            duration: 1150,
+            easing: Easing.inOut(Easing.ease),
+          })
+        ),
+        -1,
+        true
+      );
+      return;
+    }
+
+    pulse.value = withTiming(1, {
+      duration: 420,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [active, pulse]);
+
+  const sealStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulse.value }],
+  }));
+
+  return (
+    <Animated.View style={[styles.daySeal, sealStyle]}>
+      <View style={styles.daySealGlow} />
+      <View style={styles.daySealOuter} />
+      <View style={styles.daySealInner} />
+      <View style={styles.daySealMarkTop} />
+      <View style={styles.daySealMarkBottom} />
+      <Text style={styles.daySealNumber}>{number ?? '—'}</Text>
+    </Animated.View>
+  );
+}
+
+function MiniTarotOracleCard({
+  active,
+  card,
+  language,
+  locked = false,
+}: {
+  active: boolean;
+  card?: OracleTarotDraw | null;
+  language: Language;
+  locked?: boolean;
+}) {
+  const pulse = useSharedValue(1);
+
+  useEffect(() => {
+    if (active) {
+      pulse.value = withRepeat(
+        withSequence(
+          withTiming(1.025, {
+            duration: 980,
+            easing: Easing.inOut(Easing.ease),
+          }),
+          withTiming(1, {
+            duration: 980,
+            easing: Easing.inOut(Easing.ease),
+          })
+        ),
+        -1,
+        true
+      );
+      return;
+    }
+
+    pulse.value = withTiming(1, {
+      duration: 420,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [active, pulse]);
+
+  const miniCardStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulse.value }],
+  }));
+
+  return (
+    <Animated.View
+      style={[
+        styles.miniTarotCard,
+        locked && styles.miniTarotCardLocked,
+        miniCardStyle,
+      ]}
+    >
+      <View style={styles.miniTarotEdgeGlow} />
+      <View style={styles.miniTarotTopMark} />
+      <Text style={styles.miniTarotName} numberOfLines={2}>
+        {card ? localize(card.name, language) : locked ? 'PRO' : 'CARD'}
+      </Text>
+      <View style={styles.miniTarotCenterLine} />
+      <View style={styles.miniTarotBottomMark} />
+    </Animated.View>
+  );
+}
+
+function CompleteSealIcon({ completed }: { completed: boolean }) {
+  const pulse = useSharedValue(1);
+
+  useEffect(() => {
+    if (completed) {
+      pulse.value = withRepeat(
+        withSequence(
+          withTiming(1.08, {
+            duration: 1200,
+            easing: Easing.inOut(Easing.ease),
+          }),
+          withTiming(1, {
+            duration: 1200,
+            easing: Easing.inOut(Easing.ease),
+          })
+        ),
+        -1,
+        true
+      );
+      return;
+    }
+
+    pulse.value = withTiming(1, {
+      duration: 360,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [completed, pulse]);
+
+  const sealPulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulse.value }],
+  }));
+
+  return (
+    <Animated.View
+      style={[
+        styles.completeSealIcon,
+        completed && styles.completeSealWon,
+        sealPulseStyle,
+      ]}
+    >
+      <View style={styles.completeSealRing} />
+      <View style={styles.completeSealFlare} />
+      <View style={styles.completeSealCore} />
+    </Animated.View>
+  );
+}
+
+function DeeperDivineIcon() {
+  return (
+    <View style={styles.deeperDivineIcon}>
+      <View style={styles.deeperPortalRing} />
+      <View style={styles.deeperPortalLine} />
+      <View style={[styles.deeperPortalLine, styles.deeperPortalLineTurn]} />
+      <View style={styles.deeperDoorway} />
+    </View>
+  );
+}
+
+function localize(
+  value: {
+    en: string;
+    es: string;
+  },
+  language: Language
+) {
+  return language === 'es' ? value.es : value.en;
+}
+
+function TarotSigil({ symbol }: { symbol: TarotVisualSymbol }) {
+  return (
+    <View style={styles.tarotSigil}>
+      <View style={styles.tarotSigilOuterRing} />
+      <View style={styles.tarotSigilInnerRing} />
+      <View
+        style={[
+          styles.tarotSigilAxis,
+          (symbol === 'scales' || symbol === 'chariot') &&
+            styles.tarotSigilAxisWide,
+        ]}
+      />
+      <View
+        style={[
+          styles.tarotSigilAxis,
+          styles.tarotSigilAxisVertical,
+          (symbol === 'pillar' || symbol === 'tower') &&
+            styles.tarotSigilAxisStrong,
+        ]}
+      />
+      {(symbol === 'moon' || symbol === 'veil' || symbol === 'threshold') && (
+        <View style={styles.tarotCrescent} />
+      )}
+      {(symbol === 'sun' || symbol === 'star' || symbol === 'world') && (
+        <View style={styles.tarotRadiance}>
+          <View style={styles.tarotRay} />
+          <View style={[styles.tarotRay, styles.tarotRayTilt]} />
+          <View style={[styles.tarotRay, styles.tarotRayCross]} />
+        </View>
+      )}
+      {(symbol === 'chain' || symbol === 'wheel') && (
+        <View style={styles.tarotDoubleOrbit}>
+          <View style={styles.tarotOrbitDot} />
+          <View style={[styles.tarotOrbitDot, styles.tarotOrbitDotOpposite]} />
+        </View>
+      )}
+      <View
+        style={[
+          styles.tarotSigilCore,
+          (symbol === 'tower' || symbol === 'throne') &&
+            styles.tarotSigilCoreSquare,
+        ]}
+      />
+    </View>
+  );
+}
+
+function CovenantTarotCard({
+  card,
+  language,
+}: {
+  card: OracleTarotDraw;
+  language: Language;
+}) {
+  return (
+    <View style={styles.tarotArtwork}>
+      <View style={styles.tarotArtworkFrame}>
+        <View style={styles.tarotCornerTopLeft} />
+        <View style={styles.tarotCornerTopRight} />
+        <View style={styles.tarotCornerBottomLeft} />
+        <View style={styles.tarotCornerBottomRight} />
+
+        <Text style={styles.tarotArtworkRoman}>{card.romanNumeral}</Text>
+        <View style={styles.tarotArtworkLine} />
+        <TarotSigil symbol={card.visualSymbol} />
+        <View style={styles.tarotStarRow}>
+          <View style={styles.tarotStarDot} />
+          <View style={styles.tarotStarLine} />
+          <View style={styles.tarotStarDot} />
+        </View>
+        <Text style={styles.tarotArtworkName}>
+          {localize(card.name, language)}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 const HABIT_INFO = {
   es: {
     coldShower: { title: 'DUCHA FRÍA' },
@@ -156,11 +427,17 @@ export default function HabitScreen() {
   const { habit } = useLocalSearchParams();
   const habitSlug = String(habit);
   const posthog = usePostHog();
+  const { isPro } = useSubscription();
+  const user = useAuthStore((state) => state.user);
 
   const [language, setLanguage] = useState<Language>('es');
   const [completedDays, setCompletedDays] = useState(0);
   const [streak, setStreak] = useState(0);
   const [completedToday, setCompletedToday] = useState(false);
+  const [numberDraw, setNumberDraw] = useState<OracleNumberDraw | null>(null);
+  const [tarotDraw, setTarotDraw] = useState<OracleTarotDraw | null>(null);
+  const [isRevealingNumber, setIsRevealingNumber] = useState(false);
+  const [isRevealingTarot, setIsRevealingTarot] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const [celebrationKey, setCelebrationKey] = useState(0);
   const [reduceMotionEnabled, setReduceMotionEnabled] = useState(false);
@@ -190,15 +467,30 @@ export default function HabitScreen() {
     setCompletedDays(progress.completedDays);
     setStreak(progress.streak);
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateKey();
 
     setCompletedToday(progress.lastCompleted === today);
   }, [habitSlug]);
 
+  const userStorageKey = user ? String(user.id || user.email) : null;
+
+  const loadOracle = useCallback(async () => {
+    const oracleUserKey = await getOracleUserKey(userStorageKey);
+
+    const [dailyNumber, dailyTarot] = await Promise.all([
+      getDailyNumberDraw(oracleUserKey),
+      getDailyTarotDraw(oracleUserKey),
+    ]);
+
+    setNumberDraw(dailyNumber);
+    setTarotDraw(dailyTarot);
+  }, [userStorageKey]);
+
   useEffect(() => {
     loadLanguage();
     loadProgress();
-  }, [loadLanguage, loadProgress]);
+    loadOracle();
+  }, [loadLanguage, loadOracle, loadProgress]);
 
   useEffect(() => {
     let active = true;
@@ -355,6 +647,20 @@ export default function HabitScreen() {
           saving: 'GUARDANDO PROGRESO',
           complete: '¿FUISTE HONESTO CONTIGO HOY?',
           deeper: 'ENTRAR EN PROFUNDIDAD',
+          oracleTitle: 'ORÁCULO DIARIO',
+          oracleText: 'Revela el símbolo asignado a la disciplina de hoy.',
+          numberTitle: 'Número del día',
+          tarotTitle: 'Carta del día',
+          revealNumber: 'Revelar número',
+          drawCard: 'Sacar carta',
+          todayNumber: 'Número de hoy',
+          todayCard: 'Carta de hoy',
+          reflectionQuestion: 'PREGUNTA',
+          proBadge: 'PRO',
+          tarotLocked: 'El tarot diario es un ritual Covenant Pro.',
+          oracleUnavailableTitle: 'Oráculo no disponible',
+          oracleUnavailableText:
+            'Inicia sesión nuevamente para revelar el símbolo diario.',
           alreadyTitle: 'Ya completado',
           alreadyText: 'Ya fuiste honesto contigo hoy.',
           successTitle: 'Sesión completada',
@@ -379,6 +685,20 @@ export default function HabitScreen() {
           saving: 'SAVING PROGRESS',
           complete: 'WERE YOU HONEST WITH YOURSELF TODAY?',
           deeper: 'ENTER DEEPER',
+          oracleTitle: 'DAILY ORACLE',
+          oracleText: 'Reveal the symbol assigned to today’s discipline.',
+          numberTitle: 'Number of the Day',
+          tarotTitle: 'Card of the Day',
+          revealNumber: 'Reveal Number',
+          drawCard: 'Draw Card',
+          todayNumber: 'Today’s Number',
+          todayCard: 'Today’s Card',
+          reflectionQuestion: 'QUESTION',
+          proBadge: 'PRO',
+          tarotLocked: 'Daily tarot is a Covenant Pro ritual.',
+          oracleUnavailableTitle: 'Oracle unavailable',
+          oracleUnavailableText:
+            'Sign in again to reveal the daily symbol.',
           alreadyTitle: 'Already completed',
           alreadyText: 'You were already honest with yourself today.',
           successTitle: 'Session completed',
@@ -428,6 +748,88 @@ export default function HabitScreen() {
 
     } finally {
       setIsCompleting(false);
+    }
+  };
+
+  const waitForOracleReveal = async () => {
+    if (reduceMotionEnabled) {
+      return;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1250));
+  };
+
+  const handleRevealNumber = async () => {
+    await Haptics.selectionAsync();
+
+    if (numberDraw || isRevealingNumber) {
+      return;
+    }
+
+    setIsRevealingNumber(true);
+
+    try {
+      await waitForOracleReveal();
+      const oracleUserKey = await getOracleUserKey(userStorageKey);
+      const draw = await revealDailyNumberDraw(oracleUserKey);
+      setNumberDraw(draw);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
+        () => undefined
+      );
+      posthog.capture('daily_oracle_number_revealed', {
+        habit_slug: habitSlug,
+        number: draw.number,
+      });
+    } finally {
+      setIsRevealingNumber(false);
+    }
+  };
+
+  const openOraclePaywall = async () => {
+    await Haptics.selectionAsync();
+
+    posthog.capture('paywall_shown', {
+      source: 'daily_oracle_tarot',
+      habit_slug: habitSlug,
+      is_pro: isPro,
+    });
+
+    router.push({
+      pathname: '/habits',
+      params: {
+        showPaywall: 'oracle',
+      },
+    });
+  };
+
+  const handleRevealTarot = async () => {
+    await Haptics.selectionAsync();
+
+    if (!isPro) {
+      await openOraclePaywall();
+      return;
+    }
+
+    if (tarotDraw || isRevealingTarot) {
+      return;
+    }
+
+    setIsRevealingTarot(true);
+
+    try {
+      await waitForOracleReveal();
+      const oracleUserKey = await getOracleUserKey(userStorageKey);
+      const draw = await revealDailyTarotDraw(oracleUserKey, habitSlug);
+      setTarotDraw(draw);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
+        () => undefined
+      );
+      posthog.capture('daily_oracle_tarot_revealed', {
+        habit_slug: habitSlug,
+        card: draw.id,
+      });
+    } finally {
+      setIsRevealingTarot(false);
     }
   };
 
@@ -545,6 +947,119 @@ export default function HabitScreen() {
             </BlurView>
           </Animated.View>
 
+          <View style={styles.oracleSection}>
+            <Text style={styles.oracleLabel}>{t.oracleTitle}</Text>
+            <Text style={styles.oracleIntro}>{t.oracleText}</Text>
+
+            <View style={styles.oracleGrid}>
+              <Pressable
+                disabled={Boolean(numberDraw) || isRevealingNumber}
+                onPress={handleRevealNumber}
+                style={styles.oracleCard}
+              >
+                <View style={styles.oracleCardHeader}>
+                  <SealOfDayIcon
+                    active={isRevealingNumber}
+                    number={numberDraw?.number}
+                  />
+                  <View style={styles.oracleCardTitleWrap}>
+                    <Text style={styles.oracleCardKicker}>
+                      {numberDraw ? t.todayNumber : t.numberTitle}
+                    </Text>
+                    <Text style={styles.oracleCardTitle}>
+                      {numberDraw
+                        ? `${numberDraw.number} — ${localize(
+                            numberDraw.title,
+                            language
+                          )}`
+                        : t.revealNumber}
+                    </Text>
+                  </View>
+                </View>
+
+                {numberDraw ? (
+                  <View>
+                    <Text style={styles.oracleMeaning}>
+                      {localize(numberDraw.meaning, language)}
+                    </Text>
+                    <Text style={styles.oracleQuestionLabel}>
+                      {t.reflectionQuestion}
+                    </Text>
+                    <Text style={styles.oracleQuestion}>
+                      {localize(numberDraw.reflection, language)}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={styles.oraclePrompt}>
+                    {isRevealingNumber ? '...' : t.revealNumber}
+                  </Text>
+                )}
+              </Pressable>
+
+              <Pressable
+                disabled={(isPro && Boolean(tarotDraw)) || isRevealingTarot}
+                onPress={handleRevealTarot}
+                style={[styles.oracleCard, !isPro && styles.oracleCardLocked]}
+              >
+                <View style={styles.oracleCardHeader}>
+                  <MiniTarotOracleCard
+                    active={isRevealingTarot}
+                    card={isPro ? tarotDraw : null}
+                    language={language}
+                    locked={!isPro}
+                  />
+                  <View style={styles.oracleCardTitleWrap}>
+                    <View style={styles.oracleTitleRow}>
+                      <Text style={styles.oracleCardKicker}>
+                        {isPro && tarotDraw ? t.todayCard : t.tarotTitle}
+                      </Text>
+                      {!isPro && (
+                        <Text style={styles.oracleProBadge}>{t.proBadge}</Text>
+                      )}
+                    </View>
+                    <Text style={styles.oracleCardTitle}>
+                      {isPro && tarotDraw
+                        ? `${tarotDraw.romanNumeral} ${localize(
+                            tarotDraw.name,
+                            language
+                          )}`
+                        : t.drawCard}
+                    </Text>
+                  </View>
+                </View>
+
+                {isPro && tarotDraw ? (
+                  <View>
+                    <CovenantTarotCard card={tarotDraw} language={language} />
+                    <Text style={styles.oracleArchetype}>
+                      {localize(tarotDraw.archetype, language)}
+                    </Text>
+                    <Text style={styles.oracleMeaning}>
+                      {localize(tarotDraw.meaning, language)}
+                    </Text>
+                    <Text style={styles.oracleToday}>
+                      {getHabitTarotReflection(tarotDraw, info.title, language)}
+                    </Text>
+                    <Text style={styles.oracleQuestionLabel}>
+                      {t.reflectionQuestion}
+                    </Text>
+                    <Text style={styles.oracleQuestion}>
+                      {localize(tarotDraw.question, language)}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={styles.oraclePrompt}>
+                    {!isPro
+                      ? t.tarotLocked
+                      : isRevealingTarot
+                        ? '...'
+                        : t.drawCard}
+                  </Text>
+                )}
+              </Pressable>
+            </View>
+          </View>
+
           <Animated.View style={[styles.hero, heroAnimatedStyle]}>
             <Text style={[styles.period, isNight && styles.nightPeriod]}>
               {isNight ? t.night : t.morning}
@@ -602,15 +1117,18 @@ export default function HabitScreen() {
                 {isCompleting ? (
                   <ActivityIndicator color="#D8A060" />
                 ) : (
-                  <Text
-                    style={[
-                      styles.completeText,
-                      completedToday && styles.completedText,
-                      isNight && styles.nightAccentText,
-                    ]}
-                  >
-                    {completedToday ? t.completed : t.complete}
-                  </Text>
+                  <View style={styles.actionContentRow}>
+                    <CompleteSealIcon completed={completedToday} />
+                    <Text
+                      style={[
+                        styles.completeText,
+                        completedToday && styles.completedText,
+                        isNight && styles.nightAccentText,
+                      ]}
+                    >
+                      {completedToday ? t.completed : t.complete}
+                    </Text>
+                  </View>
                 )}
               </Animated.View>
             </Pressable>
@@ -622,7 +1140,10 @@ export default function HabitScreen() {
             >
               <Animated.View style={[styles.deeperButton, deeperButtonStyle]}>
                 <BlurView intensity={16} tint="dark" style={styles.deeperBlur}>
-                  <Text style={styles.deeperText}>{t.deeper}</Text>
+                  <View style={styles.actionContentRow}>
+                    <DeeperDivineIcon />
+                    <Text style={styles.deeperText}>{t.deeper}</Text>
+                  </View>
                 </BlurView>
               </Animated.View>
             </Pressable>
@@ -868,6 +1389,668 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
+  oracleSection: {
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(216,140,58,0.34)',
+    borderRadius: 26,
+    backgroundColor: 'rgba(9,7,6,0.82)',
+    padding: 20,
+    marginBottom: 56,
+    shadowColor: '#D88C3A',
+    shadowOpacity: 0.22,
+    shadowRadius: 42,
+    shadowOffset: {
+      width: 0,
+      height: 20,
+    },
+  },
+
+  oracleLabel: {
+    color: '#D88C3A',
+    fontSize: 10,
+    letterSpacing: 5,
+    fontWeight: '700',
+    marginBottom: 10,
+  },
+
+  oracleIntro: {
+    color: '#CABEAF',
+    fontSize: 15,
+    lineHeight: 25,
+    marginBottom: 20,
+  },
+
+  oracleGrid: {
+    gap: 14,
+  },
+
+  oracleCard: {
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,232,200,0.18)',
+    borderRadius: 20,
+    backgroundColor: 'rgba(14,11,9,0.9)',
+    padding: 17,
+    shadowColor: '#D88C3A',
+    shadowOpacity: 0.12,
+    shadowRadius: 22,
+    shadowOffset: {
+      width: 0,
+      height: 12,
+    },
+  },
+
+  oracleCardLocked: {
+    borderColor: 'rgba(216,140,58,0.46)',
+    backgroundColor: 'rgba(19,13,9,0.84)',
+    shadowOpacity: 0.2,
+  },
+
+  oracleCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginBottom: 14,
+  },
+
+  oracleCardTitleWrap: {
+    flex: 1,
+  },
+
+  oracleTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+
+  oracleCardKicker: {
+    color: '#8F8174',
+    fontSize: 10,
+    letterSpacing: 2.4,
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+
+  oracleCardTitle: {
+    color: '#FFF4E8',
+    fontSize: 19,
+    lineHeight: 25,
+    fontWeight: '500',
+  },
+
+  oracleProBadge: {
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(216,140,58,0.46)',
+    borderRadius: 999,
+    color: '#D88C3A',
+    fontSize: 9,
+    letterSpacing: 1.6,
+    fontWeight: '800',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+
+  ritualIconCompact: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+
+  daySeal: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(15,11,8,0.96)',
+    shadowColor: '#D88C3A',
+    shadowOpacity: 0.28,
+    shadowRadius: 18,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+  },
+
+  daySealGlow: {
+    position: 'absolute',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(216,140,58,0.08)',
+  },
+
+  daySealOuter: {
+    position: 'absolute',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: 'rgba(216,140,58,0.54)',
+  },
+
+  daySealInner: {
+    position: 'absolute',
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    borderWidth: 1,
+    borderColor: 'rgba(255,232,200,0.18)',
+  },
+
+  daySealMarkTop: {
+    position: 'absolute',
+    top: 7,
+    width: 10,
+    height: 1,
+    backgroundColor: 'rgba(241,197,142,0.54)',
+  },
+
+  daySealMarkBottom: {
+    position: 'absolute',
+    bottom: 7,
+    width: 10,
+    height: 1,
+    backgroundColor: 'rgba(241,197,142,0.54)',
+  },
+
+  daySealNumber: {
+    color: '#F7D4A5',
+    fontSize: 20,
+    lineHeight: 25,
+    fontWeight: '600',
+    letterSpacing: 0,
+  },
+
+  miniTarotCard: {
+    width: 50,
+    height: 68,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(216,140,58,0.58)',
+    backgroundColor: 'rgba(5,5,5,0.96)',
+    shadowColor: '#D88C3A',
+    shadowOpacity: 0.28,
+    shadowRadius: 18,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+  },
+
+  miniTarotCardLocked: {
+    borderColor: 'rgba(241,197,142,0.44)',
+    opacity: 0.86,
+  },
+
+  miniTarotEdgeGlow: {
+    position: 'absolute',
+    top: 3,
+    right: 3,
+    bottom: 3,
+    left: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255,232,200,0.09)',
+  },
+
+  miniTarotTopMark: {
+    position: 'absolute',
+    top: 8,
+    width: 14,
+    height: 1,
+    backgroundColor: 'rgba(241,197,142,0.54)',
+  },
+
+  miniTarotBottomMark: {
+    position: 'absolute',
+    bottom: 8,
+    width: 14,
+    height: 1,
+    backgroundColor: 'rgba(241,197,142,0.54)',
+  },
+
+  miniTarotCenterLine: {
+    width: 20,
+    height: 1,
+    backgroundColor: 'rgba(216,140,58,0.35)',
+    marginTop: 5,
+  },
+
+  miniTarotName: {
+    color: '#F7D4A5',
+    fontSize: 8,
+    lineHeight: 10,
+    letterSpacing: 0.7,
+    fontWeight: '800',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    paddingHorizontal: 5,
+  },
+
+  numberSigil: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(216,140,58,0.58)',
+    backgroundColor: 'rgba(216,140,58,0.12)',
+    shadowColor: '#D88C3A',
+    shadowOpacity: 0.34,
+    shadowRadius: 20,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+  },
+
+  numberSigilOuter: {
+    position: 'absolute',
+    width: '78%',
+    height: '78%',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(255,232,200,0.30)',
+  },
+
+  numberSigilInner: {
+    position: 'absolute',
+    width: '48%',
+    height: '48%',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(216,140,58,0.42)',
+  },
+
+  numberSigilRay: {
+    position: 'absolute',
+    width: '80%',
+    height: 1,
+    backgroundColor: 'rgba(216,140,58,0.30)',
+  },
+
+  numberSigilRayTurn: {
+    transform: [{ rotate: '90deg' }],
+  },
+
+  numberSigilGlyph: {
+    color: '#F7D4A5',
+    fontSize: 13,
+    letterSpacing: 1.4,
+    fontWeight: '800',
+  },
+
+  tarotOracleIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,232,200,0.20)',
+    backgroundColor: 'rgba(8,7,6,0.82)',
+    shadowColor: '#F1C58E',
+    shadowOpacity: 0.38,
+    shadowRadius: 22,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+  },
+
+  tarotOracleCard: {
+    position: 'absolute',
+    width: 24,
+    height: 34,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(216,140,58,0.72)',
+    backgroundColor: 'rgba(20,14,10,0.92)',
+    transform: [{ rotate: '-8deg' }],
+  },
+
+  tarotOracleMoon: {
+    position: 'absolute',
+    width: 26,
+    height: 36,
+    borderRadius: 999,
+    borderRightWidth: 3,
+    borderRightColor: 'rgba(255,232,200,0.74)',
+    transform: [{ rotate: '18deg' }],
+  },
+
+  tarotOracleEye: {
+    width: 28,
+    height: 13,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(241,197,142,0.62)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(3,3,3,0.50)',
+  },
+
+  tarotOraclePupil: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: '#F1C58E',
+  },
+
+  tarotOracleStar: {
+    position: 'absolute',
+    top: 7,
+    right: 9,
+    color: '#D8A060',
+    fontSize: 8,
+  },
+
+  oraclePrompt: {
+    color: '#CDBEAF',
+    fontSize: 13,
+    lineHeight: 22,
+    letterSpacing: 1.2,
+  },
+
+  oracleArchetype: {
+    color: '#D8A060',
+    fontSize: 12,
+    lineHeight: 19,
+    letterSpacing: 1.2,
+    marginBottom: 8,
+  },
+
+  oracleMeaning: {
+    color: '#E8DDD1',
+    fontSize: 15,
+    lineHeight: 25,
+    marginBottom: 12,
+  },
+
+  oracleToday: {
+    color: '#BBAEA1',
+    fontSize: 14,
+    lineHeight: 23,
+    marginBottom: 14,
+  },
+
+  oracleQuestionLabel: {
+    color: '#8F8174',
+    fontSize: 9,
+    letterSpacing: 3,
+    fontWeight: '700',
+    marginBottom: 7,
+  },
+
+  oracleQuestion: {
+    color: '#F0C892',
+    fontSize: 14,
+    lineHeight: 23,
+  },
+
+  tarotArtwork: {
+    alignSelf: 'center',
+    width: 190,
+    aspectRatio: 0.68,
+    borderRadius: 18,
+    backgroundColor: 'rgba(3,3,3,0.94)',
+    borderWidth: 1,
+    borderColor: 'rgba(216,140,58,0.42)',
+    padding: 9,
+    marginTop: 2,
+    marginBottom: 18,
+    shadowColor: '#D88C3A',
+    shadowOpacity: 0.22,
+    shadowRadius: 28,
+    shadowOffset: {
+      width: 0,
+      height: 12,
+    },
+  },
+
+  tarotArtworkFrame: {
+    flex: 1,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,232,200,0.18)',
+    borderRadius: 13,
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 16,
+    backgroundColor: 'rgba(13,10,8,0.96)',
+  },
+
+  tarotCornerTopLeft: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    width: 22,
+    height: 22,
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    borderColor: 'rgba(216,140,58,0.50)',
+  },
+
+  tarotCornerTopRight: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 22,
+    height: 22,
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+    borderColor: 'rgba(216,140,58,0.50)',
+  },
+
+  tarotCornerBottomLeft: {
+    position: 'absolute',
+    bottom: 10,
+    left: 10,
+    width: 22,
+    height: 22,
+    borderBottomWidth: 1,
+    borderLeftWidth: 1,
+    borderColor: 'rgba(216,140,58,0.50)',
+  },
+
+  tarotCornerBottomRight: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    width: 22,
+    height: 22,
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderColor: 'rgba(216,140,58,0.50)',
+  },
+
+  tarotArtworkRoman: {
+    color: '#F1C58E',
+    fontSize: 13,
+    letterSpacing: 3,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+
+  tarotArtworkLine: {
+    width: 64,
+    height: 1,
+    backgroundColor: 'rgba(216,140,58,0.42)',
+    marginBottom: 18,
+  },
+
+  tarotSigil: {
+    width: 112,
+    height: 112,
+    borderRadius: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 18,
+  },
+
+  tarotSigilOuterRing: {
+    position: 'absolute',
+    width: 106,
+    height: 106,
+    borderRadius: 53,
+    borderWidth: 1,
+    borderColor: 'rgba(216,140,58,0.44)',
+  },
+
+  tarotSigilInnerRing: {
+    position: 'absolute',
+    width: 74,
+    height: 74,
+    borderRadius: 37,
+    borderWidth: 1,
+    borderColor: 'rgba(255,232,200,0.20)',
+  },
+
+  tarotSigilAxis: {
+    position: 'absolute',
+    width: 86,
+    height: 1,
+    backgroundColor: 'rgba(216,140,58,0.28)',
+  },
+
+  tarotSigilAxisWide: {
+    width: 100,
+  },
+
+  tarotSigilAxisVertical: {
+    transform: [{ rotate: '90deg' }],
+  },
+
+  tarotSigilAxisStrong: {
+    height: 2,
+    backgroundColor: 'rgba(216,140,58,0.44)',
+  },
+
+  tarotCrescent: {
+    position: 'absolute',
+    width: 42,
+    height: 70,
+    borderRadius: 999,
+    borderRightWidth: 3,
+    borderRightColor: 'rgba(255,232,200,0.72)',
+    transform: [{ rotate: '18deg' }],
+  },
+
+  tarotRadiance: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  tarotRay: {
+    position: 'absolute',
+    width: 1,
+    height: 92,
+    backgroundColor: 'rgba(216,140,58,0.30)',
+  },
+
+  tarotRayTilt: {
+    transform: [{ rotate: '45deg' }],
+  },
+
+  tarotRayCross: {
+    transform: [{ rotate: '90deg' }],
+  },
+
+  tarotDoubleOrbit: {
+    position: 'absolute',
+    width: 92,
+    height: 48,
+    borderWidth: 1,
+    borderColor: 'rgba(216,140,58,0.34)',
+    borderRadius: 999,
+    transform: [{ rotate: '-22deg' }],
+  },
+
+  tarotOrbitDot: {
+    position: 'absolute',
+    top: 20,
+    left: 10,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#F1C58E',
+  },
+
+  tarotOrbitDotOpposite: {
+    left: undefined,
+    right: 10,
+  },
+
+  tarotSigilGlyph: {
+    color: '#F7D4A5',
+    fontSize: 34,
+    lineHeight: 40,
+    textAlign: 'center',
+    textShadowColor: 'rgba(216,140,58,0.42)',
+    textShadowRadius: 12,
+  },
+
+  tarotSigilCore: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(241,197,142,0.72)',
+    backgroundColor: 'rgba(216,140,58,0.12)',
+  },
+
+  tarotSigilCoreSquare: {
+    borderRadius: 3,
+    transform: [{ rotate: '45deg' }],
+  },
+
+  tarotStarRow: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 14,
+  },
+
+  tarotStar: {
+    color: '#D8A060',
+    fontSize: 10,
+  },
+
+  tarotStarDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(216,140,58,0.72)',
+  },
+
+  tarotStarLine: {
+    width: 52,
+    height: 1,
+    backgroundColor: 'rgba(255,232,200,0.16)',
+  },
+
+  tarotArtworkName: {
+    color: '#FFF4E8',
+    fontSize: 14,
+    lineHeight: 19,
+    textAlign: 'center',
+    letterSpacing: 1.2,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+
   hero: {
     marginBottom: 58,
   },
@@ -991,7 +2174,7 @@ const styles = StyleSheet.create({
 
   completeButton: {
     minHeight: 68,
-    backgroundColor: '#11100F',
+    backgroundColor: '#120F0C',
     borderWidth: 1,
     borderColor: 'rgba(216,140,58,0.3)',
     borderRadius: 22,
@@ -1009,9 +2192,9 @@ const styles = StyleSheet.create({
   },
 
   completedButton: {
-    backgroundColor: '#131313',
-    borderColor: 'rgba(255,255,255,0.12)',
-    shadowOpacity: 0.08,
+    backgroundColor: 'rgba(17,13,9,0.96)',
+    borderColor: 'rgba(216,140,58,0.42)',
+    shadowOpacity: 0.22,
   },
 
   nightButton: {
@@ -1022,10 +2205,18 @@ const styles = StyleSheet.create({
   buttonAura: {
     position: 'absolute',
     top: -42,
-    width: 180,
-    height: 72,
-    borderRadius: 90,
-    backgroundColor: 'rgba(216,140,58,0.17)',
+    width: 220,
+    height: 84,
+    borderRadius: 110,
+    backgroundColor: 'rgba(216,140,58,0.22)',
+  },
+
+  actionContentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    paddingHorizontal: 18,
   },
 
   completeText: {
@@ -1034,8 +2225,9 @@ const styles = StyleSheet.create({
     letterSpacing: 3,
     fontWeight: '700',
     textAlign: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 0,
     lineHeight: 18,
+    flexShrink: 1,
   },
 
   completedText: {
@@ -1048,9 +2240,9 @@ const styles = StyleSheet.create({
 
   deeperButton: {
     borderRadius: 22,
-    shadowColor: '#000',
-    shadowOpacity: 0.28,
-    shadowRadius: 18,
+    shadowColor: '#D88C3A',
+    shadowOpacity: 0.16,
+    shadowRadius: 24,
     shadowOffset: {
       width: 0,
       height: 16,
@@ -1061,9 +2253,9 @@ const styles = StyleSheet.create({
     minHeight: 66,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.09)',
+    borderColor: 'rgba(216,140,58,0.22)',
     borderRadius: 22,
-    backgroundColor: 'rgba(8,8,8,0.58)',
+    backgroundColor: 'rgba(9,8,7,0.66)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1073,6 +2265,103 @@ const styles = StyleSheet.create({
     fontSize: 12,
     letterSpacing: 4,
     fontWeight: '600',
+  },
+
+  completeSealIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(216,140,58,0.42)',
+    backgroundColor: 'rgba(216,140,58,0.10)',
+  },
+
+  completeSealWon: {
+    borderColor: 'rgba(241,197,142,0.66)',
+    backgroundColor: 'rgba(216,140,58,0.18)',
+    shadowColor: '#D88C3A',
+    shadowOpacity: 0.36,
+    shadowRadius: 16,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+  },
+
+  completeSealRing: {
+    position: 'absolute',
+    width: 25,
+    height: 25,
+    borderRadius: 13,
+    borderWidth: 1,
+    borderColor: 'rgba(255,232,200,0.24)',
+  },
+
+  completeSealFlare: {
+    position: 'absolute',
+    width: 30,
+    height: 1,
+    backgroundColor: 'rgba(216,140,58,0.30)',
+    transform: [{ rotate: '-28deg' }],
+  },
+
+  completeSealCore: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(241,197,142,0.74)',
+    backgroundColor: 'rgba(216,140,58,0.18)',
+  },
+
+  completeSealGlyph: {
+    color: '#F1C58E',
+    fontSize: 15,
+    lineHeight: 18,
+  },
+
+  deeperDivineIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(216,140,58,0.34)',
+    backgroundColor: 'rgba(216,140,58,0.08)',
+  },
+
+  deeperPortalRing: {
+    position: 'absolute',
+    width: 27,
+    height: 27,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,232,200,0.22)',
+  },
+
+  deeperPortalLine: {
+    position: 'absolute',
+    width: 28,
+    height: 1,
+    backgroundColor: 'rgba(216,140,58,0.34)',
+  },
+
+  deeperPortalLineTurn: {
+    transform: [{ rotate: '90deg' }],
+  },
+
+  deeperDoorway: {
+    width: 13,
+    height: 21,
+    borderTopLeftRadius: 7,
+    borderTopRightRadius: 7,
+    borderWidth: 1,
+    borderColor: 'rgba(241,197,142,0.68)',
+    borderBottomWidth: 0,
+    backgroundColor: 'rgba(3,3,3,0.24)',
   },
 
   supportCard: {

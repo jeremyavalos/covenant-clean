@@ -8,7 +8,8 @@ export const meditation = {
       evident: { es: "La quietud permite percepción más profunda.", en: "Stillness allows for deeper perception." },
       hint: { es: "La mente se vuelve más clara cuando deja de correr.", en: "The mind becomes clearer when you stop running." },
       deep: { es: "El pensamiento automático pierde fuerza cuando deja de recibir reacción inmediata.", en: "Automatic thinking loses power when it stops receiving immediate reaction." },
-      reflection: { es: "Observar en silencio ya es comenzar a despertar.", en: "To observe in silence is to begin to awaken." },
+      reflection: { es: "Observar en silencio ya es comenzar a despertar. Volver una vez más es la enseñanza escondida de la práctica.", en: "To observe in silence is to begin to awaken. Returning one more time is the hidden teaching of the practice." },
+      question: { es: "¿Qué descubriste entre una distracción y el regreso en la decisión más pequeña de hoy?", en: "What did you discover between a distraction and the return in today’s smallest decision?" }
     },
     night: {
       quote: { es: "“El silencio revela cuánto ruido existía.”", en: "Silence reveals how much noise existed." },
@@ -18,7 +19,8 @@ export const meditation = {
       evident: { es: "La quietud interior transforma incluso el descanso.", en: "Inner stillness transforms even rest." },
       hint: { es: "La calma no necesita esfuerzo constante.", en: "Calmness does not need constant effort." },
       deep: { es: "Muchos pensamientos sobreviven únicamente porque jamás fueron observados sin identificarse con ellos.", en: "Many thoughts survive only because they were never observed without identification with them." },
-      reflection: { es: "La mente se desacelera cuando dejas de perseguir cada pensamiento.", en: "The mind slows down when you stop chasing every thought." },
+      reflection: { es: "La mente se desacelera cuando dejas de perseguir cada pensamiento. Cada distracción señala una puerta; cada retorno decide si entras.", en: "The mind slows down when you stop chasing every thought. Each distraction points to a door; each return decides whether you enter." },
+      question: { es: "¿Qué parte de ti teme quedarse presente cuando el día ya no puede ser editado?", en: "What part of you fears remaining present when the day can no longer be edited?" }
     },
   },
   day2: {
@@ -30,7 +32,8 @@ export const meditation = {
       evident: { es: "La calma contiene fuerza invisible.", en: "Calm contains invisible force." },
       hint: { es: "La presencia reduce reacción automática.", en: "Presence reduces automatic reaction." },
       deep: { es: "Gran parte del sufrimiento mental nace de reaccionar inconscientemente a todo pensamiento.", en: "Much mental suffering comes from reacting unconsciously to every thought." },
-      reflection: { es: "No todo lo que aparece en tu mente merece obediencia.", en: "Not everything that appears in your mind deserves obedience." },
+      reflection: { es: "No todo lo que aparece en tu mente merece obediencia. La atención entrenada deja de confundir movimiento mental con identidad.", en: "Not everything that appears in your mind deserves obedience. Trained attention stops confusing mental movement with identity." },
+      question: { es: "¿Dónde intentas forzar silencio en vez de observar antes de entregar autoridad al ánimo?", en: "Where are you trying to force silence instead of observing before handing authority to mood?" }
     },
     night: {
       quote: { es: "“El hombre tranquilo percibe más.”", en: "The calm man perceives more." },
@@ -40,7 +43,8 @@ export const meditation = {
       evident: { es: "La quietud estabiliza el interior.", en: "Stillness stabilizes the interior." },
       hint: { es: "El silencio revela movimiento interno oculto.", en: "Silence reveals hidden internal movement." },
       deep: { es: "La hiperactividad mental suele ocultar miedo al vacío y a la quietud.", en: "Mental hyperactivity usually hides fear of emptiness and stillness." },
-      reflection: { es: "Permanecer quieto también es una forma de fortaleza.", en: "Staying still is also a form of strength." },
+      reflection: { es: "Permanecer quieto también es una forma de fortaleza. La conciencia se vuelve más limpia cuando deja de perseguir cada imagen.", en: "Staying still is also a form of strength. Awareness becomes cleaner when it stops chasing every image." },
+      question: { es: "¿Qué ruido mental pierde forma cuando no lo alimentas cuando tu cuerpo ya sabe la verdad?", en: "What mental noise loses shape when you do not feed it when your body already knows the truth?" }
     },
   },
   day3: {
@@ -52,7 +56,8 @@ export const meditation = {
       evident: { es: "La vida posee ritmos que no necesitan ser forzados.", en: "Life has rhythms that do not need to be forced." },
       hint: { es: "La mente también necesita espacio vacío.", en: "The mind also needs empty space." },
       deep: { es: "Pensar sin descanso puede convertirse en otra forma de distracción.", en: "Thinking relentlessly can become another form of distraction." },
-      reflection: { es: "La claridad suele aparecer después del silencio, no del exceso de análisis.", en: "Clarity usually comes after silence, not excess analysis." },
+      reflection: { es: "La claridad suele aparecer después del silencio, no del exceso de análisis. El silencio interior aparece por regreso, no por fuerza.", en: "Clarity usually comes after silence, not excess analysis. Inner silence appears through return, not force." },
+      question: { es: "¿Qué emoción cambia cuando la respiras sin perseguirla antes de que aparezca la primera excusa?", en: "What emotion changes when you breathe it without chasing it before the first excuse appears?" }
     },
     night: {
       quote: { es: "“La mente se aquieta cuando deja de luchar consigo misma.”", en: "The mind becomes quiet when it stops fighting with itself." },
@@ -62,7 +67,8 @@ export const meditation = {
       evident: { es: "El alma necesita regresar al descanso.", en: "The soul needs to return to rest." },
       hint: { es: "La paz interior no siempre requiere resolver todo.", en: "Inner peace does not always require solving everything." },
       deep: { es: "Mucho agotamiento mental nace de resistencia constante a lo que ya está ocurriendo.", en: "A lot of mental exhaustion is born from constant resistance to what is already happening." },
-      reflection: { es: "A veces la paz comienza simplemente dejando de pelear con cada pensamiento.", en: "Sometimes peace begins by simply stopping fighting with every thought." },
+      reflection: { es: "A veces la paz comienza simplemente dejando de pelear con cada pensamiento. La respiración no resuelve todo; te devuelve al lugar donde puedes ver con menos distorsión.", en: "Sometimes peace begins by simply stopping fighting with every thought. Breath does not solve everything; it returns you to the place where you can see with less distortion." },
+      question: { es: "¿A qué pensamiento volviste a entregar tu atención al mirar la distancia entre palabra y acto?", en: "To what thought did you hand your attention again as you look at the distance between word and act?" }
     },
   },
   day4: {
@@ -74,7 +80,8 @@ export const meditation = {
       evident: { es: "La quietud permite percepción más profunda.", en: "Stillness allows for deeper perception." },
       hint: { es: "La presencia requiere detener velocidad interior.", en: "Presence requires stopping internal speed." },
       deep: { es: "La mente acostumbrada al ruido interpreta el silencio como incomodidad.", en: "The mind accustomed to noise interprets silence as discomfort." },
-      reflection: { es: "Permanecer quieto sin escapar ya transforma algo dentro de ti.", en: "Staying still without escaping already transforms something inside you." },
+      reflection: { es: "Permanecer quieto sin escapar ya transforma algo dentro de ti. Cada distracción señala una puerta; cada retorno decide si entras.", en: "Staying still without escaping already transforms something inside you. Each distraction points to a door; each return decides whether you enter." },
+      question: { es: "¿Qué parte de ti teme quedarse presente mientras tu voluntad todavía está fresca?", en: "What part of you fears remaining present while your will is still fresh?" }
     },
     night: {
       quote: { es: "“El pensamiento pierde fuerza cuando deja de ser perseguido.”", en: "Thought loses strength when it stops being pursued." },
@@ -84,7 +91,8 @@ export const meditation = {
       evident: { es: "La quietud interior transforma incluso el descanso.", en: "Inner stillness transforms even rest." },
       hint: { es: "No toda mente activa necesita respuesta inmediata.", en: "Not every active mind needs an immediate response." },
       deep: { es: "Muchos pensamientos repetitivos sobreviven gracias a la atención emocional constante.", en: "Many repetitive thoughts survive thanks to constant emotional attention." },
-      reflection: { es: "Observar sin reaccionar debilita lentamente el caos interno.", en: "Observing without reacting slowly weakens the internal chaos." },
+      reflection: { es: "Observar sin reaccionar debilita lentamente el caos interno. Volver una vez más es la enseñanza escondida de la práctica.", en: "Observing without reacting slowly weakens the internal chaos. Returning one more time is the hidden teaching of the practice." },
+      question: { es: "¿Qué descubriste entre una distracción y el regreso en el silencio después de tus acciones?", en: "What did you discover between a distraction and the return in the silence after your actions?" }
     },
   },
   day5: {
@@ -96,7 +104,8 @@ export const meditation = {
       evident: { es: "La calma contiene fuerza invisible.", en: "Calm contains invisible force." },
       hint: { es: "La presencia reduce ansiedad futura.", en: "Presence reduces future anxiety." },
       deep: { es: "La mente rara vez permanece en el presente; normalmente oscila entre memoria y anticipación.", en: "The mind rarely remains in the present; It usually oscillates between memory and anticipation." },
-      reflection: { es: "Volver al momento presente también es regresar a la realidad.", en: "Returning to the present moment is also returning to reality." },
+      reflection: { es: "Volver al momento presente también es regresar a la realidad. La conciencia se vuelve más limpia cuando deja de perseguir cada imagen.", en: "Returning to the present moment is also returning to reality. Awareness becomes cleaner when it stops chasing every image." },
+      question: { es: "¿Qué ruido mental pierde forma cuando no lo alimentas cuando nadie ha visto todavía tu obediencia?", en: "What mental noise loses shape when you do not feed it when nobody has seen your obedience yet?" }
     },
     night: {
       quote: { es: "“El silencio no siempre está afuera.”", en: "Silence is not always outside." },
@@ -106,7 +115,8 @@ export const meditation = {
       evident: { es: "La quietud estabiliza el interior.", en: "Stillness stabilizes the interior." },
       hint: { es: "La calma verdadera comienza dentro.", en: "True calm begins within." },
       deep: { es: "Puedes estar solo y aun así lleno de ruido interno.", en: "You can be alone and still full of internal noise." },
-      reflection: { es: "La meditación comienza cuando observas el movimiento de tu mente sin seguirlo.", en: "Meditation begins when you observe the movement of your mind without following it." },
+      reflection: { es: "La meditación comienza cuando observas el movimiento de tu mente sin seguirlo. La atención entrenada deja de confundir movimiento mental con identidad.", en: "Meditation begins when you observe the movement of your mind without following it. Trained attention stops confusing mental movement with identity." },
+      question: { es: "¿Dónde intentas forzar silencio en vez de observar al cerrar este pequeño juicio del día?", en: "Where are you trying to force silence instead of observing as this small judgment of the day closes?" }
     },
   },
   day6: {
@@ -118,7 +128,8 @@ export const meditation = {
       evident: { es: "La conciencia requiere observación deliberada.", en: "Awareness requires deliberate observation." },
       hint: { es: "La pausa evita muchas decisiones impulsivas.", en: "The pause avoids many impulsive decisions." },
       deep: { es: "La reacción automática suele ser una forma inconsciente de esclavitud mental.", en: "The automatic reaction is usually an unconscious form of mental slavery." },
-      reflection: { es: "Entre pensamiento y acción existe un espacio. Ahí vive la libertad.", en: "Between thought and action there is a space. Freedom lives there." },
+      reflection: { es: "Entre pensamiento y acción existe un espacio. Ahí vive la libertad. La respiración no resuelve todo; te devuelve al lugar donde puedes ver con menos distorsión.", en: "Between thought and action there is a space. Freedom lives there. Breath does not solve everything; it returns you to the place where you can see with less distortion." },
+      question: { es: "¿A qué pensamiento volviste a entregar tu atención mientras todavía puedes elegir dirección?", en: "To what thought did you hand your attention again while you can still choose direction?" }
     },
     night: {
       quote: { es: "“La mente cansada busca controlar todo.”", en: "The tired mind seeks to control everything." },
@@ -128,7 +139,8 @@ export const meditation = {
       evident: { es: "El alma necesita regresar al descanso.", en: "The soul needs to return to rest." },
       hint: { es: "La paz interior no depende de resolver cada pensamiento.", en: "Inner peace does not depend on resolving every thought." },
       deep: { es: "Intentar controlar constantemente la mente suele producir todavía más ruido.", en: "Constantly trying to control the mind usually produces even more noise." },
-      reflection: { es: "A veces descansar significa dejar de intervenir en todo lo que piensas.", en: "Sometimes resting means stopping intervening in everything you think about." },
+      reflection: { es: "A veces descansar significa dejar de intervenir en todo lo que piensas. El silencio interior aparece por regreso, no por fuerza.", en: "Sometimes resting means stopping intervening in everything you think about. Inner silence appears through return, not force." },
+      question: { es: "¿Qué emoción cambia cuando la respiras sin perseguirla antes de dormir con una excusa intacta?", en: "What emotion changes when you breathe it without chasing it before sleeping with an excuse intact?" }
     },
   },
   day7: {
@@ -140,7 +152,8 @@ export const meditation = {
       evident: { es: "La conciencia permite corregir dirección.", en: "Consciousness allows you to correct direction." },
       hint: { es: "Aquello que observas conscientemente cambia.", en: "What you consciously observe changes." },
       deep: { es: "La mente dispersa entrega energía constantemente a pensamientos irrelevantes.", en: "The scattered mind constantly gives energy to irrelevant thoughts." },
-      reflection: { es: "La meditación también es aprender dónde colocas tu atención.", en: "Meditation is also learning where you place your attention." },
+      reflection: { es: "La meditación también es aprender dónde colocas tu atención. Volver una vez más es la enseñanza escondida de la práctica.", en: "Meditation is also learning where you place your attention. Returning one more time is the hidden teaching of the practice." },
+      question: { es: "¿Qué descubriste entre una distracción y el regreso antes de convertir intención en teatro?", en: "What did you discover between a distraction and the return before turning intention into theater?" }
     },
     night: {
       quote: { es: "“El silencio interior no aparece por fuerza.”", en: "Inner silence does not appear by force." },
@@ -150,7 +163,8 @@ export const meditation = {
       evident: { es: "La quietud interior transforma incluso el descanso.", en: "Inner stillness transforms even rest." },
       hint: { es: "La calma no responde bien al control agresivo.", en: "Calm does not respond well to aggressive control." },
       deep: { es: "Cuanto más luchas contra ciertos pensamientos, más presencia parecen adquirir.", en: "The more you fight certain thoughts, the more presence they seem to take on." },
-      reflection: { es: "Observar sin resistencia debilita lentamente el ruido mental.", en: "Observing without resistance slowly weakens mental noise." },
+      reflection: { es: "Observar sin resistencia debilita lentamente el ruido mental. Cada distracción señala una puerta; cada retorno decide si entras.", en: "Observing without resistance slowly weakens mental noise. Each distraction points to a door; each return decides whether you enter." },
+      question: { es: "¿Qué parte de ti teme quedarse presente antes de justificar el rastro que dejaste?", en: "What part of you fears remaining present before justifying the trace you left?" }
     },
   },
   day8: {
@@ -162,7 +176,8 @@ export const meditation = {
       evident: { es: "La quietud permite percepción más profunda.", en: "Stillness allows for deeper perception." },
       hint: { es: "La presencia desacelera reacción automática.", en: "Presence slows down automatic reaction." },
       deep: { es: "La velocidad mental constante reduce capacidad de observar la realidad con claridad.", en: "Constant mental speed reduces the ability to observe reality clearly." },
-      reflection: { es: "La calma permite ver sin distorsión emocional inmediata.", en: "Calmness allows you to see without immediate emotional distortion." },
+      reflection: { es: "La calma permite ver sin distorsión emocional inmediata. La atención entrenada deja de confundir movimiento mental con identidad.", en: "Calmness allows you to see without immediate emotional distortion. Trained attention stops confusing mental movement with identity." },
+      question: { es: "¿Dónde intentas forzar silencio en vez de observar antes de que el día te disperse?", en: "Where are you trying to force silence instead of observing before the day scatters you?" }
     },
     night: {
       quote: { es: "“No todo pensamiento necesita convertirse en conversación interna.”", en: "Not every thought needs to become an internal conversation." },
@@ -172,7 +187,8 @@ export const meditation = {
       evident: { es: "La quietud estabiliza el interior.", en: "Stillness stabilizes the interior." },
       hint: { es: "La mente también necesita espacios vacíos.", en: "The mind also needs empty spaces." },
       deep: { es: "Mucho agotamiento psicológico nace de discutir internamente con cada pensamiento que aparece.", en: "A lot of psychological exhaustion comes from arguing internally with every thought that appears." },
-      reflection: { es: "La paz comienza cuando dejas de alimentar todo lo que cruza tu mente.", en: "Peace begins when you stop feeding everything that crosses your mind." },
+      reflection: { es: "La paz comienza cuando dejas de alimentar todo lo que cruza tu mente. La conciencia se vuelve más limpia cuando deja de perseguir cada imagen.", en: "Peace begins when you stop feeding everything that crosses your mind. Awareness becomes cleaner when it stops chasing every image." },
+      question: { es: "¿Qué ruido mental pierde forma cuando no lo alimentas al revisar lo que realmente obedeciste?", en: "What mental noise loses shape when you do not feed it as you review what you actually obeyed?" }
     },
   },
   day9: {
@@ -184,7 +200,8 @@ export const meditation = {
       evident: { es: "La vida posee ritmos que no necesitan ser forzados.", en: "Life has rhythms that do not need to be forced." },
       hint: { es: "La mente también necesita pausas.", en: "The mind also needs breaks." },
       deep: { es: "La reacción automática se debilita cuando aparece conciencia suficiente para observarla.", en: "The automatic reaction weakens when sufficient awareness appears to observe it." },
-      reflection: { es: "La meditación no elimina pensamientos; cambia tu relación con ellos.", en: "Meditation does not eliminate thoughts; change your relationship with them." },
+      reflection: { es: "La meditación no elimina pensamientos; cambia tu relación con ellos. El silencio interior aparece por regreso, no por fuerza.", en: "Meditation does not eliminate thoughts; change your relationship with them. Inner silence appears through return, not force." },
+      question: { es: "¿Qué emoción cambia cuando la respiras sin perseguirla en el primer umbral de la mañana?", en: "What emotion changes when you breathe it without chasing it at the first threshold of morning?" }
     },
     night: {
       quote: { es: "“El agotamiento mental muchas veces es resistencia constante.”", en: "Mental exhaustion is often constant resistance." },
@@ -194,7 +211,8 @@ export const meditation = {
       evident: { es: "El alma necesita regresar al descanso.", en: "The soul needs to return to rest." },
       hint: { es: "La paz interior no siempre requiere solución inmediata.", en: "Inner peace does not always require an immediate solution." },
       deep: { es: "La mente lucha continuamente contra recuerdos, emociones y escenarios imaginarios.", en: "The mind continually fights against memories, emotions and imaginary scenarios." },
-      reflection: { es: "A veces descansar significa dejar de pelear internamente por unos momentos.", en: "Sometimes resting means stopping internal fighting for a few moments." },
+      reflection: { es: "A veces descansar significa dejar de pelear internamente por unos momentos. La respiración no resuelve todo; te devuelve al lugar donde puedes ver con menos distorsión.", en: "Sometimes resting means stopping internal fighting for a few moments. Breath does not solve everything; it returns you to the place where you can see with less distortion." },
+      question: { es: "¿A qué pensamiento volviste a entregar tu atención en la parte del día que nadie aplaude?", en: "To what thought did you hand your attention again in the part of the day nobody applauds?" }
     },
   },
   day10: {
@@ -206,7 +224,8 @@ export const meditation = {
       evident: { es: "El dominio interior vale más que fuerza externa.", en: "Inner mastery is worth more than external strength." },
       hint: { es: "Observar un pensamiento evita obedecerlo automáticamente.", en: "Observing a thought prevents automatically obeying it." },
       deep: { es: "La mente repite frases aprendidas, miedos antiguos y proyecciones futuras como si fueran realidad presente.", en: "The mind repeats learned phrases, old fears, and future projections as if they were present reality." },
-      reflection: { es: "La conciencia comienza cuando dejas de creer todo lo que piensas.", en: "Consciousness begins when you stop believing everything you think." },
+      reflection: { es: "La conciencia comienza cuando dejas de creer todo lo que piensas. Cada distracción señala una puerta; cada retorno decide si entras.", en: "Consciousness begins when you stop believing everything you think. Each distraction points to a door; each return decides whether you enter." },
+      question: { es: "¿Qué parte de ti teme quedarse presente al comenzar este día?", en: "What part of you fears remaining present as this day begins?" }
     },
     night: {
       quote: { es: "“El agua se aclara cuando deja de moverse.”", en: "Water becomes clear when it stops moving." },
@@ -216,7 +235,8 @@ export const meditation = {
       evident: { es: "La calma contiene fuerza invisible.", en: "Calm contains invisible force." },
       hint: { es: "No toda confusión necesita ser resuelta inmediatamente.", en: "Not every confusion needs to be resolved immediately." },
       deep: { es: "Muchos problemas mentales se intensifican porque la mente nunca deja de intervenir sobre ellos.", en: "Many mental problems intensify because the mind never stops intervening on them." },
-      reflection: { es: "La quietud también puede revelar respuestas que el esfuerzo excesivo ocultaba.", en: "Stillness can also reveal answers that excessive effort hid." },
+      reflection: { es: "La quietud también puede revelar respuestas que el esfuerzo excesivo ocultaba. Volver una vez más es la enseñanza escondida de la práctica.", en: "Stillness can also reveal answers that excessive effort hid. Returning one more time is the hidden teaching of the practice." },
+      question: { es: "¿Qué descubriste entre una distracción y el regreso cuando solo queda honestidad interior?", en: "What did you discover between a distraction and the return when only inner honesty remains?" }
     },
   },
   day11: {
@@ -228,7 +248,8 @@ export const meditation = {
       evident: { es: "La dirección correcta requiere observación consciente.", en: "Correct direction requires conscious observation." },
       hint: { es: "La atención define experiencia y dirección.", en: "Attention defines experience and direction." },
       deep: { es: "Una mente incapaz de permanecer presente termina viviendo dispersa entre estímulos, recuerdos y ansiedad futura.", en: "A mind unable to remain present ends up living dispersed among stimuli, memories and future anxiety." },
-      reflection: { es: "Meditar también es recuperar la capacidad de permanecer aquí.", en: "Meditating is also recovering the ability to stay here." },
+      reflection: { es: "Meditar también es recuperar la capacidad de permanecer aquí. La conciencia se vuelve más limpia cuando deja de perseguir cada imagen.", en: "Meditating is also recovering the ability to stay here. Awareness becomes cleaner when it stops chasing every image." },
+      question: { es: "¿Qué ruido mental pierde forma cuando no lo alimentas en la decisión más pequeña de hoy?", en: "What mental noise loses shape when you do not feed it in today’s smallest decision?" }
     },
     night: {
       quote: { es: "“El silencio interior expone dependencias invisibles.”", en: "Inner silence exposes invisible dependencies." },
@@ -238,7 +259,8 @@ export const meditation = {
       evident: { es: "La quietud estabiliza el interior.", en: "Stillness stabilizes the interior." },
       hint: { es: "El silencio revela aquello que normalmente distraes.", en: "Silence reveals what you normally distract from." },
       deep: { es: "Muchos descubren ansiedad real solamente cuando intentan permanecer quietos algunos minutos.", en: "Many discover real anxiety only when they try to sit still for a few minutes." },
-      reflection: { es: "La incomodidad durante el silencio también contiene información sobre ti.", en: "Discomfort during silence also contains information about you." },
+      reflection: { es: "La incomodidad durante el silencio también contiene información sobre ti. La atención entrenada deja de confundir movimiento mental con identidad.", en: "Discomfort during silence also contains information about you. Trained attention stops confusing mental movement with identity." },
+      question: { es: "¿Dónde intentas forzar silencio en vez de observar cuando el día ya no puede ser editado?", en: "Where are you trying to force silence instead of observing when the day can no longer be edited?" }
     },
   },
   day12: {
@@ -250,7 +272,8 @@ export const meditation = {
       evident: { es: "La conciencia permite corregir dirección.", en: "Consciousness allows you to correct direction." },
       hint: { es: "Observar crea distancia del impulso automático.", en: "Observing creates distance from the automatic impulse." },
       deep: { es: "Sin atención consciente, la mente reacciona a casi todo como si fuera amenaza, deseo o conflicto.", en: "Without conscious attention, the mind reacts to almost everything as if it were a threat, desire, or conflict." },
-      reflection: { es: "La pausa consciente interrumpe muchos ciclos destructivos invisibles.", en: "Conscious pausing interrupts many invisible destructive cycles." },
+      reflection: { es: "La pausa consciente interrumpe muchos ciclos destructivos invisibles. La respiración no resuelve todo; te devuelve al lugar donde puedes ver con menos distorsión.", en: "Conscious pausing interrupts many invisible destructive cycles. Breath does not solve everything; it returns you to the place where you can see with less distortion." },
+      question: { es: "¿A qué pensamiento volviste a entregar tu atención antes de entregar autoridad al ánimo?", en: "To what thought did you hand your attention again before handing authority to mood?" }
     },
     night: {
       quote: { es: "“La paz no siempre aparece añadiendo algo; a veces aparece dejando de hacer ruido.”", en: "Peace does not always appear by adding something; sometimes it appears by stopping making noise." },
@@ -260,7 +283,8 @@ export const meditation = {
       evident: { es: "El alma necesita regresar al descanso.", en: "The soul needs to return to rest." },
       hint: { es: "La quietud también es una forma de sanidad.", en: "Stillness is also a form of healing." },
       deep: { es: "La mente moderna vive tan saturada que incluso el descanso se vuelve otra actividad mental.", en: "The modern mind lives so saturated that even rest becomes another mental activity." },
-      reflection: { es: "Esta noche no intentes controlar todo. Solo observa y suelta un poco.", en: "Tonight don't try to control everything. Just watch and let go a little." },
+      reflection: { es: "Esta noche no intentes controlar todo. Solo observa y suelta un poco. El silencio interior aparece por regreso, no por fuerza.", en: "Tonight don't try to control everything. Just watch and let go a little. Inner silence appears through return, not force." },
+      question: { es: "¿Qué emoción cambia cuando la respiras sin perseguirla cuando tu cuerpo ya sabe la verdad?", en: "What emotion changes when you breathe it without chasing it when your body already knows the truth?" }
     },
   },
   day13: {
@@ -272,7 +296,8 @@ export const meditation = {
       evident: { es: "La calma interior requiere dominio consciente.", en: "Inner calm requires conscious mastery." },
       hint: { es: "La lentitud también puede ser fortaleza.", en: "Slowness can also be strength." },
       deep: { es: "Muchas reacciones emocionales ocurren tan rápido que parecen inevitables hasta que comienzas a observarlas.", en: "Many emotional reactions happen so quickly that they seem inevitable until you start observing them." },
-      reflection: { es: "La meditación ralentiza el instante entre impulso y respuesta.", en: "Meditation slows down the moment between impulse and response." },
+      reflection: { es: "La meditación ralentiza el instante entre impulso y respuesta. Volver una vez más es la enseñanza escondida de la práctica.", en: "Meditation slows down the moment between impulse and response. Returning one more time is the hidden teaching of the practice." },
+      question: { es: "¿Qué descubriste entre una distracción y el regreso antes de que aparezca la primera excusa?", en: "What did you discover between a distraction and the return before the first excuse appears?" }
     },
     night: {
       quote: { es: "“El silencio prolongado revela el estado real de la mente.”", en: "Prolonged silence reveals the real state of the mind." },
@@ -282,7 +307,8 @@ export const meditation = {
       evident: { es: "La quietud nocturna facilita introspección profunda.", en: "The nighttime stillness facilitates deep introspection." },
       hint: { es: "La noche expone movimientos internos invisibles durante el día.", en: "The night exposes internal movements invisible during the day." },
       deep: { es: "La necesidad constante de distracción suele ocultar una incapacidad de permanecer contigo mismo.", en: "The constant need for distraction often hides an inability to stay with yourself." },
-      reflection: { es: "Aprender a sentarte en silencio cambia lentamente tu relación con tu propia mente.", en: "Learning to sit in silence slowly changes your relationship with your own mind." },
+      reflection: { es: "Aprender a sentarte en silencio cambia lentamente tu relación con tu propia mente. Cada distracción señala una puerta; cada retorno decide si entras.", en: "Learning to sit in silence slowly changes your relationship with your own mind. Each distraction points to a door; each return decides whether you enter." },
+      question: { es: "¿Qué parte de ti teme quedarse presente al mirar la distancia entre palabra y acto?", en: "What part of you fears remaining present as you look at the distance between word and act?" }
     },
   },
   day14: {
@@ -294,7 +320,8 @@ export const meditation = {
       evident: { es: "La vida posee ritmos que no necesitan ser forzados.", en: "Life has rhythms that do not need to be forced." },
       hint: { es: "Gran parte de la ansiedad vive en el futuro.", en: "Much of anxiety lives in the future." },
       deep: { es: "La mente crea escenarios constantemente y luego reacciona emocionalmente a ellos como si ya existieran.", en: "The mind constantly creates scenarios and then emotionally reacts to them as if they already exist." },
-      reflection: { es: "Volver al presente reduce ruido que nunca estuvo ocurriendo realmente.", en: "Returning to the present reduces noise that was never really happening." },
+      reflection: { es: "Volver al presente reduce ruido que nunca estuvo ocurriendo realmente. La atención entrenada deja de confundir movimiento mental con identidad.", en: "Returning to the present reduces noise that was never really happening. Trained attention stops confusing mental movement with identity." },
+      question: { es: "¿Dónde intentas forzar silencio en vez de observar mientras tu voluntad todavía está fresca?", en: "Where are you trying to force silence instead of observing while your will is still fresh?" }
     },
     night: {
       quote: { es: "“El hombre agotado intenta controlar hasta sus pensamientos.”", en: "The exhausted man tries to control even his thoughts." },
@@ -304,7 +331,8 @@ export const meditation = {
       evident: { es: "La quietud interior transforma incluso el descanso.", en: "Inner stillness transforms even rest." },
       hint: { es: "No toda mente activa necesita intervención inmediata.", en: "Not every active mind needs immediate intervention." },
       deep: { es: "La obsesión por controlar la experiencia interna suele producir todavía más tensión psicológica.", en: "The obsession with controlling internal experience often produces even more psychological tension." },
-      reflection: { es: "La noche también puede ser un ejercicio de soltar.", en: "The night can also be an exercise in letting go." },
+      reflection: { es: "La noche también puede ser un ejercicio de soltar. La conciencia se vuelve más limpia cuando deja de perseguir cada imagen.", en: "The night can also be an exercise in letting go. Awareness becomes cleaner when it stops chasing every image." },
+      question: { es: "¿Qué ruido mental pierde forma cuando no lo alimentas en el silencio después de tus acciones?", en: "What mental noise loses shape when you do not feed it in the silence after your actions?" }
     },
   },
   day15: {
@@ -316,7 +344,8 @@ export const meditation = {
       evident: { es: "La conciencia requiere observación deliberada.", en: "Awareness requires deliberate observation." },
       hint: { es: "La pausa transforma decisiones.", en: "The pause transforms decisions." },
       deep: { es: "La mayoría de las personas no decide conscientemente muchas de sus acciones; simplemente reaccionan.", en: "Most people do not consciously decide many of their actions; They just react." },
-      reflection: { es: "Observar antes de actuar es una forma silenciosa de libertad.", en: "Observing before acting is a silent form of freedom." },
+      reflection: { es: "Observar antes de actuar es una forma silenciosa de libertad. El silencio interior aparece por regreso, no por fuerza.", en: "Observing before acting is a silent form of freedom. Inner silence appears through return, not force." },
+      question: { es: "¿Qué emoción cambia cuando la respiras sin perseguirla cuando nadie ha visto todavía tu obediencia?", en: "What emotion changes when you breathe it without chasing it when nobody has seen your obedience yet?" }
     },
     night: {
       quote: { es: "“La mente no siempre necesita respuesta; a veces necesita quietud.”", en: "The mind does not always need answers; sometimes it needs stillness." },
@@ -326,7 +355,8 @@ export const meditation = {
       evident: { es: "El alma necesita regresar al descanso.", en: "The soul needs to return to rest." },
       hint: { es: "La paz no depende de resolver cada pensamiento.", en: "Peace does not depend on resolving every thought." },
       deep: { es: "Buscar explicación inmediata para toda emoción puede convertirse en otra forma de ansiedad.", en: "Seeking an immediate explanation for every emotion can become another form of anxiety." },
-      reflection: { es: "Permite que algunos pensamientos pasen sin perseguirlos esta noche.", en: "Allow some thoughts to pass without haunting you tonight." },
+      reflection: { es: "Permite que algunos pensamientos pasen sin perseguirlos esta noche. La respiración no resuelve todo; te devuelve al lugar donde puedes ver con menos distorsión.", en: "Allow some thoughts to pass without haunting you tonight. Breath does not solve everything; it returns you to the place where you can see with less distortion." },
+      question: { es: "¿A qué pensamiento volviste a entregar tu atención al cerrar este pequeño juicio del día?", en: "To what thought did you hand your attention again as this small judgment of the day closes?" }
     },
   },
   day16: {
@@ -338,7 +368,8 @@ export const meditation = {
       evident: { es: "La conciencia percibe antes de actuar.", en: "Consciousness perceives before acting." },
       hint: { es: "Observar temprano evita muchas caídas.", en: "Observing early prevents many falls." },
       deep: { es: "La mayoría de los impulsos pierde fuerza si no recibe respuesta inmediata.", en: "Most impulses lose strength if they do not receive an immediate response." },
-      reflection: { es: "La meditación entrena la capacidad de no reaccionar instantáneamente.", en: "Meditation trains the ability not to react instantly." },
+      reflection: { es: "La meditación entrena la capacidad de no reaccionar instantáneamente. Cada distracción señala una puerta; cada retorno decide si entras.", en: "Meditation trains the ability not to react instantly. Each distraction points to a door; each return decides whether you enter." },
+      question: { es: "¿Qué parte de ti teme quedarse presente mientras todavía puedes elegir dirección?", en: "What part of you fears remaining present while you can still choose direction?" }
     },
     night: {
       quote: { es: "“El silencio también puede sentirse incómodo antes de sentirse libre.”", en: "Silence can also feel uncomfortable before it feels free." },
@@ -348,7 +379,8 @@ export const meditation = {
       evident: { es: "La quietud permite percepción más profunda.", en: "Stillness allows for deeper perception." },
       hint: { es: "La incomodidad inicial no significa que algo esté mal.", en: "Initial discomfort doesn't mean something is wrong." },
       deep: { es: "Una mente acostumbrada al estímulo interpreta la quietud como vacío peligroso.", en: "A mind accustomed to stimulation interprets stillness as dangerous emptiness." },
-      reflection: { es: "Permanecer unos minutos más en silencio puede revelar algo importante.", en: "Staying a few more minutes in silence can reveal something important." },
+      reflection: { es: "Permanecer unos minutos más en silencio puede revelar algo importante. Volver una vez más es la enseñanza escondida de la práctica.", en: "Staying a few more minutes in silence can reveal something important. Returning one more time is the hidden teaching of the practice." },
+      question: { es: "¿Qué descubriste entre una distracción y el regreso antes de dormir con una excusa intacta?", en: "What did you discover between a distraction and the return before sleeping with an excuse intact?" }
     },
   },
   day17: {
@@ -360,7 +392,8 @@ export const meditation = {
       evident: { es: "La claridad permite dirección consciente.", en: "Clarity allows for conscious direction." },
       hint: { es: "Aquello que observas cuidadosamente cambia.", en: "What you observe carefully changes." },
       deep: { es: "La mente distraída vive reaccionando superficialmente a demasiadas cosas al mismo tiempo.", en: "The distracted mind lives by reacting superficially to too many things at the same time." },
-      reflection: { es: "Donde colocas atención, colocas vida.", en: "Where you place attention, you place life." },
+      reflection: { es: "Donde colocas atención, colocas vida. La conciencia se vuelve más limpia cuando deja de perseguir cada imagen.", en: "Where you place attention, you place life. Awareness becomes cleaner when it stops chasing every image." },
+      question: { es: "¿Qué ruido mental pierde forma cuando no lo alimentas antes de convertir intención en teatro?", en: "What mental noise loses shape when you do not feed it before turning intention into theater?" }
     },
     night: {
       quote: { es: "“El pensamiento repetitivo muchas veces busca control, no verdad.”", en: "Repetitive thinking often seeks control, not truth." },
@@ -370,7 +403,8 @@ export const meditation = {
       evident: { es: "La calma contiene fuerza invisible.", en: "Calm contains invisible force." },
       hint: { es: "No toda actividad mental produce claridad.", en: "Not all mental activity produces clarity." },
       deep: { es: "Pensar excesivamente puede convertirse en una forma de evitar sentir o aceptar.", en: "Overthinking can become a way to avoid feeling or accepting." },
-      reflection: { es: "La paz aparece más fácilmente cuando dejas de luchar con cada pensamiento.", en: "Peace comes more easily when you stop fighting with every thought." },
+      reflection: { es: "La paz aparece más fácilmente cuando dejas de luchar con cada pensamiento. La atención entrenada deja de confundir movimiento mental con identidad.", en: "Peace comes more easily when you stop fighting with every thought. Trained attention stops confusing mental movement with identity." },
+      question: { es: "¿Dónde intentas forzar silencio en vez de observar antes de justificar el rastro que dejaste?", en: "Where are you trying to force silence instead of observing before justifying the trace you left?" }
     },
   },
   day18: {
@@ -382,7 +416,8 @@ export const meditation = {
       evident: { es: "La vida posee ritmos que no necesitan ser forzados.", en: "Life has rhythms that do not need to be forced." },
       hint: { es: "La ansiedad suele vivir adelantada al presente.", en: "Anxiety usually lives ahead of the present." },
       deep: { es: "La mente crea amenazas futuras y luego reacciona físicamente a ellas como si ya estuvieran ocurriendo.", en: "The mind creates future threats and then physically reacts to them as if they were already occurring." },
-      reflection: { es: "Volver al momento presente disminuye muchas cargas mentales innecesarias.", en: "Returning to the present moment reduces many unnecessary mental loads." },
+      reflection: { es: "Volver al momento presente disminuye muchas cargas mentales innecesarias. La respiración no resuelve todo; te devuelve al lugar donde puedes ver con menos distorsión.", en: "Returning to the present moment reduces many unnecessary mental loads. Breath does not solve everything; it returns you to the place where you can see with less distortion." },
+      question: { es: "¿A qué pensamiento volviste a entregar tu atención antes de que el día te disperse?", en: "To what thought did you hand your attention again before the day scatters you?" }
     },
     night: {
       quote: { es: "“La quietud revela cuánto cansancio venías cargando.”", en: "The stillness reveals how tired you were carrying." },
@@ -392,7 +427,8 @@ export const meditation = {
       evident: { es: "El alma necesita regresar al descanso.", en: "The soul needs to return to rest." },
       hint: { es: "La calma también es recuperación.", en: "Calm is also recovery." },
       deep: { es: "Muchos viven tan mentalmente acelerados que olvidan cómo se siente realmente descansar.", en: "Many people live so mentally fast that they forget what it really feels like to rest." },
-      reflection: { es: "Esta noche no intentes resolverte completo. Solo permanece presente un momento.", en: "Don't try to make up your mind tonight. Just stay present for a moment." },
+      reflection: { es: "Esta noche no intentes resolverte completo. Solo permanece presente un momento. El silencio interior aparece por regreso, no por fuerza.", en: "Don't try to make up your mind tonight. Just stay present for a moment. Inner silence appears through return, not force." },
+      question: { es: "¿Qué emoción cambia cuando la respiras sin perseguirla al revisar lo que realmente obedeciste?", en: "What emotion changes when you breathe it without chasing it as you review what you actually obeyed?" }
     },
   },
   day19: {
@@ -404,7 +440,8 @@ export const meditation = {
       evident: { es: "La conciencia requiere observación deliberada.", en: "Awareness requires deliberate observation." },
       hint: { es: "La atención consciente cambia dirección.", en: "Conscious attention changes direction." },
       deep: { es: "La hiperestimulación constante entrena a la mente a escapar inmediatamente de cualquier silencio.", en: "Constant hyperstimulation trains the mind to immediately escape from any silence." },
-      reflection: { es: "La meditación comienza cuando dejas de huir del espacio vacío.", en: "Meditation begins when you stop running away from empty space." },
+      reflection: { es: "La meditación comienza cuando dejas de huir del espacio vacío. Volver una vez más es la enseñanza escondida de la práctica.", en: "Meditation begins when you stop running away from empty space. Returning one more time is the hidden teaching of the practice." },
+      question: { es: "¿Qué descubriste entre una distracción y el regreso en el primer umbral de la mañana?", en: "What did you discover between a distraction and the return at the first threshold of morning?" }
     },
     night: {
       quote: { es: "“El pensamiento observado ya no domina igual.”", en: "The observed thought no longer dominates the same." },
@@ -414,7 +451,8 @@ export const meditation = {
       evident: { es: "La quietud estabiliza el interior.", en: "Stillness stabilizes the interior." },
       hint: { es: "Observar reduce identificación automática.", en: "Observe reduces automatic identification." },
       deep: { es: "La mente produce pensamientos continuamente; el sufrimiento aumenta cuando crees que todos te definen.", en: "The mind continually produces thoughts; Suffering increases when you believe that everyone defines you." },
-      reflection: { es: "No eres cada pensamiento que aparece esta noche.", en: "You are not every thought that appears tonight." },
+      reflection: { es: "No eres cada pensamiento que aparece esta noche. Cada distracción señala una puerta; cada retorno decide si entras.", en: "You are not every thought that appears tonight. Each distraction points to a door; each return decides whether you enter." },
+      question: { es: "¿Qué parte de ti teme quedarse presente en la parte del día que nadie aplaude?", en: "What part of you fears remaining present in the part of the day nobody applauds?" }
     },
   },
   day20: {
@@ -426,7 +464,8 @@ export const meditation = {
       evident: { es: "La conciencia permite corregir dirección.", en: "Consciousness allows you to correct direction." },
       hint: { es: "El presente suele pasar desapercibido.", en: "The present usually goes unnoticed." },
       deep: { es: "Una mente dispersa vive saltando entre pasado y futuro mientras pierde contacto con la realidad inmediata.", en: "A scattered mind lives jumping between past and future while losing contact with immediate reality." },
-      reflection: { es: "Respirar conscientemente también puede ser una forma de regresar.", en: "Mindful breathing can also be a way to return." },
+      reflection: { es: "Respirar conscientemente también puede ser una forma de regresar. La atención entrenada deja de confundir movimiento mental con identidad.", en: "Mindful breathing can also be a way to return. Trained attention stops confusing mental movement with identity." },
+      question: { es: "¿Dónde intentas forzar silencio en vez de observar al comenzar este día?", en: "Where are you trying to force silence instead of observing as this day begins?" }
     },
     night: {
       quote: { es: "“La mente agotada convierte pequeñas cosas en tormentas.”", en: "The exhausted mind turns small things into storms." },
@@ -436,7 +475,8 @@ export const meditation = {
       evident: { es: "La quietud interior transforma incluso el descanso.", en: "Inner stillness transforms even rest." },
       hint: { es: "El cansancio altera percepción emocional.", en: "Fatigue alters emotional perception." },
       deep: { es: "Gran parte del sufrimiento nocturno nace de una mente exhausta intentando resolver demasiado.", en: "Much of nighttime suffering comes from an exhausted mind trying to solve too much." },
-      reflection: { es: "Descansar también significa dejar de perseguir soluciones por unas horas.", en: "Resting also means stopping chasing solutions for a few hours." },
+      reflection: { es: "Descansar también significa dejar de perseguir soluciones por unas horas. La conciencia se vuelve más limpia cuando deja de perseguir cada imagen.", en: "Resting also means stopping chasing solutions for a few hours. Awareness becomes cleaner when it stops chasing every image." },
+      question: { es: "¿Qué ruido mental pierde forma cuando no lo alimentas cuando solo queda honestidad interior?", en: "What mental noise loses shape when you do not feed it when only inner honesty remains?" }
     },
   },
   day21: {
@@ -448,7 +488,8 @@ export const meditation = {
       evident: { es: "La conciencia percibe antes de reaccionar.", en: "Consciousness perceives before reacting." },
       hint: { es: "La pausa revela el impulso antes de obedecerlo.", en: "The pause reveals the impulse before it is obeyed." },
       deep: { es: "Muchos impulsos parecen inevitables solamente porque nunca fueron observados en su nacimiento.", en: "Many impulses seem inevitable only because they were never observed at their beginning." },
-      reflection: { es: "Meditar fortalece el espacio entre impulso y acción.", en: "Meditation strengthens the space between impulse and action." },
+      reflection: { es: "Meditar fortalece el espacio entre impulso y acción. El silencio interior aparece por regreso, no por fuerza.", en: "Meditation strengthens the space between impulse and action. Inner silence appears through return, not force." },
+      question: { es: "¿Qué emoción cambia cuando la respiras sin perseguirla en la decisión más pequeña de hoy?", en: "What emotion changes when you breathe it without chasing it in today’s smallest decision?" }
     },
     night: {
       quote: { es: "“La mente serena no necesita seguir cada movimiento interno.”", en: "The serene mind does not need to follow every inner movement." },
@@ -458,7 +499,8 @@ export const meditation = {
       evident: { es: "El descanso también requiere soltar agitación interior.", en: "Rest also requires releasing inner agitation." },
       hint: { es: "No todo pensamiento nocturno merece seguimiento.", en: "Not every nighttime thought deserves to be followed." },
       deep: { es: "La mente cansada intenta resolver con urgencia aquello que necesita silencio, descanso y distancia.", en: "The tired mind tries to urgently solve what needs silence, rest, and distance." },
-      reflection: { es: "Esta noche, observa la mente sin convertir cada pensamiento en tarea.", en: "Tonight, observe the mind without turning every thought into a task." },
+      reflection: { es: "Esta noche, observa la mente sin convertir cada pensamiento en tarea. La respiración no resuelve todo; te devuelve al lugar donde puedes ver con menos distorsión.", en: "Tonight, observe the mind without turning every thought into a task. Breath does not solve everything; it returns you to the place where you can see with less distortion." },
+      question: { es: "¿A qué pensamiento volviste a entregar tu atención cuando el día ya no puede ser editado?", en: "To what thought did you hand your attention again when the day can no longer be edited?" }
     },
   },
   day22: {
@@ -470,7 +512,8 @@ export const meditation = {
       evident: { es: "La calma interior afecta toda percepción.", en: "Inner calm affects all perception." },
       hint: { es: "No todo requiere reacción inmediata.", en: "Not everything requires an immediate reaction." },
       deep: { es: "La ansiedad mental suele convertir pensamientos pasajeros en problemas permanentes.", en: "Mental anxiety often turns passing thoughts into permanent problems." },
-      reflection: { es: "La meditación enseña a distinguir entre movimiento mental y realidad.", en: "Meditation teaches to distinguish between mental movement and reality." },
+      reflection: { es: "La meditación enseña a distinguir entre movimiento mental y realidad. Cada distracción señala una puerta; cada retorno decide si entras.", en: "Meditation teaches to distinguish between mental movement and reality. Each distraction points to a door; each return decides whether you enter." },
+      question: { es: "¿Qué parte de ti teme quedarse presente antes de entregar autoridad al ánimo?", en: "What part of you fears remaining present before handing authority to mood?" }
     },
     night: {
       quote: { es: "“El silencio revela dependencias invisibles.”", en: "Silence reveals invisible dependencies." },
@@ -480,7 +523,8 @@ export const meditation = {
       evident: { es: "La quietud produce reverencia y observación.", en: "Stillness produces reverence and observation." },
       hint: { es: "El vacío también comunica cosas sobre ti.", en: "Emptiness also communicates things about you." },
       deep: { es: "Muchos descubren su nivel real de inquietud solamente cuando intentan permanecer inmóviles y sin estímulos.", en: "Many discover their true level of restlessness only when they try to remain still and unstimulated." },
-      reflection: { es: "La incomodidad durante el silencio no siempre es enemiga; a veces es diagnóstico.", en: "Discomfort during silence is not always the enemy; sometimes it is diagnostic." },
+      reflection: { es: "La incomodidad durante el silencio no siempre es enemiga; a veces es diagnóstico. Volver una vez más es la enseñanza escondida de la práctica.", en: "Discomfort during silence is not always the enemy; sometimes it is diagnostic. Returning one more time is the hidden teaching of the practice." },
+      question: { es: "¿Qué descubriste entre una distracción y el regreso cuando tu cuerpo ya sabe la verdad?", en: "What did you discover between a distraction and the return when your body already knows the truth?" }
     },
   },
   day23: {
@@ -492,7 +536,8 @@ export const meditation = {
       evident: { es: "La dirección correcta requiere observación consciente.", en: "Correct direction requires conscious observation." },
       hint: { es: "Ver claramente transforma decisiones.", en: "Seeing clearly transforms decisions." },
       deep: { es: "Sin atención consciente, los patrones internos se repiten con apariencia de inevitabilidad.", en: "Without conscious attention, internal patterns repeat with the appearance of inevitability." },
-      reflection: { es: "Observar un hábito profundamente ya comienza a debilitarlo.", en: "Observing a habit deeply already begins to weaken it." },
+      reflection: { es: "Observar un hábito profundamente ya comienza a debilitarlo. La conciencia se vuelve más limpia cuando deja de perseguir cada imagen.", en: "Observing a habit deeply already begins to weaken it. Awareness becomes cleaner when it stops chasing every image." },
+      question: { es: "¿Qué ruido mental pierde forma cuando no lo alimentas antes de que aparezca la primera excusa?", en: "What mental noise loses shape when you do not feed it before the first excuse appears?" }
     },
     night: {
       quote: { es: "“La paz no es ausencia de pensamientos, sino menor apego a ellos.”", en: "Peace is not the absence of thoughts, but less attachment to them." },
@@ -502,7 +547,8 @@ export const meditation = {
       evident: { es: "La calma contiene fuerza invisible.", en: "Calm contains invisible force." },
       hint: { es: "La quietud cambia la relación con la mente.", en: "Stillness changes the relationship with the mind." },
       deep: { es: "Intentar eliminar completamente el pensamiento suele producir todavía más conflicto interno.", en: "Trying to completely eliminate the thought usually produces even more internal conflict." },
-      reflection: { es: "Esta noche no luches con tu mente. Obsérvala pasar.", en: "Don't fight with your mind tonight. Watch her pass." },
+      reflection: { es: "Esta noche no luches con tu mente. Obsérvala pasar. La atención entrenada deja de confundir movimiento mental con identidad.", en: "Don't fight with your mind tonight. Watch her pass. Trained attention stops confusing mental movement with identity." },
+      question: { es: "¿Dónde intentas forzar silencio en vez de observar al mirar la distancia entre palabra y acto?", en: "Where are you trying to force silence instead of observing as you look at the distance between word and act?" }
     },
   },
   day24: {
@@ -514,7 +560,8 @@ export const meditation = {
       evident: { es: "La claridad permite dirección consciente.", en: "Clarity allows for conscious direction." },
       hint: { es: "La atención sostenida ilumina el camino.", en: "Sustained attention lights the way." },
       deep: { es: "La estimulación constante fragmenta la percepción hasta volver difícil permanecer plenamente presente.", en: "Constant stimulation fragments perception until it becomes difficult to remain fully present." },
-      reflection: { es: "Cada vez que regresas al momento presente, recuperas parte de ti.", en: "Every time you return to the present moment, you regain part of yourself." },
+      reflection: { es: "Cada vez que regresas al momento presente, recuperas parte de ti. La respiración no resuelve todo; te devuelve al lugar donde puedes ver con menos distorsión.", en: "Every time you return to the present moment, you regain part of yourself. Breath does not solve everything; it returns you to the place where you can see with less distortion." },
+      question: { es: "¿A qué pensamiento volviste a entregar tu atención mientras tu voluntad todavía está fresca?", en: "To what thought did you hand your attention again while your will is still fresh?" }
     },
     night: {
       quote: { es: "“La quietud profunda también puede sanar.”", en: "Deep stillness can also heal." },
@@ -524,7 +571,8 @@ export const meditation = {
       evident: { es: "El alma necesita regresar al descanso.", en: "The soul needs to return to rest." },
       hint: { es: "La calma sostenida reorganiza lentamente el interior.", en: "Sustained calm slowly reorganizes the interior." },
       deep: { es: "Mucho cansancio emocional no proviene solo del dolor, sino de nunca detenerse realmente.", en: "A lot of emotional exhaustion comes not just from pain, but from never really stopping." },
-      reflection: { es: "Permite que esta noche exista menos control y más silencio.", en: "Allow this night for less control and more silence." },
+      reflection: { es: "Permite que esta noche exista menos control y más silencio. El silencio interior aparece por regreso, no por fuerza.", en: "Allow this night for less control and more silence. Inner silence appears through return, not force." },
+      question: { es: "¿Qué emoción cambia cuando la respiras sin perseguirla en el silencio después de tus acciones?", en: "What emotion changes when you breathe it without chasing it in the silence after your actions?" }
     },
   },
   day25: {
@@ -536,7 +584,8 @@ export const meditation = {
       evident: { es: "La conciencia requiere observación deliberada.", en: "Awareness requires deliberate observation." },
       hint: { es: "La pausa transforma decisiones.", en: "The pause transforms decisions." },
       deep: { es: "La mayoría de las reacciones impulsivas ocurren tan rápido que parecen inevitables hasta que aparece suficiente atención.", en: "Most impulsive reactions occur so quickly that they seem inevitable until sufficient attention appears." },
-      reflection: { es: "La meditación fortalece el espacio entre impulso y acción.", en: "Meditation strengthens the space between impulse and action." },
+      reflection: { es: "La meditación fortalece el espacio entre impulso y acción. Volver una vez más es la enseñanza escondida de la práctica.", en: "Meditation strengthens the space between impulse and action. Returning one more time is the hidden teaching of the practice." },
+      question: { es: "¿Qué descubriste entre una distracción y el regreso cuando nadie ha visto todavía tu obediencia?", en: "What did you discover between a distraction and the return when nobody has seen your obedience yet?" }
     },
     night: {
       quote: { es: "“El silencio prolongado revela aquello que normalmente ignoras.”", en: "Prolonged silence reveals what you normally ignore." },
@@ -546,7 +595,8 @@ export const meditation = {
       evident: { es: "La quietud nocturna facilita introspección profunda.", en: "The nighttime stillness facilitates deep introspection." },
       hint: { es: "La noche expone movimientos internos invisibles durante el día.", en: "The night exposes internal movements invisible during the day." },
       deep: { es: "Cuando desaparece distracción externa, muchas tensiones internas finalmente se vuelven visibles.", en: "When external distraction disappears, many internal tensions finally become visible." },
-      reflection: { es: "La quietud puede mostrarte partes de ti que el ruido mantenía ocultas.", en: "Stillness can show you parts of yourself that noise kept hidden." },
+      reflection: { es: "La quietud puede mostrarte partes de ti que el ruido mantenía ocultas. Cada distracción señala una puerta; cada retorno decide si entras.", en: "Stillness can show you parts of yourself that noise kept hidden. Each distraction points to a door; each return decides whether you enter." },
+      question: { es: "¿Qué parte de ti teme quedarse presente al cerrar este pequeño juicio del día?", en: "What part of you fears remaining present as this small judgment of the day closes?" }
     },
   },
   day26: {
@@ -558,7 +608,8 @@ export const meditation = {
       evident: { es: "La vida posee ritmos que no necesitan ser forzados.", en: "Life has rhythms that do not need to be forced." },
       hint: { es: "La ansiedad suele adelantarse demasiado.", en: "Anxiety usually comes too early." },
       deep: { es: "La mente produce escenarios futuros y luego responde emocionalmente a ellos como si fueran inevitables.", en: "The mind produces future scenarios and then emotionally responds to them as if they were inevitable." },
-      reflection: { es: "Regresar al presente disminuye cargas que todavía no existen.", en: "Returning to the present diminishes burdens that do not yet exist." },
+      reflection: { es: "Regresar al presente disminuye cargas que todavía no existen. La atención entrenada deja de confundir movimiento mental con identidad.", en: "Returning to the present diminishes burdens that do not yet exist. Trained attention stops confusing mental movement with identity." },
+      question: { es: "¿Dónde intentas forzar silencio en vez de observar mientras todavía puedes elegir dirección?", en: "Where are you trying to force silence instead of observing while you can still choose direction?" }
     },
     night: {
       quote: { es: "“El agotamiento mental muchas veces nace de resistencia constante.”", en: "Mental exhaustion often arises from constant resistance." },
@@ -568,7 +619,8 @@ export const meditation = {
       evident: { es: "La quietud interior transforma incluso el descanso.", en: "Inner stillness transforms even rest." },
       hint: { es: "No toda experiencia interna necesita control inmediato.", en: "Not every internal experience needs immediate control." },
       deep: { es: "La mente se desgasta intentando corregir, analizar y resolver cada emoción que aparece.", en: "The mind wears itself out trying to correct, analyze and resolve each emotion that appears." },
-      reflection: { es: "Esta noche permite que algunos pensamientos simplemente pasen.", en: "Tonight allow some thoughts to simply pass." },
+      reflection: { es: "Esta noche permite que algunos pensamientos simplemente pasen. La conciencia se vuelve más limpia cuando deja de perseguir cada imagen.", en: "Tonight allow some thoughts to simply pass. Awareness becomes cleaner when it stops chasing every image." },
+      question: { es: "¿Qué ruido mental pierde forma cuando no lo alimentas antes de dormir con una excusa intacta?", en: "What mental noise loses shape when you do not feed it before sleeping with an excuse intact?" }
     },
   },
   day27: {
@@ -580,7 +632,8 @@ export const meditation = {
       evident: { es: "La conciencia permite corregir dirección.", en: "Consciousness allows you to correct direction." },
       hint: { es: "Observar cambia percepción y conducta.", en: "Observing changes perception and behavior." },
       deep: { es: "La distracción constante fragmenta lentamente la capacidad de permanecer realmente presente.", en: "Constant distraction slowly fragments the ability to truly remain present." },
-      reflection: { es: "La meditación también es recuperar unidad interior.", en: "Meditation is also recovering inner unity." },
+      reflection: { es: "La meditación también es recuperar unidad interior. El silencio interior aparece por regreso, no por fuerza.", en: "Meditation is also recovering inner unity. Inner silence appears through return, not force." },
+      question: { es: "¿Qué emoción cambia cuando la respiras sin perseguirla antes de convertir intención en teatro?", en: "What emotion changes when you breathe it without chasing it before turning intention into theater?" }
     },
     night: {
       quote: { es: "“No todo silencio está vacío.”", en: "Not all silence is empty." },
@@ -590,7 +643,8 @@ export const meditation = {
       evident: { es: "La quietud estabiliza el interior.", en: "Stillness stabilizes the interior." },
       hint: { es: "La calma profunda contiene claridad.", en: "Deep calm contains clarity." },
       deep: { es: "El hombre moderno suele llenar inmediatamente cualquier espacio vacío por miedo a lo que pueda encontrar ahí.", en: "Modern man usually immediately fills any empty space for fear of what he may find there." },
-      reflection: { es: "Permanece quieto un poco más. La mente aprende lentamente a descansar.", en: "Stay still a little longer. The mind slowly learns to rest." },
+      reflection: { es: "Permanece quieto un poco más. La mente aprende lentamente a descansar. La respiración no resuelve todo; te devuelve al lugar donde puedes ver con menos distorsión.", en: "Stay still a little longer. The mind slowly learns to rest. Breath does not solve everything; it returns you to the place where you can see with less distortion." },
+      question: { es: "¿A qué pensamiento volviste a entregar tu atención antes de justificar el rastro que dejaste?", en: "To what thought did you hand your attention again before justifying the trace you left?" }
     },
   },
   day28: {
@@ -602,7 +656,8 @@ export const meditation = {
       evident: { es: "La calma interior afecta percepción y conducta.", en: "Inner calm affects perception and behavior." },
       hint: { es: "La serenidad permite ver más claramente.", en: "Serenity allows you to see more clearly." },
       deep: { es: "La reacción automática suele impedir que el pensamiento madure antes de convertirse en acción.", en: "The automatic reaction often prevents the thought from maturing before becoming action." },
-      reflection: { es: "La meditación enseña a no obedecer inmediatamente cada impulso interno.", en: "Meditation teaches not to immediately obey every internal impulse." },
+      reflection: { es: "La meditación enseña a no obedecer inmediatamente cada impulso interno. Cada distracción señala una puerta; cada retorno decide si entras.", en: "Meditation teaches not to immediately obey every internal impulse. Each distraction points to a door; each return decides whether you enter." },
+      question: { es: "¿Qué parte de ti teme quedarse presente antes de que el día te disperse?", en: "What part of you fears remaining present before the day scatters you?" }
     },
     night: {
       quote: { es: "“La quietud profunda cambia cosas que las palabras no alcanzan.”", en: "Deep stillness changes things that words cannot achieve." },
@@ -612,7 +667,8 @@ export const meditation = {
       evident: { es: "La quietud permite percepción más profunda.", en: "Stillness allows for deeper perception." },
       hint: { es: "El silencio también transforma.", en: "Silence also transforms." },
       deep: { es: "La mente saturada de ruido pierde sensibilidad hacia lo esencial.", en: "The mind saturated with noise loses sensitivity to what is essential." },
-      reflection: { es: "La noche silenciosa puede reorganizar lentamente el interior sin que lo notes de inmediato.", en: "The silent night can slowly reorganize the interior without you noticing it immediately." },
+      reflection: { es: "La noche silenciosa puede reorganizar lentamente el interior sin que lo notes de inmediato. Volver una vez más es la enseñanza escondida de la práctica.", en: "The silent night can slowly reorganize the interior without you noticing it immediately. Returning one more time is the hidden teaching of the practice." },
+      question: { es: "¿Qué descubriste entre una distracción y el regreso al revisar lo que realmente obedeciste?", en: "What did you discover between a distraction and the return as you review what you actually obeyed?" }
     },
   },
   day29: {
@@ -624,7 +680,8 @@ export const meditation = {
       evident: { es: "La conciencia percibe antes de reaccionar.", en: "Consciousness perceives before reacting." },
       hint: { es: "Detectar temprano cambia resultado.", en: "Detecting early changes results." },
       deep: { es: "Muchos hábitos mentales se fortalecen solamente porque nunca son observados en sus primeras etapas.", en: "Many mental habits become stronger only because they are never observed in their early stages." },
-      reflection: { es: "La atención temprana debilita patrones antes de que crezcan.", en: "Early attention weakens patterns before they grow." },
+      reflection: { es: "La atención temprana debilita patrones antes de que crezcan. La conciencia se vuelve más limpia cuando deja de perseguir cada imagen.", en: "Early attention weakens patterns before they grow. Awareness becomes cleaner when it stops chasing every image." },
+      question: { es: "¿Qué ruido mental pierde forma cuando no lo alimentas en el primer umbral de la mañana?", en: "What mental noise loses shape when you do not feed it at the first threshold of morning?" }
     },
     night: {
       quote: { es: "“La paz aparece cuando la mente deja de perseguirse a sí misma.”", en: "Peace appears when the mind stops chasing itself." },
@@ -634,7 +691,8 @@ export const meditation = {
       evident: { es: "El alma necesita regresar al descanso.", en: "The soul needs to return to rest." },
       hint: { es: "La calma no requiere perfección mental absoluta.", en: "Calm does not require absolute mental perfection." },
       deep: { es: "La lucha constante contra pensamientos difíciles muchas veces prolonga todavía más su presencia.", en: "The constant fight against difficult thoughts often prolongs their presence even more." },
-      reflection: { es: "Esta noche no necesitas resolver todo para descansar un poco.", en: "Tonight you don't need to solve everything to get some rest." },
+      reflection: { es: "Esta noche no necesitas resolver todo para descansar un poco. La atención entrenada deja de confundir movimiento mental con identidad.", en: "Tonight you don't need to solve everything to get some rest. Trained attention stops confusing mental movement with identity." },
+      question: { es: "¿Dónde intentas forzar silencio en vez de observar en la parte del día que nadie aplaude?", en: "Where are you trying to force silence instead of observing in the part of the day nobody applauds?" }
     },
   },
   day30: {
@@ -646,7 +704,8 @@ export const meditation = {
       evident: { es: "La dirección correcta requiere observación consciente.", en: "Correct direction requires conscious observation." },
       hint: { es: "La claridad cambia decisiones diarias.", en: "Clarity changes daily decisions." },
       deep: { es: "La mayoría vive arrastrada por impulsos invisibles hasta que aprende finalmente a observarlos.", en: "Most people live carried away by invisible impulses until they finally learn to observe them." },
-      reflection: { es: "Treinta días de meditación comienzan a cambiar tu relación con pensamientos, emociones e impulsos.", en: "Thirty days of meditation begins to change your relationship with thoughts, emotions and impulses." },
+      reflection: { es: "Treinta días de meditación comienzan a cambiar tu relación con pensamientos, emociones e impulsos. La respiración no resuelve todo; te devuelve al lugar donde puedes ver con menos distorsión.", en: "Thirty days of meditation begins to change your relationship with thoughts, emotions and impulses. Breath does not solve everything; it returns you to the place where you can see with less distortion." },
+      question: { es: "¿A qué pensamiento volviste a entregar tu atención al comenzar este día?", en: "To what thought did you hand your attention again as this day begins?" }
     },
     night: {
       quote: { es: "“El silencio interior no es ausencia de mente, sino menor esclavitud a ella.”", en: "Inner silence is not absence of mind, but less slavery to it." },
@@ -656,7 +715,8 @@ export const meditation = {
       evident: { es: "La calma contiene fuerza invisible.", en: "Calm contains invisible force." },
       hint: { es: "La paz interior nace de la presencia consciente.", en: "Inner peace is born from conscious presence." },
       deep: { es: "La transformación profunda ocurre cuando el hombre deja de identificarse completamente con cada pensamiento que aparece.", en: "Deep transformation occurs when man stops completely identifying with each thought that appears." },
-      reflection: { es: "La quietud nocturna puede convertirse en uno de los espacios más libres de toda tu vida.", en: "The stillness of the night can become one of the freest spaces of your entire life." },
+      reflection: { es: "La quietud nocturna puede convertirse en uno de los espacios más libres de toda tu vida. El silencio interior aparece por regreso, no por fuerza.", en: "The stillness of the night can become one of the freest spaces of your entire life. Inner silence appears through return, not force." },
+      question: { es: "¿Qué emoción cambia cuando la respiras sin perseguirla cuando solo queda honestidad interior?", en: "What emotion changes when you breathe it without chasing it when only inner honesty remains?" }
     },
   },
 };

@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { apiFetch, getStoredAuthToken } from "./api";
+import { getLocalDateKey } from "./dates";
 
 const LEGACY_STORAGE_KEY =
   "COVENANT_PROGRESS";
@@ -132,9 +133,7 @@ export async function clearProgressUser() {
 }
 
 function today() {
-  return new Date()
-    .toISOString()
-    .split("T")[0];
+  return getLocalDateKey();
 }
 
 function fromServerProgress(
@@ -301,10 +300,19 @@ function shouldUseRemoteProgress(
     return true;
   }
 
-  return (
-    remote.completedDays >=
-    local.completedDays
-  );
+  if (remote.completedDays !== local.completedDays) {
+    return remote.completedDays > local.completedDays;
+  }
+
+  if (remote.sessions !== local.sessions) {
+    return remote.sessions > local.sessions;
+  }
+
+  if (remote.completionDates.length !== local.completionDates.length) {
+    return remote.completionDates.length > local.completionDates.length;
+  }
+
+  return String(remote.lastCompleted || "") >= String(local.lastCompleted || "");
 }
 
 async function pushProgressToServer(
@@ -399,6 +407,9 @@ export async function syncProgress() {
   }
 
   syncRequest = (async () => {
+    const localProgress =
+      await getLocalProgress();
+
     const remote =
       await withRetry(
         "load remote progress",
@@ -408,24 +419,47 @@ export async function syncProgress() {
           )
       );
 
-    const progress: ProgressData = {};
+    const progress: ProgressData = {
+      ...localProgress,
+    };
+    const localProgressToPush: ProgressData = {};
+    const remoteHabitKeys = new Set<string>();
 
     for (const item of remote) {
+      remoteHabitKeys.add(item.habit_key);
+
       const remoteProgress =
         fromServerProgress(item);
+      const local =
+        localProgress[item.habit_key];
 
       if (
         shouldUseRemoteProgress(
-          progress[item.habit_key],
+          local,
           remoteProgress
         )
       ) {
         progress[item.habit_key] =
           remoteProgress;
+      } else if (local) {
+        localProgressToPush[item.habit_key] =
+          local;
+      }
+    }
+
+    for (const [habit, local] of Object.entries(localProgress)) {
+      if (!remoteHabitKeys.has(habit)) {
+        localProgressToPush[habit] = local;
       }
     }
 
     await saveLocalProgress(progress);
+
+    if (Object.keys(localProgressToPush).length > 0) {
+      await pushProgressToServer(localProgressToPush).catch(
+        () => undefined
+      );
+    }
 
     lastSyncAt = Date.now();
 

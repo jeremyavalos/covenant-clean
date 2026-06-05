@@ -19,6 +19,7 @@ import {
 
 import {
   useFocusEffect,
+  useLocalSearchParams,
   useRouter,
 } from "expo-router";
 import { usePostHog } from "posthog-react-native";
@@ -29,6 +30,13 @@ import {
   SUPPORT_URL,
   TERMS_OF_USE_URL,
 } from "../constants/legal";
+import {
+  OracleNumberDraw,
+  OracleTarotDraw,
+  getDailyNumberDraw,
+  getDailyTarotDraw,
+  getOracleUserKey,
+} from "../utils/oracle";
 
 import {
   clearProgressUser,
@@ -45,6 +53,7 @@ import {
   getLanguage,
   Language,
 } from "../utils/language";
+import { getLocalDateKey } from "../utils/dates";
 
 import {
   ANDROID_MONTHLY_PRODUCT_IDENTIFIER,
@@ -69,6 +78,18 @@ import {
 import {
   useAuthStore,
 } from "../store/authStore";
+
+function localize(
+value: {
+en: string;
+es: string;
+},
+language: Language
+) {
+return language === "es"
+? value.es
+: value.en;
+}
 
 const COLORS = {
 background: "#050505",
@@ -320,6 +341,9 @@ return a.index - b.index;
 export default function HabitsScreen() {
 
 const router = useRouter();
+const params = useLocalSearchParams<{
+showPaywall?: string;
+}>();
 const posthog = usePostHog();
 const {
 isPro,
@@ -353,6 +377,25 @@ setSelectedFreeHabit,
 ] = useState<string | null>(
 null
 );
+
+const [
+dailyNumberDraw,
+setDailyNumberDraw,
+] = useState<OracleNumberDraw | null>(
+null
+);
+
+const [
+dailyTarotDraw,
+setDailyTarotDraw,
+] = useState<OracleTarotDraw | null>(
+null
+);
+
+const [
+oracleModalVisible,
+setOracleModalVisible,
+] = useState(false);
 
 const [
 isFreeHabitReady,
@@ -430,6 +473,40 @@ currentLanguage
 );
 }, []);
 
+const loadOracleSummary = useCallback(async () => {
+const userStorageKey =
+getUserStorageKey();
+
+const oracleUserKey =
+await getOracleUserKey(
+userStorageKey
+);
+
+const [
+numberDraw,
+tarotDraw,
+] =
+await Promise.all([
+getDailyNumberDraw(
+oracleUserKey
+),
+getDailyTarotDraw(
+oracleUserKey
+),
+]);
+
+if (!mountedRef.current) {
+return;
+}
+
+setDailyNumberDraw(
+numberDraw
+);
+setDailyTarotDraw(
+tarotDraw
+);
+}, [getUserStorageKey]);
+
 	const loadSelectedFreeHabit = useCallback(async () => {
 
 	setIsFreeHabitReady(false);
@@ -487,7 +564,20 @@ loadProgress();
 
 loadSelectedFreeHabit();
 
-	}, [loadLanguage, loadSelectedFreeHabit]);
+loadOracleSummary();
+
+	}, [loadLanguage, loadOracleSummary, loadSelectedFreeHabit]);
+
+useEffect(() => {
+if (params.showPaywall !== "oracle") {
+return;
+}
+
+setSelectedLockedHabit(null);
+setSelectedPlan("monthly");
+initRevenueCat().catch(() => undefined);
+setPaywallVisible(true);
+}, [params.showPaywall]);
 
 useFocusEffect(
 useCallback(() => {
@@ -495,7 +585,18 @@ loadLanguage()
 .catch((error) => {
 console.warn("[Habits] Could not refresh language on focus.", error);
 });
-}, [loadLanguage])
+
+loadProgress()
+.catch((error) => {
+console.warn("[Habits] Could not refresh progress on focus.", error);
+});
+
+loadOracleSummary()
+.catch((error) => {
+console.warn("[Habits] Could not refresh oracle on focus.", error);
+});
+
+}, [loadLanguage, loadOracleSummary])
 );
 
 async function loadProgress() {
@@ -509,8 +610,9 @@ try {
 const remoteOrCachedProgress =
 await getProgress();
 
-const allProgress =
-remoteOrCachedProgress;
+const allProgress = {
+...remoteOrCachedProgress,
+};
 
 const currentHabits =
 habits.es;
@@ -1045,8 +1147,17 @@ pro3:
 pro4:
 "• confrontaciones profundas",
 
-	pro5:
+pro5:
 	"• progreso extendido",
+
+pro6:
+"• ritual diario de tarot",
+
+pro7:
+"• reflexiones simbólicas diarias",
+
+pro8:
+"• lecturas más profundas del hábito",
 
 	price:
 	"$1.99 USD / MES",
@@ -1128,10 +1239,10 @@ creator:
 "EL CREADOR",
 
 settings:
-"CONFIGURACION",
+"CONFIGURACIÓN",
 
 subscriptionButton:
-"VER SUSCRIPCION MENSUAL",
+"VER SUSCRIPCIÓN MENSUAL",
 
 deleteAccount:
 "Eliminar cuenta",
@@ -1140,10 +1251,10 @@ deleteAccountTitle:
 "Eliminar cuenta",
 
 deleteAccountText:
-"Esto eliminara permanentemente tu cuenta, progreso y datos asociados. Ingresa tu contrasena para confirmar.",
+"Esto eliminará permanentemente tu cuenta, progreso y datos asociados. Ingresa tu contraseña para confirmar.",
 
 deletePasswordPlaceholder:
-"Contrasena",
+"Contraseña",
 
 deleteAccountCancel:
 "CANCELAR",
@@ -1155,7 +1266,7 @@ deleteAccountErrorTitle:
 "No se pudo eliminar la cuenta",
 
 deletePasswordRequired:
-"Ingresa tu contrasena para eliminar tu cuenta.",
+"Ingresa tu contraseña para eliminar tu cuenta.",
 
 accountDeletedTitle:
 "Cuenta eliminada",
@@ -1185,16 +1296,43 @@ dashboardPro:
 "TODOS",
 
 dashboardFree:
-"1 HABITO",
+"1 HÁBITO",
 
 dayUnit:
-"DIAS",
+"DÍAS",
 
 todayPanelTitle:
 "PANEL DE HOY",
 
 todayPanelText:
-"Completa tu practica diaria y conserva la racha viva.",
+"Completa tu práctica diaria y conserva la racha viva.",
+
+monthlyPath:
+"CAMINO MENSUAL",
+
+monthlyPathSubtext:
+"constancia del mes",
+
+oracleSummary:
+"GUÍA DE HOY",
+
+todayNumber:
+"NÚMERO",
+
+todayCard:
+"CARTA",
+
+revealGuidance:
+"Revelar la guía de hoy",
+
+dailyCompletion:
+"CIERRE DIARIO",
+
+oracleModalTitle:
+"GUÍA DE HOY",
+
+oracleModalClose:
+"CERRAR",
 
 openAction:
 "ABRIR",
@@ -1230,8 +1368,17 @@ pro3:
 pro4:
 "• deeper confrontations",
 
-	pro5:
+pro5:
 	"• extended progress",
+
+pro6:
+"• daily tarot ritual",
+
+pro7:
+"• symbolic daily reflections",
+
+pro8:
+"• deeper habit insights",
 
 	price:
 	"$1.99 USD / MONTH",
@@ -1381,6 +1528,33 @@ todayPanelTitle:
 todayPanelText:
 "Complete your daily practice and keep the streak alive.",
 
+monthlyPath:
+"MONTHLY PATH",
+
+monthlyPathSubtext:
+"consistency this month",
+
+oracleSummary:
+"TODAY'S GUIDANCE",
+
+todayNumber:
+"NUMBER",
+
+todayCard:
+"CARD",
+
+revealGuidance:
+"Reveal today's guidance",
+
+dailyCompletion:
+"DAILY COMPLETION",
+
+oracleModalTitle:
+"TODAY'S GUIDANCE",
+
+oracleModalClose:
+"CLOSE",
+
 openAction:
 "OPEN",
 
@@ -1393,12 +1567,19 @@ progressLabel:
 };
 
 const today =
-new Date()
-.toISOString()
-.split("T")[0];
+getLocalDateKey();
+
+const dashboardHabits =
+isPro
+? currentHabits
+: selectedFreeHabit
+? currentHabits.filter(
+(habit) => habit.slug === selectedFreeHabit
+)
+: currentHabits.slice(0, 1);
 
 const totalCompletedDays =
-currentHabits.reduce(
+dashboardHabits.reduce(
 (sum, habit) =>
 sum +
 (progressMap[habit.slug]?.completedDays || 0),
@@ -1406,7 +1587,7 @@ sum +
 );
 
 const completedTodayCount =
-currentHabits.filter(
+dashboardHabits.filter(
 (habit) =>
 progressMap[habit.slug]?.lastCompleted === today
 ).length;
@@ -1415,11 +1596,84 @@ const averageProgress =
 Math.min(
 Math.round(
 totalCompletedDays /
-Math.max(currentHabits.length * 30, 1) *
+Math.max(dashboardHabits.length * 30, 1) *
 100
 ),
 100
 );
+
+const currentMonth =
+today.slice(0, 7);
+
+const monthlyCompletedCount =
+dashboardHabits.reduce(
+(sum, habit) => {
+const progress =
+progressMap[habit.slug];
+const completionDates =
+Array.isArray(progress?.completionDates)
+? progress.completionDates
+: [];
+const uniqueMonthlyDates =
+new Set(
+completionDates.filter(
+(date: string) =>
+typeof date === "string" &&
+date.startsWith(currentMonth)
+)
+);
+
+if (
+uniqueMonthlyDates.size === 0 &&
+typeof progress?.lastCompleted === "string" &&
+progress.lastCompleted.startsWith(currentMonth)
+) {
+uniqueMonthlyDates.add(
+progress.lastCompleted
+);
+}
+
+return sum + uniqueMonthlyDates.size;
+},
+0
+);
+
+const monthlyPossibleCount =
+Math.max(
+dashboardHabits.length * 30,
+1
+);
+
+const monthlyProgress =
+Math.min(
+Math.round(
+(monthlyCompletedCount / monthlyPossibleCount) *
+100
+),
+100
+);
+
+const hasOracleSummary =
+Boolean(
+dailyNumberDraw ||
+(isPro && dailyTarotDraw)
+);
+
+const openTodayGuidance = () => {
+if (hasOracleSummary) {
+setOracleModalVisible(true);
+return;
+}
+
+const targetHabit =
+selectedFreeHabit ??
+dashboardHabits[0]?.slug ??
+currentHabits[0]?.slug;
+
+if (targetHabit) {
+openHabit(targetHabit);
+}
+};
 
 return (
 
@@ -1481,7 +1735,7 @@ style={styles.logoutButton}
 {t.dashboardToday}
 </Text>
 <Text style={styles.dashboardValue}>
-{completedTodayCount}/{currentHabits.length}
+{completedTodayCount}/{dashboardHabits.length}
 </Text>
 </View>
 
@@ -1529,6 +1783,18 @@ COVENANT PRO
 {t.pro5}
 </Text>
 
+<Text style={styles.proText}>
+{t.pro6}
+</Text>
+
+<Text style={styles.proText}>
+{t.pro7}
+</Text>
+
+<Text style={styles.proText}>
+{t.pro8}
+</Text>
+
 	<Text style={styles.price}>
 	{t.price}
 	</Text>
@@ -1545,25 +1811,85 @@ style={styles.subscriptionButton}
 
 </View>
 
-<View style={styles.todayPanel}>
+<TouchableOpacity
+activeOpacity={0.86}
+onPress={openTodayGuidance}
+style={styles.todayPanel}
+>
+<View style={styles.monthlyPathHeader}>
 <View>
 <Text style={styles.todayPanelLabel}>
-{t.todayPanelTitle}
+{t.monthlyPath}
 </Text>
-<Text style={styles.todayPanelText}>
-{t.todayPanelText}
+<Text style={styles.monthlyPathValue}>
+{monthlyProgress}%
+</Text>
+<Text style={styles.monthlyPathSubtext}>
+{t.monthlyPathSubtext} · {monthlyCompletedCount}/{monthlyPossibleCount}
 </Text>
 </View>
 
-<View style={styles.todayPanelBadge}>
-<Text style={styles.todayPanelBadgeValue}>
-{completedTodayCount}
-</Text>
-<Text style={styles.todayPanelBadgeLabel}>
-{t.completed}
-</Text>
+<View style={styles.monthlyOrb}>
+<View style={styles.monthlyOrbRing} />
+<View style={styles.monthlyOrbInner} />
 </View>
 </View>
+
+<View style={styles.monthlyTrack}>
+<View
+style={[
+styles.monthlyTrackFill,
+{
+width: `${monthlyProgress}%`,
+},
+]}
+/>
+</View>
+
+<View style={styles.todayPanelDivider} />
+
+<View style={styles.oracleSummaryRow}>
+<View style={styles.oracleSummaryGlyph}>
+<View style={styles.oracleSummaryGlyphRing} />
+<View style={styles.oracleSummaryGlyphCore} />
+</View>
+
+<View style={styles.oracleSummaryCopy}>
+<Text style={styles.todayPanelLabel}>
+{t.oracleSummary}
+</Text>
+
+{hasOracleSummary ? (
+<View style={styles.oracleSummaryItems}>
+{dailyNumberDraw && (
+<Text style={styles.oracleSummaryText}>
+{t.todayNumber} {dailyNumberDraw.number} — {localize(dailyNumberDraw.title, language)}
+</Text>
+)}
+
+{isPro && dailyTarotDraw && (
+<Text style={styles.oracleSummaryText}>
+{t.todayCard} {localize(dailyTarotDraw.name, language)}
+</Text>
+)}
+</View>
+) : (
+<Text style={styles.todayPanelText}>
+{t.revealGuidance}
+</Text>
+)}
+</View>
+</View>
+
+<View style={styles.dailyCompletionRow}>
+<Text style={styles.dailyCompletionLabel}>
+{t.dailyCompletion}
+</Text>
+<Text style={styles.dailyCompletionValue}>
+{completedTodayCount}/{dashboardHabits.length}
+</Text>
+</View>
+</TouchableOpacity>
 
 {isSyncingProgress && (
 
@@ -1879,6 +2205,21 @@ styles.paywallText
 {t.pro5.replace("• ", "")}
 </Text>
 </View>
+<View style={styles.paywallFeaturePill}>
+<Text style={styles.paywallFeatureText}>
+{t.pro6.replace("• ", "")}
+</Text>
+</View>
+<View style={styles.paywallFeaturePill}>
+<Text style={styles.paywallFeatureText}>
+{t.pro7.replace("• ", "")}
+</Text>
+</View>
+<View style={styles.paywallFeaturePill}>
+<Text style={styles.paywallFeatureText}>
+{t.pro8.replace("• ", "")}
+</Text>
+</View>
 </View>
 
 <View style={styles.planRow}>
@@ -2040,6 +2381,65 @@ styles.paywallCancelText
 
 </View>
 
+</Modal>
+
+<Modal
+visible={oracleModalVisible}
+transparent
+animationType="fade"
+onRequestClose={() => setOracleModalVisible(false)}
+>
+<View style={styles.oracleModalOverlay}>
+<View style={styles.oracleModalPanel}>
+<Text style={styles.oracleModalLabel}>
+{t.oracleModalTitle}
+</Text>
+
+{dailyNumberDraw && (
+<View style={styles.oracleModalBlock}>
+<Text style={styles.oracleModalKicker}>
+{t.todayNumber}
+</Text>
+<Text style={styles.oracleModalTitleText}>
+{dailyNumberDraw.number} — {localize(dailyNumberDraw.title, language)}
+</Text>
+<Text style={styles.oracleModalBody}>
+{localize(dailyNumberDraw.meaning, language)}
+</Text>
+<Text style={styles.oracleModalQuestion}>
+{localize(dailyNumberDraw.reflection, language)}
+</Text>
+</View>
+)}
+
+{isPro && dailyTarotDraw && (
+<View style={styles.oracleModalBlock}>
+<Text style={styles.oracleModalKicker}>
+{t.todayCard}
+</Text>
+<Text style={styles.oracleModalTitleText}>
+{dailyTarotDraw.romanNumeral} {localize(dailyTarotDraw.name, language)}
+</Text>
+<Text style={styles.oracleModalBody}>
+{localize(dailyTarotDraw.meaning, language)}
+</Text>
+<Text style={styles.oracleModalQuestion}>
+{localize(dailyTarotDraw.question, language)}
+</Text>
+</View>
+)}
+
+<TouchableOpacity
+activeOpacity={0.82}
+onPress={() => setOracleModalVisible(false)}
+style={styles.oracleModalButton}
+>
+<Text style={styles.oracleModalButtonText}>
+{t.oracleModalClose}
+</Text>
+</TouchableOpacity>
+</View>
+</View>
 </Modal>
 
 <Modal
@@ -2296,68 +2696,214 @@ textAlign: "center",
 },
 
 todayPanel: {
+backgroundColor:
+"rgba(12,9,7,0.86)",
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.30)",
+borderRadius: 26,
+padding: 22,
+marginBottom: 24,
+shadowColor:
+COLORS.bronze,
+shadowOpacity: 0.22,
+shadowRadius: 34,
+shadowOffset: {
+width: 0,
+height: 18,
+},
+elevation: 5,
+},
+
+monthlyPathHeader: {
 flexDirection: "row",
 alignItems: "center",
 justifyContent: "space-between",
 gap: 18,
-backgroundColor:
-"rgba(16,13,10,0.78)",
-borderWidth: 1,
-borderColor:
-"rgba(255,232,200,0.13)",
-borderRadius: 22,
-padding: 20,
-marginBottom: 24,
-shadowColor:
-COLORS.bronze,
-shadowOpacity: 0.14,
-shadowRadius: 26,
-shadowOffset: {
-width: 0,
-height: 14,
-},
-elevation: 5,
+marginBottom: 16,
 },
 
 todayPanelLabel: {
 color: COLORS.bronze,
 fontSize: 10,
-letterSpacing: 3,
+letterSpacing: 3.4,
 fontWeight: "800",
-marginBottom: 8,
+marginBottom: 7,
+},
+
+monthlyPathValue: {
+color: COLORS.text,
+fontSize: 34,
+lineHeight: 40,
+fontWeight: "300",
+letterSpacing: 1,
+},
+
+monthlyPathSubtext: {
+color: COLORS.quiet,
+fontSize: 11,
+lineHeight: 17,
+letterSpacing: 1.4,
+},
+
+monthlyOrb: {
+width: 78,
+height: 78,
+borderRadius: 39,
+alignItems: "center",
+justifyContent: "center",
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.45)",
+backgroundColor:
+"rgba(216,140,58,0.11)",
+shadowColor:
+COLORS.bronze,
+shadowOpacity: 0.24,
+shadowRadius: 18,
+shadowOffset: {
+width: 0,
+height: 0,
+},
+},
+
+monthlyOrbRing: {
+position: "absolute",
+width: 56,
+height: 56,
+borderRadius: 28,
+borderWidth: 1,
+borderColor:
+"rgba(255,232,200,0.18)",
+},
+
+monthlyOrbInner: {
+width: 34,
+height: 34,
+borderRadius: 17,
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.58)",
+backgroundColor:
+"rgba(216,140,58,0.08)",
+},
+
+monthlyTrack: {
+height: 9,
+borderRadius: 999,
+overflow: "hidden",
+backgroundColor:
+"rgba(255,255,255,0.08)",
+marginBottom: 20,
+},
+
+monthlyTrackFill: {
+height: "100%",
+borderRadius: 999,
+backgroundColor:
+"#D88C3A",
+shadowColor:
+COLORS.bronze,
+shadowOpacity: 0.35,
+shadowRadius: 12,
+shadowOffset: {
+width: 0,
+height: 0,
+},
+},
+
+todayPanelDivider: {
+height: 1,
+backgroundColor:
+"rgba(255,232,200,0.12)",
+marginBottom: 18,
+},
+
+oracleSummaryRow: {
+flexDirection: "row",
+alignItems: "flex-start",
+gap: 14,
+marginBottom: 18,
+},
+
+oracleSummaryGlyph: {
+width: 40,
+height: 40,
+borderRadius: 20,
+alignItems: "center",
+justifyContent: "center",
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.42)",
+backgroundColor:
+"rgba(216,140,58,0.10)",
+},
+
+oracleSummaryGlyphRing: {
+position: "absolute",
+width: 28,
+height: 28,
+borderRadius: 14,
+borderWidth: 1,
+borderColor:
+"rgba(255,232,200,0.18)",
+},
+
+oracleSummaryGlyphCore: {
+width: 9,
+height: 9,
+borderRadius: 5,
+borderWidth: 1,
+borderColor:
+"rgba(241,197,142,0.72)",
+backgroundColor:
+"rgba(216,140,58,0.16)",
+},
+
+oracleSummaryCopy: {
+flex: 1,
+},
+
+oracleSummaryItems: {
+gap: 6,
+},
+
+oracleSummaryText: {
+color: "#F2E5D7",
+fontSize: 14,
+lineHeight: 21,
+fontWeight: "500",
 },
 
 todayPanelText: {
 color: "#D5C9BD",
 fontSize: 15,
 lineHeight: 23,
-maxWidth: 220,
 },
 
-todayPanelBadge: {
-width: 72,
-height: 72,
-borderRadius: 36,
+dailyCompletionRow: {
+flexDirection: "row",
 alignItems: "center",
-justifyContent: "center",
-borderWidth: 1,
-borderColor:
-COLORS.border,
-backgroundColor:
-"rgba(216,140,58,0.13)",
+justifyContent: "space-between",
+borderTopWidth: 1,
+borderTopColor:
+"rgba(255,232,200,0.10)",
+paddingTop: 16,
+gap: 12,
 },
 
-todayPanelBadgeValue: {
-color: COLORS.text,
-fontSize: 24,
-fontWeight: "700",
-lineHeight: 29,
+dailyCompletionLabel: {
+color: COLORS.quiet,
+fontSize: 10,
+letterSpacing: 2.6,
+fontWeight: "800",
 },
 
-todayPanelBadgeLabel: {
+dailyCompletionValue: {
 color: COLORS.bronze,
-fontSize: 8,
-letterSpacing: 1.4,
+fontSize: 17,
+lineHeight: 22,
+letterSpacing: 2,
 fontWeight: "700",
 },
 
@@ -2609,6 +3155,104 @@ color: COLORS.bronze,
 fontSize: 10,
 letterSpacing: 3,
 fontWeight: "700",
+},
+
+oracleModalOverlay: {
+flex: 1,
+backgroundColor:
+"rgba(0,0,0,0.82)",
+paddingHorizontal: 24,
+alignItems: "center",
+justifyContent: "center",
+},
+
+oracleModalPanel: {
+width: "100%",
+backgroundColor:
+"rgba(8,7,6,0.96)",
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.38)",
+borderRadius: 26,
+padding: 26,
+shadowColor:
+COLORS.bronze,
+shadowOpacity: 0.24,
+shadowRadius: 38,
+shadowOffset: {
+width: 0,
+height: 18,
+},
+elevation: 10,
+},
+
+oracleModalLabel: {
+color: COLORS.bronze,
+fontSize: 10,
+letterSpacing: 6,
+fontWeight: "800",
+marginBottom: 20,
+},
+
+oracleModalBlock: {
+borderTopWidth: 1,
+borderTopColor:
+"rgba(255,232,200,0.10)",
+paddingTop: 18,
+marginBottom: 20,
+},
+
+oracleModalKicker: {
+color: COLORS.quiet,
+fontSize: 10,
+letterSpacing: 3,
+fontWeight: "800",
+marginBottom: 8,
+},
+
+oracleModalTitleText: {
+color: COLORS.text,
+fontSize: 22,
+lineHeight: 29,
+fontWeight: "300",
+marginBottom: 12,
+},
+
+oracleModalBody: {
+color: "#D8CCC0",
+fontSize: 15,
+lineHeight: 25,
+marginBottom: 12,
+},
+
+oracleModalQuestion: {
+color: "#F0C892",
+fontSize: 14,
+lineHeight: 23,
+},
+
+oracleModalButton: {
+height: 54,
+borderRadius: 999,
+alignItems: "center",
+justifyContent: "center",
+backgroundColor:
+COLORS.bronze,
+shadowColor:
+COLORS.bronze,
+shadowOpacity: 0.22,
+shadowRadius: 18,
+shadowOffset: {
+width: 0,
+height: 10,
+},
+},
+
+oracleModalButtonText: {
+color: COLORS.background,
+fontSize: 11,
+letterSpacing: 3,
+fontWeight: "800",
 },
 
 purchaseErrorOverlay: {
