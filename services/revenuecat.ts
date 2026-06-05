@@ -20,10 +20,9 @@ type RevenueCatEnv = {
 declare const __DEV__: boolean;
 
 declare const process:
-  | {
-      env?: RevenueCatEnv;
-    }
-  | undefined;
+  {
+    env: RevenueCatEnv;
+  };
 
 const IOS_API_KEY_PLACEHOLDER = "ios api key";
 const ANDROID_API_KEY_PLACEHOLDER = "android api key";
@@ -90,14 +89,14 @@ function getRevenueCatApiKey() {
 
   if (Platform.OS === "ios") {
     return firstCleanApiKey(
-      process?.env?.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY,
+      process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY,
       extra.revenueCatIosApiKey
     );
   }
 
   if (Platform.OS === "android") {
     return firstCleanApiKey(
-      process?.env?.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY,
+      process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY,
       extra.revenueCatAndroidApiKey
     );
   }
@@ -110,13 +109,13 @@ function getRevenueCatApiKeyDiagnostics() {
   const extra = getExpoExtra();
   const iosKeyPresent = Boolean(
     firstCleanApiKey(
-      process?.env?.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY,
+      process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY,
       extra.revenueCatIosApiKey
     )
   );
   const androidKeyPresent = Boolean(
     firstCleanApiKey(
-      process?.env?.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY,
+      process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY,
       extra.revenueCatAndroidApiKey
     )
   );
@@ -127,11 +126,11 @@ function getRevenueCatApiKeyDiagnostics() {
     iosKeyPresent,
     androidKeyPresent,
     iOSProcessEnvKeyPresent: Boolean(
-      cleanApiKey(process?.env?.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY)
+      cleanApiKey(process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY)
     ),
     iOSExpoExtraKeyPresent: Boolean(cleanApiKey(extra.revenueCatIosApiKey)),
     androidProcessEnvKeyPresent: Boolean(
-      cleanApiKey(process?.env?.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY)
+      cleanApiKey(process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY)
     ),
     androidExpoExtraKeyPresent: Boolean(
       cleanApiKey(extra.revenueCatAndroidApiKey)
