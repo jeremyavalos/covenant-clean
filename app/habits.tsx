@@ -415,6 +415,16 @@ setIsPurchasing,
 ] = useState(false);
 
 const [
+isPaywallLoading,
+setIsPaywallLoading,
+] = useState(false);
+
+const [
+lastPurchaseError,
+setLastPurchaseError,
+] = useState<string | null>(null);
+
+const [
 purchaseErrorModal,
 setPurchaseErrorModal,
 ] = useState<{
@@ -435,8 +445,8 @@ setSelectedPlan,
 );
 
 const [
-selectedMonthlyPackage,
-setSelectedMonthlyPackage,
+paywallPackage,
+setPaywallPackage,
 ] = useState<PurchasesPackage | null>(null);
 
 const [
@@ -687,9 +697,11 @@ slug
 
 function closePaywall() {
 setIsPurchasing(false);
+setIsPaywallLoading(false);
 setIsRestoring(false);
 setPurchaseErrorModal(null);
-setSelectedMonthlyPackage(null);
+setLastPurchaseError(null);
+setPaywallPackage(null);
 setPaywallVisible(false);
 }
 
@@ -794,6 +806,7 @@ async function openSubscriptionReviewPath() {
 
 setSelectedLockedHabit(null);
 setSelectedPlan("monthly");
+setLastPurchaseError(null);
 const revenueCatReady =
 await initRevenueCat();
 
@@ -818,6 +831,10 @@ is_pro: isPro,
 }
 
 const loadSelectedMonthlyPackage = useCallback(async () => {
+setIsPaywallLoading(true);
+setLastPurchaseError(null);
+
+try {
 console.log("[Paywall] Loading RevenueCat offerings for monthly package.", {
 platform: Platform.OS,
 revenueCatReady: isRevenueCatConfigured(),
@@ -847,7 +864,7 @@ offering
 );
 
 if (mountedRef.current) {
-setSelectedMonthlyPackage(
+setPaywallPackage(
 resolvedMonthlyPackage
 );
 }
@@ -889,6 +906,10 @@ selectedProductPrice: resolvedMonthlyPackage?.product.priceString ?? null,
 });
 
 if (!offering) {
+if (mountedRef.current) {
+setLastPurchaseError("RevenueCat default offering not found.");
+}
+
 console.warn("[Paywall] RevenueCat default offering not found.", {
 platform: Platform.OS,
 reason: "offerings.all.default was not found, so no default monthly package can be selected.",
@@ -910,6 +931,10 @@ return null;
 }
 
 if (!resolvedMonthlyPackage) {
+if (mountedRef.current) {
+setLastPurchaseError("Selected monthly package is null.");
+}
+
 console.warn("[Paywall] No monthly RevenueCat package available to purchase.", {
 platform: Platform.OS,
 reason:
@@ -944,6 +969,20 @@ return null;
 }
 
 return resolvedMonthlyPackage;
+} catch (error) {
+const errorMessage =
+error instanceof Error ? error.message : String(error);
+
+if (mountedRef.current) {
+setLastPurchaseError(errorMessage);
+}
+
+throw error;
+} finally {
+if (mountedRef.current) {
+setIsPaywallLoading(false);
+}
+}
 }, []);
 
 useEffect(() => {
@@ -951,60 +990,57 @@ if (!paywallVisible) {
 return;
 }
 
-setSelectedMonthlyPackage(null);
+setPaywallPackage(null);
 
 loadSelectedMonthlyPackage().catch((error) => {
 console.warn("[Paywall] Could not load selected monthly package.", error);
 });
 }, [loadSelectedMonthlyPackage, paywallVisible]);
 
-async function purchaseSelectedPlan(
-plan: CovenantProPlan
+async function activateCovenantPro(
+packageToPurchase: PurchasesPackage | null
 ) {
-const packageToPurchase =
-selectedMonthlyPackage;
+console.log("[PAYWALL CLICKED]");
+console.log("selectedMonthlyPackage", !!packageToPurchase);
+console.log("selectedMonthlyPackage full", packageToPurchase);
 
-console.log("[Paywall] Purchase button selected monthly package.", {
-plan,
-platform: Platform.OS,
-selectedMonthlyPackageExists: Boolean(packageToPurchase),
-selectedMonthlyPackageIdentifier: packageToPurchase?.identifier ?? null,
-selectedMonthlyPackageType: packageToPurchase?.packageType ?? null,
-selectedProductIdentifier: packageToPurchase?.product.identifier ?? null,
-selectedProductId: packageToPurchase?.product.identifier ?? null,
-selectedProductPrice: packageToPurchase?.product.priceString ?? null,
+if (packageToPurchase) {
+console.log("identifier", packageToPurchase.identifier);
+console.log("packageType", packageToPurchase.packageType);
+console.log("productId", packageToPurchase.product.identifier);
+console.log("priceString", packageToPurchase.product.priceString);
+}
+
+console.log("[Paywall] Purchase button pressed.", {
+packagePresent: Boolean(packageToPurchase),
 });
 
 if (!packageToPurchase) {
-throw new Error(t.paywallPurchaseUnavailableText);
-}
-
-return purchasePackage(
-packageToPurchase
-);
-}
-
-async function activateCovenantPro(
-plan: CovenantProPlan
-) {
-console.log("[Paywall] Purchase button pressed.", {
-plan,
+console.warn("[Paywall] Purchase clicked with null package.", {
+paywallPackageExists: Boolean(paywallPackage),
+priceVisible: Boolean(paywallPackage?.product.priceString),
+isPaywallLoading,
 });
+setLastPurchaseError(t.paywallPurchaseUnavailableText);
+return;
+}
 
 setIsPurchasing(
 true
 );
 setPurchaseErrorModal(null);
+setLastPurchaseError(null);
 
 try {
 
+console.log("[PURCHASE ATTEMPT]");
+
 const customerInfo =
-await purchaseSelectedPlan(
-plan
+await purchasePackage(
+packageToPurchase
 );
 
 console.log("[Paywall] purchasePackage responded.", {
-plan,
 hasCustomerInfo: Boolean(customerInfo),
 activeEntitlements: customerInfo
 ? Object.keys(customerInfo.entitlements.active)
@@ -1013,7 +1049,7 @@ activeEntitlements: customerInfo
 
 if (!customerInfo) {
 console.log("[Paywall] Purchase finished without customerInfo.", {
-plan,
+plan: selectedPlan,
 });
 return;
 }
@@ -1030,7 +1066,7 @@ false
 );
 
 posthog.capture("subscription_started", {
-plan,
+plan: selectedPlan,
 habit_slug: selectedLockedHabit ?? null,
 });
 
@@ -1056,6 +1092,11 @@ error,
 t.paywallPurchaseErrorText
 );
 
+const errorMessage =
+error instanceof Error ? error.message : String(error);
+
+setLastPurchaseError(alertMessage ?? errorMessage);
+
 if (!alertMessage) {
 return;
 }
@@ -1073,7 +1114,7 @@ frames: error.stack ?? "",
 },
 ],
 $exception_source: "subscription",
-plan,
+plan: selectedPlan,
 });
 }
 
@@ -2286,7 +2327,7 @@ selectedPlan === "monthly" &&
 styles.planPriceActive,
 ]}
 >
-{selectedMonthlyPackage?.product.priceString ?? t.monthlyPrice}
+{paywallPackage?.product.priceString ?? ""}
 </Text>
 
 </TouchableOpacity>
@@ -2297,15 +2338,21 @@ styles.planPriceActive,
 activeOpacity={0.86}
 onPress={
 () => activateCovenantPro(
-selectedPlan
+paywallPackage
 )
 }
 disabled={
-isPurchasing
+isPurchasing ||
+isPaywallLoading ||
+!paywallPackage
 }
 style={[
 styles.paywallButton,
-isPurchasing && {
+(
+isPurchasing ||
+isPaywallLoading ||
+!paywallPackage
+) && {
 opacity: 0.72,
 },
 ]}
@@ -2337,6 +2384,23 @@ styles.paywallButtonText
 )}
 
 </TouchableOpacity>
+
+{Platform.OS === "ios" && !__DEV__ ? (
+
+<View style={styles.paywallDebugBox}>
+<Text style={styles.paywallDebugText}>
+{`selectedMonthlyPackage exists: ${Boolean(paywallPackage)}
+identifier: ${paywallPackage?.identifier ?? ""}
+packageType: ${paywallPackage?.packageType ?? ""}
+productId: ${paywallPackage?.product.identifier ?? ""}
+priceString: ${paywallPackage?.product.priceString ?? ""}
+isPurchasing: ${isPurchasing}
+isPaywallLoading: ${isPaywallLoading}
+lastPurchaseError: ${lastPurchaseError ?? ""}`}
+</Text>
+</View>
+
+) : null}
 
 <TouchableOpacity
 activeOpacity={0.72}
@@ -3538,6 +3602,22 @@ color: COLORS.background,
 fontSize: 10,
 letterSpacing: 1.8,
 fontWeight: "800",
+},
+
+paywallDebugBox: {
+borderWidth: 1,
+borderColor:
+"rgba(255,232,200,0.22)",
+backgroundColor:
+"rgba(0,0,0,0.36)",
+padding: 10,
+marginBottom: 14,
+},
+
+paywallDebugText: {
+color: COLORS.text,
+fontSize: 11,
+lineHeight: 16,
 },
 
 restoreButton: {
