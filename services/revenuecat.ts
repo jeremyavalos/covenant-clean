@@ -28,6 +28,8 @@ declare const process:
 const IOS_API_KEY_PLACEHOLDER = "ios api key";
 const ANDROID_API_KEY_PLACEHOLDER = "android api key";
 export const DEFAULT_OFFERING_IDENTIFIER = "default";
+export const IOS_MONTHLY_PRODUCT_IDENTIFIER =
+  "com.joincovenantapp.covenant.pro.monthly";
 export const ANDROID_MONTHLY_PRODUCT_IDENTIFIER =
   "com.joincovenantapp.covenant.pro.monthly:monthly";
 export const PRO_ENTITLEMENT_IDS = ["covenant Pro", "covenant_pro"];
@@ -71,22 +73,32 @@ function cleanApiKey(value?: string | null) {
   return apiKey;
 }
 
+function firstCleanApiKey(...values: Array<string | null | undefined>) {
+  for (const value of values) {
+    const apiKey = cleanApiKey(value);
+
+    if (apiKey) {
+      return apiKey;
+    }
+  }
+
+  return null;
+}
+
 function getRevenueCatApiKey() {
   const extra = getExpoExtra();
 
   if (Platform.OS === "ios") {
-    return cleanApiKey(
-      process?.env?.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY ??
-        extra.revenueCatIosApiKey ??
-        IOS_API_KEY_PLACEHOLDER
+    return firstCleanApiKey(
+      process?.env?.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY,
+      extra.revenueCatIosApiKey
     );
   }
 
   if (Platform.OS === "android") {
-    return cleanApiKey(
-      process?.env?.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY ??
-        extra.revenueCatAndroidApiKey ??
-        ANDROID_API_KEY_PLACEHOLDER
+    return firstCleanApiKey(
+      process?.env?.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY,
+      extra.revenueCatAndroidApiKey
     );
   }
 
@@ -96,17 +108,34 @@ function getRevenueCatApiKey() {
 
 function getRevenueCatApiKeyDiagnostics() {
   const extra = getExpoExtra();
+  const iosKeyPresent = Boolean(
+    firstCleanApiKey(
+      process?.env?.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY,
+      extra.revenueCatIosApiKey
+    )
+  );
+  const androidKeyPresent = Boolean(
+    firstCleanApiKey(
+      process?.env?.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY,
+      extra.revenueCatAndroidApiKey
+    )
+  );
 
   return {
     platform: Platform.OS,
+    revenueCatReady: initialized,
+    iosKeyPresent,
+    androidKeyPresent,
     iOSProcessEnvKeyPresent: Boolean(
-      process?.env?.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY
+      cleanApiKey(process?.env?.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY)
     ),
-    iOSExpoExtraKeyPresent: Boolean(extra.revenueCatIosApiKey),
+    iOSExpoExtraKeyPresent: Boolean(cleanApiKey(extra.revenueCatIosApiKey)),
     androidProcessEnvKeyPresent: Boolean(
-      process?.env?.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY
+      cleanApiKey(process?.env?.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY)
     ),
-    androidExpoExtraKeyPresent: Boolean(extra.revenueCatAndroidApiKey),
+    androidExpoExtraKeyPresent: Boolean(
+      cleanApiKey(extra.revenueCatAndroidApiKey)
+    ),
     currentPlatformKeyPresent: Boolean(getRevenueCatApiKey()),
   };
 }
@@ -121,11 +150,12 @@ export function isRevenueCatConfigured() {
 
 export async function initRevenueCat(appUserID?: string): Promise<boolean> {
   if (initialized) {
-      console.log("[RevenueCat] SDK already configured.", {
-        platform: configuredPlatform ?? Platform.OS,
-        requestedPlatform: Platform.OS,
-      });
-      return true;
+    console.log("[RevenueCat] SDK already configured.", {
+      ...getRevenueCatApiKeyDiagnostics(),
+      configuredPlatform: configuredPlatform ?? Platform.OS,
+      requestedPlatform: Platform.OS,
+    });
+    return true;
   }
 
   if (initPromise) {
@@ -218,7 +248,6 @@ export async function getOfferings(): Promise<PurchasesOfferings | null> {
 
   if (!ready) {
     console.warn("[RevenueCat] getOfferings skipped because SDK is not ready.", {
-      configured: initialized,
       ...getRevenueCatApiKeyDiagnostics(),
     });
     return null;
@@ -226,7 +255,6 @@ export async function getOfferings(): Promise<PurchasesOfferings | null> {
 
   try {
     console.log("[RevenueCat] Calling Purchases.getOfferings.", {
-      configured: initialized,
       configuredPlatform,
       ...getRevenueCatApiKeyDiagnostics(),
     });
@@ -238,8 +266,7 @@ export async function getOfferings(): Promise<PurchasesOfferings | null> {
     );
 
     console.log("[RevenueCat] getOfferings responded.", {
-      configured: initialized,
-      offeringsAllKeys: Object.keys(offerings.all),
+      offeringsKeys: Object.keys(offerings.all),
       offeringsCurrentIdentifier: offerings.current?.identifier ?? null,
       defaultOfferingExists: Boolean(
         offerings.all[DEFAULT_OFFERING_IDENTIFIER]
@@ -260,9 +287,12 @@ export async function getOfferings(): Promise<PurchasesOfferings | null> {
 
     return offerings;
   } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : String(error);
+
     console.error("[RevenueCat] Full getOfferings error object.", {
       error,
-      configured: initialized,
+      getOfferingsErrorMessage: errorMessage,
       ...getRevenueCatApiKeyDiagnostics(),
     });
     warnRevenueCat("Could not load offerings.", error);

@@ -58,6 +58,7 @@ import { getLocalDateKey } from "../utils/dates";
 import {
   ANDROID_MONTHLY_PRODUCT_IDENTIFIER,
   DEFAULT_OFFERING_IDENTIFIER,
+  IOS_MONTHLY_PRODUCT_IDENTIFIER,
   getDefaultOffering,
   getOfferings,
   hasProAccess,
@@ -794,6 +795,8 @@ source: "pro_card",
 platform: Platform.OS,
 revenueCatReady,
 revenueCatConfigured: isRevenueCatConfigured(),
+iosKeyPresent:
+Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
 iOSRevenueCatApiKeyPresent:
 Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
 });
@@ -813,6 +816,9 @@ plan: CovenantProPlan
 console.log("[Paywall] Loading RevenueCat offerings for selected plan.", {
 plan,
 platform: Platform.OS,
+revenueCatReady: isRevenueCatConfigured(),
+iosKeyPresent:
+Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
 iOSRevenueCatApiKeyPresent:
 Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
 androidRevenueCatApiKeyPresent:
@@ -851,18 +857,24 @@ item.product.identifier ===
 ANDROID_MONTHLY_PRODUCT_IDENTIFIER
 ) ?? null;
 
+const iosMonthlyByProductIdentifier =
+offering?.availablePackages.find(
+(item) =>
+item.product.identifier ===
+IOS_MONTHLY_PRODUCT_IDENTIFIER
+) ?? null;
+
 const packageToPurchase =
 Platform.OS === "android"
 ? androidMonthlyByProductIdentifier
-:
-monthlyFromOfferingProperty ??
-monthlyByRevenueCatIdentifier ??
-monthlyByPackageType ??
-null;
+: iosMonthlyByProductIdentifier;
 
 console.log("[Paywall] RevenueCat diagnostics.", {
 plan,
 platform: Platform.OS,
+revenueCatReady: isRevenueCatConfigured(),
+iosKeyPresent:
+Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
 iOSRevenueCatApiKeyPresent:
 Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
 androidRevenueCatApiKeyPresent:
@@ -871,7 +883,10 @@ revenueCatConfigured: isRevenueCatConfigured(),
 defaultOfferingIdentifier: DEFAULT_OFFERING_IDENTIFIER,
 expectedAndroidMonthlyProductIdentifier:
 ANDROID_MONTHLY_PRODUCT_IDENTIFIER,
+expectedIosMonthlyProductIdentifier:
+IOS_MONTHLY_PRODUCT_IDENTIFIER,
 offeringsAllKeys: offerings ? Object.keys(offerings.all) : [],
+offeringsKeys: offerings ? Object.keys(offerings.all) : [],
 offeringsCurrentIdentifier: offerings?.current?.identifier ?? null,
 offeringsAllDefaultExists: Boolean(defaultOffering),
 selectedOfferingIdentifier: offering?.identifier ?? null,
@@ -886,8 +901,10 @@ offeringMonthlyExists: Boolean(monthlyFromOfferingProperty),
 rcMonthlyPackageExists: Boolean(monthlyByRevenueCatIdentifier),
 monthlyPackageTypeExists: Boolean(monthlyByPackageType),
 androidMonthlyProductExists: Boolean(androidMonthlyByProductIdentifier),
+iosMonthlyProductExists: Boolean(iosMonthlyByProductIdentifier),
 selectedMonthlyPackageIdentifier: packageToPurchase?.identifier ?? null,
 selectedProductIdentifier: packageToPurchase?.product.identifier ?? null,
+selectedProductId: packageToPurchase?.product.identifier ?? null,
 });
 
 if (!offering) {
@@ -896,6 +913,9 @@ plan,
 platform: Platform.OS,
 reason: "offerings.all.default was not found, so no default monthly package can be selected.",
 defaultOfferingIdentifier: DEFAULT_OFFERING_IDENTIFIER,
+revenueCatReady: isRevenueCatConfigured(),
+iosKeyPresent:
+Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
 iOSRevenueCatApiKeyPresent:
 Platform.OS === "ios" ? hasRevenueCatApiKeyForCurrentPlatform() : null,
 androidRevenueCatApiKeyPresent:
@@ -916,12 +936,15 @@ platform: Platform.OS,
 reason:
 Platform.OS === "android"
 ? "No package matched the required Android product identifier. Purchase sheet will not open."
-: "No package was found through offering.monthly, identifier $rc_monthly, or packageType MONTHLY. Purchase sheet will not open.",
+: "No package matched the required iOS product identifier. Purchase sheet will not open.",
 defaultOfferingIdentifier: DEFAULT_OFFERING_IDENTIFIER,
 expectedAndroidMonthlyProductIdentifier:
 ANDROID_MONTHLY_PRODUCT_IDENTIFIER,
+expectedIosMonthlyProductIdentifier:
+IOS_MONTHLY_PRODUCT_IDENTIFIER,
 offeringIdentifier: offering?.identifier ?? null,
 offeringsAllKeys: offerings ? Object.keys(offerings.all) : [],
+offeringsKeys: offerings ? Object.keys(offerings.all) : [],
 offeringsCurrentIdentifier: offerings?.current?.identifier ?? null,
 offeringsAllDefaultExists: Boolean(defaultOffering),
 defaultMonthlyExists: Boolean(defaultOffering?.monthly),
@@ -931,6 +954,7 @@ availablePackageTypes:
 offering?.availablePackages.map((item) => item.packageType) ?? [],
 availableProductIdentifiers:
 offering?.availablePackages.map((item) => item.product.identifier) ?? [],
+selectedProductId: null,
 availablePackages:
 offering?.availablePackages.map((item) =>
 describePurchasePackage(item)
@@ -948,6 +972,7 @@ offering.availablePackages.map((item) => item.identifier),
 selectedPackageIdentifier: packageToPurchase.identifier,
 selectedPackageType: packageToPurchase.packageType,
 selectedProductIdentifier: packageToPurchase.product.identifier,
+selectedProductId: packageToPurchase.product.identifier,
 selectedProductPrice: packageToPurchase.product.priceString,
 });
 
