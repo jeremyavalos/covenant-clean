@@ -382,6 +382,30 @@ export function getDefaultOffering(offerings: PurchasesOfferings | null) {
 export function getMonthlyPackageFromOffering(
   offering: RevenueCatOffering | null
 ): PurchasesPackage | null {
+  if (Platform.OS === "android") {
+    return (
+      offering?.availablePackages.find(
+        (item) =>
+          item.product.identifier === ANDROID_MONTHLY_PRODUCT_IDENTIFIER
+      ) ?? null
+    );
+  }
+
+  if (Platform.OS === "ios") {
+    return (
+      offering?.availablePackages.find(
+        (item) => item.product.identifier === IOS_MONTHLY_PRODUCT_IDENTIFIER
+      ) ??
+      offering?.monthly ??
+      offering?.availablePackages.find(
+        (item) =>
+          item.identifier === "$rc_monthly" ||
+          item.packageType === "MONTHLY"
+      ) ??
+      null
+    );
+  }
+
   return (
     offering?.monthly ??
     offering?.availablePackages.find(

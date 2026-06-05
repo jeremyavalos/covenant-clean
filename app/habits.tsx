@@ -60,6 +60,7 @@ import {
   DEFAULT_OFFERING_IDENTIFIER,
   IOS_MONTHLY_PRODUCT_IDENTIFIER,
   getDefaultOffering,
+  getMonthlyPackageFromOffering,
   getOfferings,
   hasProAccess,
   hasRevenueCatApiKeyForCurrentPlatform,
@@ -434,6 +435,11 @@ setSelectedPlan,
 );
 
 const [
+selectedMonthlyPackage,
+setSelectedMonthlyPackage,
+] = useState<PurchasesPackage | null>(null);
+
+const [
 selectedLockedHabit,
 setSelectedLockedHabit,
 	] = useState<string | null>(
@@ -683,6 +689,7 @@ function closePaywall() {
 setIsPurchasing(false);
 setIsRestoring(false);
 setPurchaseErrorModal(null);
+setSelectedMonthlyPackage(null);
 setPaywallVisible(false);
 }
 
@@ -810,11 +817,8 @@ is_pro: isPro,
 
 }
 
-async function purchaseSelectedPlan(
-plan: CovenantProPlan
-) {
-console.log("[Paywall] Loading RevenueCat offerings for selected plan.", {
-plan,
+const loadSelectedMonthlyPackage = useCallback(async () => {
+console.log("[Paywall] Loading RevenueCat offerings for monthly package.", {
 platform: Platform.OS,
 revenueCatReady: isRevenueCatConfigured(),
 iosKeyPresent:
@@ -837,40 +841,18 @@ getDefaultOffering(
 offerings
 );
 
-const monthlyFromOfferingProperty =
-offering?.monthly ?? null;
+const resolvedMonthlyPackage =
+getMonthlyPackageFromOffering(
+offering
+);
 
-const monthlyByRevenueCatIdentifier =
-offering?.availablePackages.find(
-(item) => item.identifier === "$rc_monthly"
-) ?? null;
+if (mountedRef.current) {
+setSelectedMonthlyPackage(
+resolvedMonthlyPackage
+);
+}
 
-const monthlyByPackageType =
-offering?.availablePackages.find(
-(item) => item.packageType === "MONTHLY"
-) ?? null;
-
-const androidMonthlyByProductIdentifier =
-offering?.availablePackages.find(
-(item) =>
-item.product.identifier ===
-ANDROID_MONTHLY_PRODUCT_IDENTIFIER
-) ?? null;
-
-const iosMonthlyByProductIdentifier =
-offering?.availablePackages.find(
-(item) =>
-item.product.identifier ===
-IOS_MONTHLY_PRODUCT_IDENTIFIER
-) ?? null;
-
-const packageToPurchase =
-Platform.OS === "android"
-? androidMonthlyByProductIdentifier
-: iosMonthlyByProductIdentifier;
-
-console.log("[Paywall] RevenueCat diagnostics.", {
-plan,
+console.log("[Paywall] RevenueCat monthly package resolved.", {
 platform: Platform.OS,
 revenueCatReady: isRevenueCatConfigured(),
 iosKeyPresent:
@@ -897,19 +879,17 @@ defaultOffering?.availablePackages.map((item) =>
 describePurchasePackage(item)
 ) ?? [],
 defaultMonthlyExists: Boolean(defaultOffering?.monthly),
-offeringMonthlyExists: Boolean(monthlyFromOfferingProperty),
-rcMonthlyPackageExists: Boolean(monthlyByRevenueCatIdentifier),
-monthlyPackageTypeExists: Boolean(monthlyByPackageType),
-androidMonthlyProductExists: Boolean(androidMonthlyByProductIdentifier),
-iosMonthlyProductExists: Boolean(iosMonthlyByProductIdentifier),
-selectedMonthlyPackageIdentifier: packageToPurchase?.identifier ?? null,
-selectedProductIdentifier: packageToPurchase?.product.identifier ?? null,
-selectedProductId: packageToPurchase?.product.identifier ?? null,
+selectedMonthlyPackageExists: Boolean(resolvedMonthlyPackage),
+selectedMonthlyPackageIdentifier: resolvedMonthlyPackage?.identifier ?? null,
+selectedMonthlyPackageType: resolvedMonthlyPackage?.packageType ?? null,
+selectedProductIdentifier:
+resolvedMonthlyPackage?.product.identifier ?? null,
+selectedProductId: resolvedMonthlyPackage?.product.identifier ?? null,
+selectedProductPrice: resolvedMonthlyPackage?.product.priceString ?? null,
 });
 
 if (!offering) {
 console.warn("[Paywall] RevenueCat default offering not found.", {
-plan,
 platform: Platform.OS,
 reason: "offerings.all.default was not found, so no default monthly package can be selected.",
 defaultOfferingIdentifier: DEFAULT_OFFERING_IDENTIFIER,
@@ -926,17 +906,16 @@ offeringsCurrentIdentifier: offerings?.current?.identifier ?? null,
 offeringsAllDefaultExists: Boolean(defaultOffering),
 });
 
-throw new Error(t.paywallPurchaseUnavailableText);
+return null;
 }
 
-if (!packageToPurchase) {
+if (!resolvedMonthlyPackage) {
 console.warn("[Paywall] No monthly RevenueCat package available to purchase.", {
-plan,
 platform: Platform.OS,
 reason:
 Platform.OS === "android"
 ? "No package matched the required Android product identifier. Purchase sheet will not open."
-: "No package matched the required iOS product identifier. Purchase sheet will not open.",
+: "No package matched the required iOS product identifier or monthly fallback. Purchase sheet will not open.",
 defaultOfferingIdentifier: DEFAULT_OFFERING_IDENTIFIER,
 expectedAndroidMonthlyProductIdentifier:
 ANDROID_MONTHLY_PRODUCT_IDENTIFIER,
@@ -961,20 +940,44 @@ describePurchasePackage(item)
 ) ?? [],
 });
 
-throw new Error(t.paywallPurchaseUnavailableText);
+return null;
 }
 
-console.log("[Paywall] Selected monthly RevenueCat package.", {
-plan,
-offeringIdentifier: offering.identifier,
-availablePackageIdentifiers:
-offering.availablePackages.map((item) => item.identifier),
-selectedPackageIdentifier: packageToPurchase.identifier,
-selectedPackageType: packageToPurchase.packageType,
-selectedProductIdentifier: packageToPurchase.product.identifier,
-selectedProductId: packageToPurchase.product.identifier,
-selectedProductPrice: packageToPurchase.product.priceString,
+return resolvedMonthlyPackage;
+}, []);
+
+useEffect(() => {
+if (!paywallVisible) {
+return;
+}
+
+setSelectedMonthlyPackage(null);
+
+loadSelectedMonthlyPackage().catch((error) => {
+console.warn("[Paywall] Could not load selected monthly package.", error);
 });
+}, [loadSelectedMonthlyPackage, paywallVisible]);
+
+async function purchaseSelectedPlan(
+plan: CovenantProPlan
+) {
+const packageToPurchase =
+selectedMonthlyPackage;
+
+console.log("[Paywall] Purchase button selected monthly package.", {
+plan,
+platform: Platform.OS,
+selectedMonthlyPackageExists: Boolean(packageToPurchase),
+selectedMonthlyPackageIdentifier: packageToPurchase?.identifier ?? null,
+selectedMonthlyPackageType: packageToPurchase?.packageType ?? null,
+selectedProductIdentifier: packageToPurchase?.product.identifier ?? null,
+selectedProductId: packageToPurchase?.product.identifier ?? null,
+selectedProductPrice: packageToPurchase?.product.priceString ?? null,
+});
+
+if (!packageToPurchase) {
+throw new Error(t.paywallPurchaseUnavailableText);
+}
 
 return purchasePackage(
 packageToPurchase
@@ -1237,12 +1240,12 @@ Platform.OS === "ios"
 
 paywallPurchaseErrorTitle:
 Platform.OS === "ios"
-? "Monthly Pro unavailable"
+? "No se pudo completar la compra"
 : "No se pudo iniciar la compra",
 
 paywallPurchaseErrorText:
 Platform.OS === "ios"
-? "Monthly Pro is temporarily unavailable. Please try again later."
+? "No se pudo completar la compra. Inténtalo de nuevo."
 : "Las compras no están disponibles temporalmente. Inténtalo de nuevo más tarde.",
 
 paywallCancel:
@@ -2283,7 +2286,7 @@ selectedPlan === "monthly" &&
 styles.planPriceActive,
 ]}
 >
-{t.monthlyPrice}
+{selectedMonthlyPackage?.product.priceString ?? t.monthlyPrice}
 </Text>
 
 </TouchableOpacity>
