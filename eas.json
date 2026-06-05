@@ -33,9 +33,12 @@
   },
   "submit": {
     "production": {
-      "android": {},
+      "android": {
+        "applicationId": "com.joincovenant.app"
+      },
       "ios": {
         "ascAppId": "6773019036",
+        "bundleIdentifier": "com.joincovenantapp.covenant",
         "ascApiKeyId": "D6GVHL2K89",
         "ascApiKeyIssuerId": "d2288037-ac8a-4638-ba12-7a4487db1ef0",
         "ascApiKeyPath": "credentials/AuthKey_D6GVHL2K89.p8"
