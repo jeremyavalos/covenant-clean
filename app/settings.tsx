@@ -92,6 +92,11 @@ useAuthStore(
 (state) => state.deleteAccount
 );
 
+const user =
+useAuthStore(
+(state) => state.user
+);
+
 const [
 language,
 setLanguage,
@@ -163,6 +168,7 @@ english: "English",
 restore: "Restaurar compras",
 support: "Soporte / contacto",
 deleteAccount: "Eliminar cuenta",
+signIn: "Iniciar sesión / registrarse",
 deleteTitle: "Eliminar cuenta",
 deleteText:
 "Esto eliminará permanentemente tu cuenta, progreso y datos asociados. Ingresa tu contraseña para confirmar.",
@@ -192,6 +198,7 @@ english: "English",
 restore: "Restore purchases",
 support: "Support / contact",
 deleteAccount: "Delete account",
+signIn: "Sign in / register",
 deleteTitle: "Delete account",
 deleteText:
 "This will permanently delete your account, progress, and associated data. Enter your password to confirm.",
@@ -277,6 +284,11 @@ Linking.openURL(SUPPORT_URL)
 }
 
 function openDeleteAccount() {
+if (!user) {
+router.push("/auth" as never);
+return;
+}
+
 setDeletePassword("");
 setDeleteVisible(true);
 }
@@ -429,13 +441,15 @@ style={styles.rowButton}
 </TouchableOpacity>
 </View>
 
-<View style={styles.dangerPanel}>
+<View style={user ? styles.dangerPanel : styles.panel}>
 <TouchableOpacity
 activeOpacity={0.78}
 onPress={openDeleteAccount}
-style={styles.dangerButton}
+style={user ? styles.dangerButton : styles.rowButton}
 >
-<Text style={styles.dangerText}>{t.deleteAccount}</Text>
+<Text style={user ? styles.dangerText : styles.rowText}>
+{user ? t.deleteAccount : t.signIn}
+</Text>
 </TouchableOpacity>
 </View>
 </ScrollView>

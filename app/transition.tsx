@@ -1,4 +1,5 @@
 import {
+  Platform,
   Text,
   TouchableOpacity,
   View,
@@ -78,7 +79,7 @@ export default function TransitionScreen() {
       true;
 
     router.replace(
-      token
+      token || Platform.OS === "ios"
         ? "/habits"
         : "/auth"
     );

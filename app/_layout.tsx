@@ -21,8 +21,14 @@ import {
 import { PostHogProvider } from "posthog-react-native";
 
 import {
+  setProgressUser,
   syncProgress,
 } from "../utils/progress";
+
+import {
+  GUEST_PROGRESS_USER_KEY,
+  isGuestModeAvailable,
+} from "../utils/guestMode";
 
 import {
   useAuthStore,
@@ -92,7 +98,23 @@ export default function Layout() {
       currentRoute === "reset-password" ||
       currentRoute === "verify-email";
 
-    if (!token && !isPublicRoute) {
+    const canUseGuestMode =
+      isGuestModeAvailable();
+
+    if (
+      !token &&
+      canUseGuestMode
+    ) {
+      setProgressUser(
+        GUEST_PROGRESS_USER_KEY
+      ).catch(() => undefined);
+    }
+
+    if (
+      !token &&
+      !canUseGuestMode &&
+      !isPublicRoute
+    ) {
       router.replace("/auth" as never);
       return;
     }

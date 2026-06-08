@@ -81,6 +81,10 @@ import {
   useAuthStore,
 } from "../store/authStore";
 
+import {
+  getGuestStorageKey,
+} from "../utils/guestMode";
+
 function localize(
 value: {
 en: string;
@@ -361,6 +365,9 @@ useAuthStore(
 (state) => state.user
 );
 
+const isGuest =
+!user;
+
 const [
 progressMap,
 setProgressMap,
@@ -466,7 +473,7 @@ mountedRef.current = false;
 
 const getUserStorageKey = useCallback(() => {
 if (!user) {
-return null;
+return getGuestStorageKey();
 }
 
 return String(user.id || user.email);
@@ -782,6 +789,13 @@ habit: slug,
 }
 
 async function handleLogout() {
+
+if (!user) {
+router.push(
+"/auth" as never
+);
+return;
+}
 
 setSelectedFreeHabit(null);
 setIsFreeHabitReady(false);
@@ -1124,7 +1138,9 @@ free:
 "1 hábito / 24 hrs",
 
 logout:
-"CERRAR SESIÓN",
+isGuest
+? "INICIAR SESIÓN"
+: "CERRAR SESIÓN",
 
 completed:
 "COMPLETADO",
@@ -1345,7 +1361,9 @@ free:
 "1 habit / 24 hrs",
 
 logout:
-"SIGN OUT",
+isGuest
+? "SIGN IN"
+: "SIGN OUT",
 
 completed:
 "COMPLETED",

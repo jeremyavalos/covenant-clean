@@ -33,6 +33,7 @@ import CovenantBackdrop from '../../components/CovenantBackdrop';
 import { useSubscription } from '../../context/SubscriptionContext';
 import { TarotVisualSymbol } from '../../data/oracle';
 import { useAuthStore } from '../../store/authStore';
+import { getGuestStorageKey } from '../../utils/guestMode';
 import { getTodayHabitEntry } from '../../utils/habitEngine';
 import { getLocalDateKey } from '../../utils/dates';
 import { getLanguage, Language } from '../../utils/language';
@@ -472,7 +473,9 @@ export default function HabitScreen() {
     setCompletedToday(progress.lastCompleted === today);
   }, [habitSlug]);
 
-  const userStorageKey = user ? String(user.id || user.email) : null;
+  const userStorageKey = user
+    ? String(user.id || user.email)
+    : getGuestStorageKey();
 
   const loadOracle = useCallback(async () => {
     const oracleUserKey = await getOracleUserKey(userStorageKey);

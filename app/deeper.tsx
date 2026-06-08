@@ -25,6 +25,7 @@ import CovenantBackdrop from '../components/CovenantBackdrop';
 import { useSubscription } from '../context/SubscriptionContext';
 import { getStableDeeperEntry } from '../data/deeper';
 import { useAuthStore } from '../store/authStore';
+import { getGuestStorageKey } from '../utils/guestMode';
 import { getLocalDateKey } from '../utils/dates';
 import { getLanguage, Language } from '../utils/language';
 import {
@@ -429,7 +430,9 @@ export default function DeeperScreen() {
     const currentProgress = await getHabitProgress(habitSlug);
     setProgress(currentProgress);
 
-    const userStorageKey = user ? String(user.id || user.email) : null;
+    const userStorageKey = user
+      ? String(user.id || user.email)
+      : getGuestStorageKey();
     const oracleUserKey = await getOracleUserKey(userStorageKey);
 
     const [dailyNumber, dailyTarot] = await Promise.all([
