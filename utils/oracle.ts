@@ -2,7 +2,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import {
   DAILY_NUMBERS,
+  DAILY_COUNSELS,
   DailyNumber,
+  DailyCounsel,
   MAJOR_ARCANA,
   TarotCard,
 } from "../data/oracle";
@@ -16,6 +18,10 @@ export type OracleTarotDraw = TarotCard & {
   date: string;
 };
 
+export type OracleCounselDraw = DailyCounsel & {
+  date: string;
+};
+
 type StoredNumberDraw = {
   date: string;
   number: number;
@@ -26,8 +32,14 @@ type StoredTarotDraw = {
   cardId: string;
 };
 
+type StoredCounselDraw = {
+  date: string;
+  counselId: string;
+};
+
 const NUMBER_PREFIX = "dailyNumberDraw";
 const TAROT_PREFIX = "dailyTarotDraw";
+const COUNSEL_PREFIX = "dailyCounselDraw";
 const ANONYMOUS_ORACLE_USER_KEY = "COVENANT_ORACLE_ANONYMOUS_USER";
 
 const TAROT_WEIGHTS_BY_HABIT: Record<string, string[]> = {
@@ -79,6 +91,10 @@ function getNumberStorageKey(userIdOrEmail: string, date: string) {
 
 function getTarotStorageKey(userIdOrEmail: string, date: string) {
   return `${TAROT_PREFIX}:${sanitizeUserKey(userIdOrEmail)}:${date}`;
+}
+
+function getCounselStorageKey(userIdOrEmail: string, date: string) {
+  return `${COUNSEL_PREFIX}:${sanitizeUserKey(userIdOrEmail)}:${date}`;
 }
 
 function parseStoredDraw<T>(raw: string | null): T | null {
@@ -161,6 +177,31 @@ function resolveTarotDraw(
   };
 }
 
+function resolveCounselDraw(
+  stored: StoredCounselDraw | OracleCounselDraw | null,
+  date: string
+): OracleCounselDraw | null {
+  if (!stored) {
+    return null;
+  }
+
+  const counsel =
+    "counselId" in stored
+      ? DAILY_COUNSELS.find((item) => item.id === stored.counselId)
+      : "id" in stored
+        ? DAILY_COUNSELS.find((item) => item.id === stored.id)
+        : null;
+
+  if (!counsel) {
+    return null;
+  }
+
+  return {
+    ...counsel,
+    date,
+  };
+}
+
 export async function getDailyNumberDraw(
   userIdOrEmail: string,
   date = getLocalDateKey()
@@ -217,9 +258,23 @@ export async function getDailyTarotDraw(
   );
 }
 
+export async function getDailyCounselDraw(
+  userIdOrEmail: string,
+  date = getLocalDateKey()
+) {
+  const raw = await AsyncStorage.getItem(
+    getCounselStorageKey(userIdOrEmail, date)
+  );
+
+  return resolveCounselDraw(
+    parseStoredDraw<StoredCounselDraw | OracleCounselDraw>(raw),
+    date
+  );
+}
+
 export async function revealDailyTarotDraw(
   userIdOrEmail: string,
-  habitSlug: string,
+  habitSlug?: string,
   date = getLocalDateKey()
 ) {
   const existing = await getDailyTarotDraw(userIdOrEmail, date);
@@ -228,7 +283,7 @@ export async function revealDailyTarotDraw(
     return existing;
   }
 
-  const card = pickRandom(buildWeightedTarotPool(habitSlug));
+  const card = pickRandom(MAJOR_ARCANA);
   const draw: OracleTarotDraw = {
     ...card,
     date,
@@ -240,6 +295,34 @@ export async function revealDailyTarotDraw(
 
   await AsyncStorage.setItem(
     getTarotStorageKey(userIdOrEmail, date),
+    JSON.stringify(stored)
+  );
+
+  return draw;
+}
+
+export async function revealDailyCounselDraw(
+  userIdOrEmail: string,
+  date = getLocalDateKey()
+) {
+  const existing = await getDailyCounselDraw(userIdOrEmail, date);
+
+  if (existing) {
+    return existing;
+  }
+
+  const counsel = pickRandom(DAILY_COUNSELS);
+  const draw: OracleCounselDraw = {
+    ...counsel,
+    date,
+  };
+  const stored: StoredCounselDraw = {
+    date,
+    counselId: counsel.id,
+  };
+
+  await AsyncStorage.setItem(
+    getCounselStorageKey(userIdOrEmail, date),
     JSON.stringify(stored)
   );
 

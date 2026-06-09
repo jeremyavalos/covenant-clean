@@ -263,14 +263,14 @@ export default function CovenantIntro({
       {isFirstIntro ? (
         <View style={styles.firstContent}>
           <Animated.Text style={[styles.line, titleStyle]}>
-            What you repeat in silence...
+            Enter the quiet command.
           </Animated.Text>
           <Animated.Text style={[styles.line, secondStyle]}>
-            ...becomes the shape of your life.
+            What you repeat becomes law inside you.
           </Animated.Text>
           <Animated.View style={[styles.brandBlock, brandStyle]}>
             <Text style={styles.brand}>COVENANT</Text>
-            <Text style={styles.subtitle}>A ritual of inner command</Text>
+            <Text style={styles.subtitle}>Discipline over impulse</Text>
           </Animated.View>
         </View>
       ) : (
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
 
   texture: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(216,140,58,0.04)",
+    backgroundColor: "rgba(216,140,58,0.055)",
     opacity: 0.86,
   },
 
@@ -324,17 +324,17 @@ const styles = StyleSheet.create({
   eclipseWrap: {
     position: "absolute",
     top: "24%",
-    width: 154,
-    height: 154,
+    width: 174,
+    height: 174,
     alignItems: "center",
     justifyContent: "center",
   },
 
   eclipseOuter: {
     position: "absolute",
-    width: 154,
-    height: 154,
-    borderRadius: 77,
+    width: 174,
+    height: 174,
+    borderRadius: 87,
     borderWidth: 1,
     borderColor: "rgba(216,140,58,0.58)",
     shadowColor: "#D88C3A",
@@ -347,9 +347,9 @@ const styles = StyleSheet.create({
   },
 
   eclipseInner: {
-    width: 104,
-    height: 104,
-    borderRadius: 52,
+    width: 116,
+    height: 116,
+    borderRadius: 58,
     backgroundColor: "#050302",
     borderWidth: 1,
     borderColor: "rgba(255,209,160,0.30)",

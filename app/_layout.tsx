@@ -10,11 +10,14 @@ import {
 import {
   useEffect,
   useRef,
+  useState,
 } from "react";
 
 import {
   ActivityIndicator,
+  Image,
   StyleSheet,
+  Text,
   View,
 } from "react-native";
 
@@ -55,6 +58,8 @@ export default function Layout() {
   const previousPathname = useRef<string | undefined>(undefined);
   const previousToken = useRef<string | null>(null);
   const covenantIntro = useCovenantIntro();
+  const [minimumStartupElapsed, setMinimumStartupElapsed] = useState(false);
+  const [startupGateVisible, setStartupGateVisible] = useState(true);
 
   const token = useAuthStore(
     (state) => state.token
@@ -77,6 +82,28 @@ export default function Layout() {
     initializeAuth();
 
   }, [initializeAuth]);
+
+  useEffect(() => {
+    const minimumTimer = setTimeout(
+      () => setMinimumStartupElapsed(true),
+      2000
+    );
+    const maximumTimer = setTimeout(
+      () => setStartupGateVisible(false),
+      3000
+    );
+
+    return () => {
+      clearTimeout(minimumTimer);
+      clearTimeout(maximumTimer);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!loading && minimumStartupElapsed) {
+      setStartupGateVisible(false);
+    }
+  }, [loading, minimumStartupElapsed]);
 
   useEffect(() => {
     if (
@@ -216,8 +243,15 @@ export default function Layout() {
 
         />
 
-        {loading && (
+        {startupGateVisible && (
           <View style={styles.loadingOverlay}>
+            <View style={styles.logoHalo} />
+            <Image
+              source={require("../assets/images/icon.png")}
+              style={styles.loadingLogo}
+              resizeMode="contain"
+            />
+            <Text style={styles.loadingBrand}>COVENANT</Text>
             <ActivityIndicator color="#D88C3A" />
           </View>
         )}
@@ -244,5 +278,33 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#050505",
+    zIndex: 900,
+  },
+  logoHalo: {
+    position: "absolute",
+    width: 190,
+    height: 190,
+    borderRadius: 95,
+    borderWidth: 1,
+    borderColor: "rgba(216,140,58,0.24)",
+    backgroundColor: "rgba(216,140,58,0.05)",
+    shadowColor: "#D88C3A",
+    shadowOpacity: 0.28,
+    shadowRadius: 42,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+  },
+  loadingLogo: {
+    width: 92,
+    height: 92,
+    marginBottom: 20,
+  },
+  loadingBrand: {
+    color: "#FFD1A0",
+    fontSize: 14,
+    letterSpacing: 7,
+    marginBottom: 22,
   },
 });

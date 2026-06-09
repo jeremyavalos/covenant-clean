@@ -3,6 +3,7 @@ import {
   Alert,
   Linking,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -48,6 +49,16 @@ import {
   hasProAccess,
   restorePurchases,
 } from "../services/revenuecat";
+import {
+  redeemManualProAccessCode,
+} from "../utils/manualProAccess";
+
+const APP_STORE_URL = "https://apps.apple.com/app/id6773019036";
+const GOOGLE_PLAY_URL =
+  "https://play.google.com/store/apps/details?id=com.joincovenant.app";
+const IOS_REVIEW_URL =
+  "https://apps.apple.com/app/id6773019036?action=write-review";
+const ANDROID_REVIEW_URL = "market://details?id=com.joincovenant.app";
 
 const COLORS = {
 background: "#050505",
@@ -84,6 +95,7 @@ promise
 
 export default function SettingsScreen() {
 const {
+isPro,
 refreshSubscription,
 } = useSubscription();
 
@@ -110,6 +122,21 @@ setIsSavingLanguage,
 const [
 isRestoring,
 setIsRestoring,
+] = useState(false);
+
+const [
+redeemVisible,
+setRedeemVisible,
+] = useState(false);
+
+const [
+accessCode,
+setAccessCode,
+] = useState("");
+
+const [
+isRedeeming,
+setIsRedeeming,
 ] = useState(false);
 
 const [
@@ -167,6 +194,18 @@ spanish: "Español",
 english: "English",
 restore: "Restaurar compras",
 support: "Soporte / contacto",
+redeemCode: "Canjear código",
+accessCodePlaceholder: "Ingresa tu código de acceso",
+codeAccepted: "Código aceptado. Covenant Pro desbloqueado.",
+invalidCode: "Código inválido.",
+alreadyPro: "Este dispositivo ya tiene acceso Pro.",
+storeTitle: "Calificar Covenant",
+storeSubtitle:
+"Si Covenant te ayuda a mantener la disciplina, déjanos una reseña de 5 estrellas.",
+appStore: "Descargar en App Store",
+googlePlay: "Disponible en Google Play",
+rateAppStore: "Calificar en App Store",
+rateGooglePlay: "Calificar en Google Play",
 deleteAccount: "Eliminar cuenta",
 signIn: "Iniciar sesión / registrarse",
 deleteTitle: "Eliminar cuenta",
@@ -197,6 +236,18 @@ spanish: "Español",
 english: "English",
 restore: "Restore purchases",
 support: "Support / contact",
+redeemCode: "Redeem Code",
+accessCodePlaceholder: "Enter your access code",
+codeAccepted: "Code accepted. Covenant Pro unlocked.",
+invalidCode: "Invalid code.",
+alreadyPro: "This device already has Pro access.",
+storeTitle: "Rate Covenant",
+storeSubtitle:
+"If Covenant helps you stay disciplined, leave us a 5-star review.",
+appStore: "Download on the App Store",
+googlePlay: "Get it on Google Play",
+rateAppStore: "Rate on the App Store",
+rateGooglePlay: "Rate on Google Play",
 deleteAccount: "Delete account",
 signIn: "Sign in / register",
 deleteTitle: "Delete account",
@@ -281,6 +332,57 @@ setIsRestoring(false);
 function openSupport() {
 Linking.openURL(SUPPORT_URL)
 .catch(() => undefined);
+}
+
+function openUrl(url: string, fallbackUrl?: string) {
+Linking.openURL(url).catch(() => {
+if (fallbackUrl) {
+Linking.openURL(fallbackUrl).catch(() => undefined);
+}
+});
+}
+
+function openRedeemCode() {
+setAccessCode("");
+setRedeemVisible(true);
+}
+
+function closeRedeemCode() {
+setRedeemVisible(false);
+setAccessCode("");
+}
+
+async function confirmRedeemCode() {
+if (isPro) {
+Alert.alert(t.redeemCode, t.alreadyPro);
+return;
+}
+
+setIsRedeeming(true);
+
+try {
+const result =
+await redeemManualProAccessCode(accessCode);
+
+if (result === "already-unlocked") {
+Alert.alert(t.redeemCode, t.alreadyPro);
+return;
+}
+
+if (result === "invalid") {
+Alert.alert(t.redeemCode, t.invalidCode);
+return;
+}
+
+await refreshSubscription();
+setRedeemVisible(false);
+setAccessCode("");
+Alert.alert(t.redeemCode, t.codeAccepted);
+} finally {
+if (mountedRef.current) {
+setIsRedeeming(false);
+}
+}
 }
 
 function openDeleteAccount() {
@@ -439,6 +541,59 @@ style={styles.rowButton}
 >
 <Text style={styles.rowText}>{t.support}</Text>
 </TouchableOpacity>
+
+<TouchableOpacity
+activeOpacity={0.78}
+onPress={openRedeemCode}
+style={styles.rowButton}
+>
+<Text style={styles.rowText}>{t.redeemCode}</Text>
+</TouchableOpacity>
+</View>
+
+<View style={styles.panel}>
+<Text style={styles.sectionLabel}>{t.storeTitle}</Text>
+<Text style={styles.panelText}>{t.storeSubtitle}</Text>
+
+{Platform.OS !== "android" && (
+<TouchableOpacity
+activeOpacity={0.78}
+onPress={() => openUrl(APP_STORE_URL)}
+style={styles.rowButton}
+>
+<Text style={styles.rowText}>{t.appStore}</Text>
+</TouchableOpacity>
+)}
+
+{Platform.OS !== "ios" && (
+<TouchableOpacity
+activeOpacity={0.78}
+onPress={() => openUrl(GOOGLE_PLAY_URL)}
+style={styles.rowButton}
+>
+<Text style={styles.rowText}>{t.googlePlay}</Text>
+</TouchableOpacity>
+)}
+
+{Platform.OS !== "android" && (
+<TouchableOpacity
+activeOpacity={0.78}
+onPress={() => openUrl(IOS_REVIEW_URL)}
+style={styles.rowButton}
+>
+<Text style={styles.rowText}>{t.rateAppStore}</Text>
+</TouchableOpacity>
+)}
+
+{Platform.OS !== "ios" && (
+<TouchableOpacity
+activeOpacity={0.78}
+onPress={() => openUrl(ANDROID_REVIEW_URL, GOOGLE_PLAY_URL)}
+style={styles.rowButton}
+>
+<Text style={styles.rowText}>{t.rateGooglePlay}</Text>
+</TouchableOpacity>
+)}
 </View>
 
 <View style={user ? styles.dangerPanel : styles.panel}>
@@ -502,6 +657,56 @@ style={styles.deleteCancel}
 >
 <Text style={styles.deleteCancelText}>
 {isDeleting ? t.processing : t.cancel}
+</Text>
+</TouchableOpacity>
+</View>
+</View>
+</Modal>
+
+<Modal
+visible={redeemVisible}
+transparent
+animationType="fade"
+onRequestClose={closeRedeemCode}
+>
+<View style={styles.deleteOverlay}>
+<View style={styles.deletePanel}>
+<Text style={styles.deleteTitle}>{t.redeemCode}</Text>
+
+<TextInput
+value={accessCode}
+onChangeText={setAccessCode}
+placeholder={t.accessCodePlaceholder}
+placeholderTextColor="rgba(245,245,245,0.38)"
+autoCapitalize="characters"
+autoCorrect={false}
+editable={!isRedeeming}
+style={styles.deleteInput}
+/>
+
+<TouchableOpacity
+activeOpacity={0.82}
+onPress={confirmRedeemCode}
+disabled={isRedeeming}
+style={[
+styles.deleteConfirm,
+isRedeeming && styles.disabled,
+]}
+>
+{isRedeeming ? (
+<ActivityIndicator color={COLORS.background} />
+) : (
+<Text style={styles.deleteConfirmText}>{t.redeemCode}</Text>
+)}
+</TouchableOpacity>
+
+<TouchableOpacity
+activeOpacity={0.72}
+onPress={closeRedeemCode}
+style={styles.deleteCancel}
+>
+<Text style={styles.deleteCancelText}>
+{isRedeeming ? t.processing : t.cancel}
 </Text>
 </TouchableOpacity>
 </View>
@@ -581,6 +786,13 @@ width: 0,
 height: 14,
 },
 elevation: 5,
+},
+
+panelText: {
+color: COLORS.muted,
+fontSize: 14,
+lineHeight: 23,
+marginBottom: 10,
 },
 
 sectionLabel: {

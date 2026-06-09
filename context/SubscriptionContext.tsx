@@ -14,6 +14,9 @@ import {
   hasProAccess,
   initRevenueCat,
 } from "../services/revenuecat";
+import {
+  hasManualProAccess,
+} from "../utils/manualProAccess";
 
 type SubscriptionContextValue = {
   isPro: boolean;
@@ -31,19 +34,34 @@ export function SubscriptionProvider({
 }) {
   const [customerInfo, setCustomerInfo] =
     useState<CustomerInfo | null>(null);
+  const [manualProAccess, setManualProAccess] =
+    useState(false);
   const [loading, setLoading] = useState(false);
 
   const refreshSubscription = useCallback(async () => {
     setLoading(true);
 
     try {
-      await initRevenueCat();
+      const manualAccess = await hasManualProAccess();
+      setManualProAccess(manualAccess);
 
-      const info = await getCustomerInfo();
-      setCustomerInfo(info);
+      try {
+        await initRevenueCat();
+
+        const info = await getCustomerInfo();
+        setCustomerInfo(info);
+      } catch {
+        // Manual access is local and must not depend on RevenueCat availability.
+      }
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    hasManualProAccess()
+      .then(setManualProAccess)
+      .catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -68,11 +86,11 @@ export function SubscriptionProvider({
 
   const value = useMemo(
     () => ({
-      isPro: hasProAccess(customerInfo),
+      isPro: hasProAccess(customerInfo) || manualProAccess,
       loading,
       refreshSubscription,
     }),
-    [customerInfo, loading, refreshSubscription]
+    [customerInfo, loading, manualProAccess, refreshSubscription]
   );
 
   return (

@@ -45,6 +45,15 @@ export type TarotCard = {
   visualSymbol: TarotVisualSymbol;
 };
 
+export type DailyCounsel = {
+  id: string;
+  number: number;
+  title: LocalizedText;
+  statement: LocalizedText;
+  explanation: LocalizedText;
+  action: LocalizedText;
+};
+
 const NUMBER_TITLES: LocalizedText[] = [
   { en: "The Threshold", es: "El Umbral" },
   { en: "The Witness", es: "El Testigo" },
@@ -748,3 +757,79 @@ export const MAJOR_ARCANA: TarotCard[] = [
     visualSymbol: "world",
   },
 ];
+
+const COUNSEL_SEEDS: Array<{
+  title: LocalizedText;
+  virtue: LocalizedText;
+  enemy: LocalizedText;
+  practice: LocalizedText;
+}> = [
+  { title: { en: "Guard the First Hour", es: "Guarda la Primera Hora" }, virtue: { en: "command", es: "mando" }, enemy: { en: "drift", es: "dispersión" }, practice: { en: "start before checking noise", es: "empieza antes de revisar ruido" } },
+  { title: { en: "Let Silence Work", es: "Deja Trabajar al Silencio" }, virtue: { en: "restraint", es: "dominio" }, enemy: { en: "explanation", es: "explicación" }, practice: { en: "answer one urge with quiet", es: "responde a un impulso con quietud" } },
+  { title: { en: "Spend No Strength on Display", es: "No Gastes Fuerza en Exhibición" }, virtue: { en: "reserve", es: "reserva" }, enemy: { en: "performance", es: "actuación" }, practice: { en: "complete one task unseen", es: "completa una tarea sin público" } },
+  { title: { en: "Move Before Mood Votes", es: "Muévete Antes de que Vote el Ánimo" }, virtue: { en: "obedience", es: "obediencia" }, enemy: { en: "negotiation", es: "negociación" }, practice: { en: "take the next disciplined step", es: "da el próximo paso disciplinado" } },
+  { title: { en: "Keep Your Word Small", es: "Haz Pequeña tu Palabra" }, virtue: { en: "precision", es: "precisión" }, enemy: { en: "boasting", es: "alarde" }, practice: { en: "promise less and finish more", es: "promete menos y termina más" } },
+  { title: { en: "Study the Room Before Acting", es: "Estudia la Sala Antes de Actuar" }, virtue: { en: "timing", es: "momento justo" }, enemy: { en: "haste", es: "prisa" }, practice: { en: "observe before entering conflict", es: "observa antes de entrar al conflicto" } },
+  { title: { en: "Do Not Feed Every Fire", es: "No Alimentes Cada Fuego" }, virtue: { en: "discernment", es: "discernimiento" }, enemy: { en: "reaction", es: "reacción" }, practice: { en: "let one provocation pass", es: "deja pasar una provocación" } },
+  { title: { en: "Make Reputation Quietly Expensive", es: "Haz Costosa tu Reputación en Silencio" }, virtue: { en: "consistency", es: "constancia" }, enemy: { en: "carelessness", es: "descuido" }, practice: { en: "protect one standard today", es: "protege un estándar hoy" } },
+  { title: { en: "Choose Distance Over Drama", es: "Elige Distancia Antes que Drama" }, virtue: { en: "separation", es: "separación" }, enemy: { en: "entanglement", es: "enredo" }, practice: { en: "step back without announcing it", es: "retrocede sin anunciarlo" } },
+  { title: { en: "Let Results Speak Last", es: "Deja que el Resultado Hable al Final" }, virtue: { en: "proof", es: "prueba" }, enemy: { en: "noise", es: "ruido" }, practice: { en: "finish before explaining", es: "termina antes de explicar" } },
+  { title: { en: "Hold the Line Under Praise", es: "Sostén la Línea Bajo el Elogio" }, virtue: { en: "sobriety", es: "sobriedad" }, enemy: { en: "vanity", es: "vanidad" }, practice: { en: "receive praise without changing pace", es: "recibe elogio sin cambiar el paso" } },
+  { title: { en: "Hold the Line Under Blame", es: "Sostén la Línea Bajo la Culpa" }, virtue: { en: "steadiness", es: "firmeza" }, enemy: { en: "panic", es: "pánico" }, practice: { en: "correct what is true, release the rest", es: "corrige lo verdadero, suelta lo demás" } },
+  { title: { en: "Never Crown an Impulse", es: "Nunca Corones un Impulso" }, virtue: { en: "rule", es: "gobierno" }, enemy: { en: "appetite", es: "apetito" }, practice: { en: "delay one craving by ten minutes", es: "retrasa un deseo diez minutos" } },
+  { title: { en: "Let Patience Gather Force", es: "Deja que la Paciencia Reúna Fuerza" }, virtue: { en: "patience", es: "paciencia" }, enemy: { en: "premature action", es: "acción prematura" }, practice: { en: "wait until the next clear signal", es: "espera la próxima señal clara" } },
+  { title: { en: "Keep One Door Closed", es: "Mantén una Puerta Cerrada" }, virtue: { en: "boundary", es: "límite" }, enemy: { en: "access", es: "acceso" }, practice: { en: "refuse one old permission", es: "rechaza un permiso antiguo" } },
+  { title: { en: "Train the Face", es: "Entrena el Rostro" }, virtue: { en: "composure", es: "compostura" }, enemy: { en: "leakage", es: "fuga" }, practice: { en: "breathe before your expression answers", es: "respira antes de que responda tu expresión" } },
+  { title: { en: "Protect the Unfinished Work", es: "Protege la Obra Incompleta" }, virtue: { en: "privacy", es: "privacidad" }, enemy: { en: "exposure", es: "exposición" }, practice: { en: "keep one plan off display", es: "mantén un plan fuera de exhibición" } },
+  { title: { en: "Make the Easy Thing Earn Entry", es: "Haz que lo Fácil Gane Entrada" }, virtue: { en: "standard", es: "estándar" }, enemy: { en: "convenience", es: "comodidad" }, practice: { en: "add one honest condition", es: "añade una condición honesta" } },
+  { title: { en: "Refuse the Second Wound", es: "Rechaza la Segunda Herida" }, virtue: { en: "recovery", es: "recuperación" }, enemy: { en: "rumination", es: "rumiación" }, practice: { en: "stop rehearsing one injury", es: "deja de ensayar una herida" } },
+  { title: { en: "Read Incentives, Not Speeches", es: "Lee Incentivos, no Discursos" }, virtue: { en: "clarity", es: "claridad" }, enemy: { en: "flattery", es: "adulación" }, practice: { en: "ask what the action rewards", es: "pregunta qué recompensa la acción" } },
+  { title: { en: "Make Anger Pay a Toll", es: "Haz que la Ira Pague Peaje" }, virtue: { en: "control", es: "control" }, enemy: { en: "eruption", es: "estallido" }, practice: { en: "write the response before sending none", es: "escribe la respuesta antes de no enviar ninguna" } },
+  { title: { en: "Do Not Borrow Tomorrow's Fear", es: "No Tomes Prestado el Miedo de Mañana" }, virtue: { en: "presence", es: "presencia" }, enemy: { en: "projection", es: "proyección" }, practice: { en: "solve only the present step", es: "resuelve solo el paso presente" } },
+  { title: { en: "Let Repetition Become Rank", es: "Deja que la Repetición Sea Rango" }, virtue: { en: "discipline", es: "disciplina" }, enemy: { en: "novelty", es: "novedad" }, practice: { en: "repeat the core practice cleanly", es: "repite limpia la práctica central" } },
+  { title: { en: "Keep Counsel Above Complaint", es: "Pon Consejo Sobre Queja" }, virtue: { en: "wisdom", es: "sabiduría" }, enemy: { en: "complaint", es: "queja" }, practice: { en: "turn one complaint into instruction", es: "convierte una queja en instrucción" } },
+  { title: { en: "Be Hard to Distract", es: "Sé Difícil de Distraer" }, virtue: { en: "focus", es: "enfoque" }, enemy: { en: "fragmentation", es: "fragmentación" }, practice: { en: "remove one interruption before work", es: "quita una interrupción antes de trabajar" } },
+  { title: { en: "Do Not Negotiate with Collapse", es: "No Negocies con el Derrumbe" }, virtue: { en: "resolve", es: "resolución" }, enemy: { en: "surrender", es: "rendición" }, practice: { en: "stand up and complete one small order", es: "levántate y completa un pequeño orden" } },
+  { title: { en: "Measure Before You Judge", es: "Mide Antes de Juzgar" }, virtue: { en: "accuracy", es: "exactitud" }, enemy: { en: "assumption", es: "suposición" }, practice: { en: "check the facts once", es: "verifica los hechos una vez" } },
+  { title: { en: "Keep Victory Clean", es: "Mantén Limpia la Victoria" }, virtue: { en: "honor", es: "honor" }, enemy: { en: "cruelty", es: "crueldad" }, practice: { en: "win without humiliating", es: "vence sin humillar" } },
+  { title: { en: "Lose Without Selling the Throne", es: "Pierde Sin Vender el Trono" }, virtue: { en: "dignity", es: "dignidad" }, enemy: { en: "despair", es: "desesperación" }, practice: { en: "take the lesson without self-betrayal", es: "toma la lección sin traicionarte" } },
+  { title: { en: "Hide the Root, Show the Fruit", es: "Oculta la Raíz, Muestra el Fruto" }, virtue: { en: "depth", es: "profundidad" }, enemy: { en: "display", es: "exhibición" }, practice: { en: "protect the source of one strength", es: "protege la fuente de una fuerza" } },
+  { title: { en: "Choose the Battlefield", es: "Elige el Campo de Batalla" }, virtue: { en: "strategy", es: "estrategia" }, enemy: { en: "impulse", es: "impulso" }, practice: { en: "decline one poorly timed fight", es: "rechaza una lucha mal situada" } },
+  { title: { en: "Let Scarcity Clarify", es: "Deja que la Escasez Aclare" }, virtue: { en: "priority", es: "prioridad" }, enemy: { en: "excess", es: "exceso" }, practice: { en: "choose the one thing that matters", es: "elige lo único que importa" } },
+  { title: { en: "Make Rest Serve Command", es: "Haz que el Descanso Sirva al Mando" }, virtue: { en: "renewal", es: "renovación" }, enemy: { en: "escape", es: "escape" }, practice: { en: "rest without abandoning tomorrow", es: "descansa sin abandonar mañana" } },
+  { title: { en: "Speak After the Heat Leaves", es: "Habla Cuando se Vaya el Calor" }, virtue: { en: "coolness", es: "templanza" }, enemy: { en: "heat", es: "calor" }, practice: { en: "wait for your tone to clear", es: "espera a que se limpie tu tono" } },
+  { title: { en: "Turn Envy into Study", es: "Convierte Envidia en Estudio" }, virtue: { en: "learning", es: "aprendizaje" }, enemy: { en: "envy", es: "envidia" }, practice: { en: "name one skill worth training", es: "nombra una habilidad que valga entrenar" } },
+  { title: { en: "Keep the Inner Court Sober", es: "Mantén Sobrio el Patio Interior" }, virtue: { en: "inner order", es: "orden interior" }, enemy: { en: "fantasy", es: "fantasía" }, practice: { en: "tell yourself the plain truth", es: "dite la verdad sencilla" } },
+  { title: { en: "Do the Unglamorous Part", es: "Haz la Parte Sin Gloria" }, virtue: { en: "service", es: "servicio" }, enemy: { en: "avoidance", es: "evasión" }, practice: { en: "complete the neglected detail", es: "completa el detalle descuidado" } },
+  { title: { en: "Keep Tools Sharpened", es: "Mantén Afiladas las Herramientas" }, virtue: { en: "preparation", es: "preparación" }, enemy: { en: "decay", es: "deterioro" }, practice: { en: "repair one system before it fails", es: "repara un sistema antes de que falle" } },
+  { title: { en: "Let Loyalty Require Truth", es: "Haz que la Lealtad Exija Verdad" }, virtue: { en: "truth", es: "verdad" }, enemy: { en: "blindness", es: "ceguera" }, practice: { en: "be honest without theatrics", es: "sé honesto sin teatro" } },
+  { title: { en: "Leave Before You Are Owned", es: "Sal Antes de Ser Poseído" }, virtue: { en: "freedom", es: "libertad" }, enemy: { en: "dependency", es: "dependencia" }, practice: { en: "exit one weakening pattern early", es: "sal temprano de un patrón debilitante" } },
+  { title: { en: "Give No Throne to Urgency", es: "No Des Trono a la Urgencia" }, virtue: { en: "pace", es: "ritmo" }, enemy: { en: "urgency", es: "urgencia" }, practice: { en: "separate urgent from important", es: "separa urgente de importante" } },
+  { title: { en: "Make Gratitude Practical", es: "Haz Práctica la Gratitud" }, virtue: { en: "reverence", es: "reverencia" }, enemy: { en: "entitlement", es: "derecho automático" }, practice: { en: "honor one gift with action", es: "honra un regalo con acción" } },
+  { title: { en: "Keep the Standard When Alone", es: "Mantén el Estándar a Solas" }, virtue: { en: "integrity", es: "integridad" }, enemy: { en: "permission", es: "permiso" }, practice: { en: "do the right thing unseen", es: "haz lo correcto sin testigos" } },
+  { title: { en: "Use Pain as Intelligence", es: "Usa el Dolor como Inteligencia" }, virtue: { en: "interpretation", es: "interpretación" }, enemy: { en: "self-pity", es: "autocompasión" }, practice: { en: "ask what the pain is teaching", es: "pregunta qué enseña el dolor" } },
+  { title: { en: "Do Not Confuse Access with Trust", es: "No Confundas Acceso con Confianza" }, virtue: { en: "discernment", es: "discernimiento" }, enemy: { en: "familiarity", es: "familiaridad" }, practice: { en: "set one clean boundary", es: "define un límite limpio" } },
+  { title: { en: "Give the Body a Command", es: "Dale un Mandato al Cuerpo" }, virtue: { en: "embodiment", es: "encarnación" }, enemy: { en: "inertia", es: "inercia" }, practice: { en: "move with deliberate posture", es: "muévete con postura deliberada" } },
+  { title: { en: "Let the Day Close Accountably", es: "Cierra el Día con Cuenta Clara" }, virtue: { en: "accountability", es: "rendición de cuentas" }, enemy: { en: "forgetting", es: "olvido" }, practice: { en: "review one action without excuse", es: "revisa una acción sin excusa" } },
+  { title: { en: "Return Without Ceremony", es: "Regresa Sin Ceremonia" }, virtue: { en: "return", es: "regreso" }, enemy: { en: "shame", es: "vergüenza" }, practice: { en: "restart the practice immediately", es: "reinicia la práctica de inmediato" } },
+];
+
+export const DAILY_COUNSELS: DailyCounsel[] = COUNSEL_SEEDS.map(
+  (seed, index) => ({
+    id: `counsel-${String(index + 1).padStart(2, "0")}`,
+    number: index + 1,
+    title: seed.title,
+    statement: {
+      en: `${seed.title.en}. Protect ${seed.virtue.en} from ${seed.enemy.en}.`,
+      es: `${seed.title.es}. Protege ${seed.virtue.es} de ${seed.enemy.es}.`,
+    },
+    explanation: {
+      en: `Power becomes discipline when it is governed before pressure arrives. Today, ${seed.virtue.en} is not an idea; it is the boundary that keeps ${seed.enemy.en} from taking command of your conduct.`,
+      es: `El poder se vuelve disciplina cuando recibe gobierno antes de que llegue la presión. Hoy, ${seed.virtue.es} no es una idea; es el límite que impide que ${seed.enemy.es} tome mando sobre tu conducta.`,
+    },
+    action: {
+      en: `Daily action: ${seed.practice.en}.`,
+      es: `Acción diaria: ${seed.practice.es}.`,
+    },
+  })
+);

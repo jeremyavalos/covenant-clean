@@ -1,9 +1,11 @@
 import {
   ActivityIndicator,
+  Alert,
   Linking,
   Modal,
   Platform,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -32,10 +34,15 @@ import {
 } from "../constants/legal";
 import {
   OracleNumberDraw,
+  OracleCounselDraw,
   OracleTarotDraw,
   getDailyNumberDraw,
+  getDailyCounselDraw,
   getDailyTarotDraw,
   getOracleUserKey,
+  revealDailyCounselDraw,
+  revealDailyNumberDraw,
+  revealDailyTarotDraw,
 } from "../utils/oracle";
 
 import {
@@ -76,6 +83,9 @@ import type {
 import {
   useSubscription,
 } from "../context/SubscriptionContext";
+import type {
+  TarotVisualSymbol,
+} from "../data/oracle";
 
 import {
   useAuthStore,
@@ -95,6 +105,48 @@ language: Language
 return language === "es"
 ? value.es
 : value.en;
+}
+
+function TarotSigil({
+symbol,
+}: {
+symbol: TarotVisualSymbol;
+}) {
+return (
+<View style={styles.tarotSigil}>
+<View style={styles.tarotSigilOrbit} />
+<View style={styles.tarotSigilOrbitTilt} />
+{(symbol === "moon" || symbol === "veil" || symbol === "threshold") && (
+<View style={styles.tarotSigilCrescent} />
+)}
+{(symbol === "sun" || symbol === "star" || symbol === "world") && (
+<View style={styles.tarotSigilRay} />
+)}
+<View style={styles.tarotSigilCore} />
+</View>
+);
+}
+
+function DailyTarotArtwork({
+card,
+language,
+}: {
+card: OracleTarotDraw;
+language: Language;
+}) {
+return (
+<View style={styles.tarotArtwork}>
+<View style={styles.tarotCornerTopLeft} />
+<View style={styles.tarotCornerTopRight} />
+<View style={styles.tarotCornerBottomLeft} />
+<View style={styles.tarotCornerBottomRight} />
+<Text style={styles.tarotArtworkRoman}>{card.romanNumeral}</Text>
+<TarotSigil symbol={card.visualSymbol} />
+<Text style={styles.tarotArtworkName}>
+{localize(card.name, language)}
+</Text>
+</View>
+);
 }
 
 const COLORS = {
@@ -402,6 +454,18 @@ null
 );
 
 const [
+dailyCounselDraw,
+setDailyCounselDraw,
+] = useState<OracleCounselDraw | null>(
+null
+);
+
+const [
+isRevealingGuidance,
+setIsRevealingGuidance,
+] = useState(false);
+
+const [
 oracleModalVisible,
 setOracleModalVisible,
 ] = useState(false);
@@ -504,12 +568,16 @@ userStorageKey
 const [
 numberDraw,
 tarotDraw,
+counselDraw,
 ] =
 await Promise.all([
 getDailyNumberDraw(
 oracleUserKey
 ),
 getDailyTarotDraw(
+oracleUserKey
+),
+getDailyCounselDraw(
 oracleUserKey
 ),
 ]);
@@ -523,6 +591,9 @@ numberDraw
 );
 setDailyTarotDraw(
 tarotDraw
+);
+setDailyCounselDraw(
+counselDraw
 );
 }, [getUserStorageKey]);
 
@@ -1290,8 +1361,26 @@ todayNumber:
 todayCard:
 "CARTA",
 
+todayCounsel:
+"CONSEJO",
+
 revealGuidance:
 "Revelar la guía de hoy",
+
+shareProgress:
+"Compartir progreso",
+
+shareSocials:
+"Compartir en redes",
+
+copySummary:
+"Copiar resumen",
+
+copiedSummary:
+"Resumen copiado.",
+
+shareUnavailable:
+"No se pudo compartir el resumen.",
 
 dailyCompletion:
 "CIERRE DIARIO",
@@ -1513,8 +1602,26 @@ todayNumber:
 todayCard:
 "CARD",
 
+todayCounsel:
+"COUNSEL",
+
 revealGuidance:
 "Reveal today's guidance",
+
+shareProgress:
+"Share progress",
+
+shareSocials:
+"Share on socials",
+
+copySummary:
+"Copy summary",
+
+copiedSummary:
+"Summary copied.",
+
+shareUnavailable:
+"Could not share the summary.",
 
 dailyCompletion:
 "DAILY COMPLETION",
@@ -1626,22 +1733,153 @@ Math.round(
 const hasOracleSummary =
 Boolean(
 dailyNumberDraw ||
-(isPro && dailyTarotDraw)
+(isPro && dailyTarotDraw) ||
+(isPro && dailyCounselDraw)
 );
 
-const openTodayGuidance = () => {
-if (hasOracleSummary) {
+const openOraclePaywall = async () => {
+setOracleModalVisible(false);
+setSelectedLockedHabit(null);
+setSelectedPlan("monthly");
+await initRevenueCat();
+setPaywallVisible(true);
+posthog.capture("paywall_shown", {
+source: "daily_guidance",
+is_pro: isPro,
+});
+};
+
+const openTodayGuidance = async () => {
+if (hasOracleSummary || isRevealingGuidance) {
 setOracleModalVisible(true);
 return;
 }
 
-const targetHabit =
-selectedFreeHabit ??
-dashboardHabits[0]?.slug ??
-currentHabits[0]?.slug;
+setIsRevealingGuidance(true);
 
-if (targetHabit) {
-openHabit(targetHabit);
+try {
+const userStorageKey =
+getUserStorageKey();
+const oracleUserKey =
+await getOracleUserKey(userStorageKey);
+
+const numberDraw =
+await revealDailyNumberDraw(oracleUserKey);
+setDailyNumberDraw(numberDraw);
+
+if (isPro) {
+const [
+tarotDraw,
+counselDraw,
+] = await Promise.all([
+revealDailyTarotDraw(oracleUserKey),
+revealDailyCounselDraw(oracleUserKey),
+]);
+
+setDailyTarotDraw(tarotDraw);
+setDailyCounselDraw(counselDraw);
+}
+
+setOracleModalVisible(true);
+} finally {
+if (mountedRef.current) {
+setIsRevealingGuidance(false);
+}
+}
+};
+
+function buildShareSummary() {
+const lines =
+language === "es"
+? [
+"Covenant",
+`Progreso mensual: ${monthlyProgress}%`,
+`Racha actual: ${Math.max(...dashboardHabits.map((habit) => progressMap[habit.slug]?.streak || 0), 0)}`,
+`Hábitos completados hoy: ${completedTodayCount}/${dashboardHabits.length}`,
+]
+: [
+"Covenant",
+`Monthly progress: ${monthlyProgress}%`,
+`Current streak: ${Math.max(...dashboardHabits.map((habit) => progressMap[habit.slug]?.streak || 0), 0)}`,
+`Completed today: ${completedTodayCount}/${dashboardHabits.length}`,
+];
+
+if (dailyNumberDraw) {
+lines.push(
+language === "es"
+? `Número del día: ${dailyNumberDraw.number} - ${localize(dailyNumberDraw.title, language)}`
+: `Number of the day: ${dailyNumberDraw.number} - ${localize(dailyNumberDraw.title, language)}`
+);
+}
+
+if (isPro && dailyTarotDraw) {
+lines.push(
+language === "es"
+? `Carta del día: ${localize(dailyTarotDraw.name, language)}`
+: `Card of the day: ${localize(dailyTarotDraw.name, language)}`
+);
+}
+
+if (isPro && dailyCounselDraw) {
+lines.push(
+language === "es"
+? `Consejo del día: ${localize(dailyCounselDraw.title, language)}`
+: `Counsel of the day: ${localize(dailyCounselDraw.title, language)}`
+);
+}
+
+return lines.join("\n");
+}
+
+async function shareProgressSummary() {
+const message =
+buildShareSummary();
+
+try {
+if (
+Platform.OS === "web" &&
+typeof navigator !== "undefined" &&
+"share" in navigator
+) {
+await navigator.share({
+text: message,
+title: "Covenant",
+});
+return;
+}
+
+await Share.share({
+message,
+title: "Covenant",
+});
+} catch {
+Alert.alert(t.shareProgress, t.shareUnavailable);
+}
+}
+
+async function copyProgressSummary() {
+const message =
+buildShareSummary();
+
+try {
+const clipboard =
+Platform.OS === "web" &&
+typeof navigator !== "undefined"
+? navigator.clipboard
+: null;
+
+if (clipboard?.writeText) {
+await clipboard.writeText(message);
+Alert.alert(t.copySummary, t.copiedSummary);
+return;
+}
+
+await Share.share({
+message,
+title: "Covenant",
+});
+} catch {
+Alert.alert(t.copySummary, t.shareUnavailable);
 }
 };
 
@@ -1781,11 +2019,7 @@ style={styles.subscriptionButton}
 
 </View>
 
-<TouchableOpacity
-activeOpacity={0.86}
-onPress={openTodayGuidance}
-style={styles.todayPanel}
->
+<View style={styles.todayPanel}>
 <View style={styles.monthlyPathHeader}>
 <View>
 <Text style={styles.todayPanelLabel}>
@@ -1842,13 +2076,83 @@ width: `${monthlyProgress}%`,
 {t.todayCard} {localize(dailyTarotDraw.name, language)}
 </Text>
 )}
-</View>
-) : (
-<Text style={styles.todayPanelText}>
-{t.revealGuidance}
+
+{isPro && dailyCounselDraw && (
+<Text style={styles.oracleSummaryText}>
+{t.todayCounsel} {localize(dailyCounselDraw.title, language)}
 </Text>
 )}
 </View>
+) : (
+<View style={styles.oracleSummaryItems}>
+<Text style={styles.todayPanelText}>
+{isRevealingGuidance ? t.processing : t.revealGuidance}
+</Text>
+{!isPro && (
+<>
+<TouchableOpacity
+activeOpacity={0.78}
+onPress={openOraclePaywall}
+style={styles.lockedGuidanceRow}
+>
+<Text style={styles.lockedGuidanceText}>{t.todayCard}</Text>
+<Text style={styles.lockedGuidanceBadge}>{t.proAction}</Text>
+</TouchableOpacity>
+<TouchableOpacity
+activeOpacity={0.78}
+onPress={openOraclePaywall}
+style={styles.lockedGuidanceRow}
+>
+<Text style={styles.lockedGuidanceText}>{t.todayCounsel}</Text>
+<Text style={styles.lockedGuidanceBadge}>{t.proAction}</Text>
+</TouchableOpacity>
+</>
+)}
+</View>
+)}
+</View>
+</View>
+
+<TouchableOpacity
+activeOpacity={0.82}
+onPress={openTodayGuidance}
+disabled={isRevealingGuidance}
+style={[
+styles.guidanceButton,
+isRevealingGuidance && {
+opacity: 0.72,
+},
+]}
+>
+<Text style={styles.guidanceButtonText}>
+{hasOracleSummary ? t.openAction : t.revealGuidance}
+</Text>
+</TouchableOpacity>
+
+<View style={styles.shareRow}>
+<TouchableOpacity
+activeOpacity={0.78}
+onPress={shareProgressSummary}
+style={styles.shareButton}
+>
+<Text style={styles.shareButtonText}>{t.shareProgress}</Text>
+</TouchableOpacity>
+
+<TouchableOpacity
+activeOpacity={0.78}
+onPress={shareProgressSummary}
+style={styles.shareButton}
+>
+<Text style={styles.shareButtonText}>{t.shareSocials}</Text>
+</TouchableOpacity>
+
+<TouchableOpacity
+activeOpacity={0.78}
+onPress={copyProgressSummary}
+style={styles.shareButton}
+>
+<Text style={styles.shareButtonText}>{t.copySummary}</Text>
+</TouchableOpacity>
 </View>
 
 <View style={styles.dailyCompletionRow}>
@@ -1859,7 +2163,7 @@ width: `${monthlyProgress}%`,
 {completedTodayCount}/{dashboardHabits.length}
 </Text>
 </View>
-</TouchableOpacity>
+</View>
 
 {isSyncingProgress && (
 
@@ -2405,6 +2709,10 @@ onRequestClose={() => setOracleModalVisible(false)}
 <Text style={styles.oracleModalKicker}>
 {t.todayCard}
 </Text>
+<DailyTarotArtwork
+card={dailyTarotDraw}
+language={language}
+/>
 <Text style={styles.oracleModalTitleText}>
 {dailyTarotDraw.romanNumeral} {localize(dailyTarotDraw.name, language)}
 </Text>
@@ -2412,10 +2720,73 @@ onRequestClose={() => setOracleModalVisible(false)}
 {localize(dailyTarotDraw.meaning, language)}
 </Text>
 <Text style={styles.oracleModalQuestion}>
+{localize(dailyTarotDraw.todayReflection, language)}
+</Text>
+<Text style={styles.oracleModalBody}>
 {localize(dailyTarotDraw.question, language)}
 </Text>
 </View>
 )}
+
+{isPro && dailyCounselDraw && (
+<View style={styles.oracleModalBlock}>
+<Text style={styles.oracleModalKicker}>
+{t.todayCounsel}
+</Text>
+<Text style={styles.oracleModalTitleText}>
+{dailyCounselDraw.number}. {localize(dailyCounselDraw.title, language)}
+</Text>
+<Text style={styles.oracleModalQuestion}>
+{localize(dailyCounselDraw.statement, language)}
+</Text>
+<Text style={styles.oracleModalBody}>
+{localize(dailyCounselDraw.explanation, language)}
+</Text>
+<Text style={styles.oracleModalQuestion}>
+{localize(dailyCounselDraw.action, language)}
+</Text>
+</View>
+)}
+
+{!isPro && (
+<View style={styles.oracleModalBlock}>
+<Text style={styles.oracleModalKicker}>
+{t.todayCard} / {t.todayCounsel}
+</Text>
+<Text style={styles.oracleModalBody}>
+{language === "es"
+? "La carta y el consejo del día pertenecen a Covenant Pro."
+: "The card and counsel of the day belong to Covenant Pro."}
+</Text>
+<TouchableOpacity
+activeOpacity={0.82}
+onPress={openOraclePaywall}
+style={styles.oracleModalSecondaryButton}
+>
+<Text style={styles.oracleModalSecondaryButtonText}>
+{t.proAction}
+</Text>
+</TouchableOpacity>
+</View>
+)}
+
+<View style={styles.shareRow}>
+<TouchableOpacity
+activeOpacity={0.78}
+onPress={shareProgressSummary}
+style={styles.shareButton}
+>
+<Text style={styles.shareButtonText}>{t.shareSocials}</Text>
+</TouchableOpacity>
+
+<TouchableOpacity
+activeOpacity={0.78}
+onPress={copyProgressSummary}
+style={styles.shareButton}
+>
+<Text style={styles.shareButtonText}>{t.copySummary}</Text>
+</TouchableOpacity>
+</View>
 
 <TouchableOpacity
 activeOpacity={0.82}
@@ -2869,6 +3240,88 @@ fontSize: 15,
 lineHeight: 23,
 },
 
+lockedGuidanceRow: {
+minHeight: 38,
+borderWidth: 1,
+borderColor:
+"rgba(255,232,200,0.12)",
+borderRadius: 999,
+paddingHorizontal: 13,
+paddingVertical: 8,
+flexDirection: "row",
+alignItems: "center",
+justifyContent: "space-between",
+gap: 12,
+backgroundColor:
+"rgba(255,255,255,0.035)",
+},
+
+lockedGuidanceText: {
+color: "#D5C9BD",
+fontSize: 12,
+letterSpacing: 2,
+fontWeight: "700",
+},
+
+lockedGuidanceBadge: {
+color: COLORS.bronze,
+fontSize: 10,
+letterSpacing: 2,
+fontWeight: "800",
+},
+
+shareRow: {
+flexDirection: "row",
+flexWrap: "wrap",
+gap: 8,
+marginBottom: 16,
+},
+
+guidanceButton: {
+minHeight: 48,
+borderRadius: 999,
+borderWidth: 1,
+borderColor:
+COLORS.border,
+alignItems: "center",
+justifyContent: "center",
+paddingHorizontal: 16,
+paddingVertical: 12,
+marginBottom: 16,
+backgroundColor:
+"rgba(216,140,58,0.15)",
+},
+
+guidanceButtonText: {
+color: COLORS.bronze,
+fontSize: 10,
+letterSpacing: 2.4,
+fontWeight: "800",
+textAlign: "center",
+},
+
+shareButton: {
+minHeight: 38,
+borderRadius: 999,
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.32)",
+paddingHorizontal: 12,
+paddingVertical: 9,
+alignItems: "center",
+justifyContent: "center",
+backgroundColor:
+"rgba(216,140,58,0.10)",
+},
+
+shareButtonText: {
+color: COLORS.bronze,
+fontSize: 10,
+letterSpacing: 1.4,
+fontWeight: "800",
+textAlign: "center",
+},
+
 dailyCompletionRow: {
 flexDirection: "row",
 alignItems: "center",
@@ -3217,6 +3670,186 @@ oracleModalQuestion: {
 color: "#F0C892",
 fontSize: 14,
 lineHeight: 23,
+},
+
+tarotArtwork: {
+alignSelf: "center",
+width: 138,
+height: 214,
+borderRadius: 18,
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.56)",
+backgroundColor:
+"rgba(10,7,5,0.94)",
+alignItems: "center",
+justifyContent: "space-between",
+paddingVertical: 18,
+marginBottom: 18,
+shadowColor:
+COLORS.bronze,
+shadowOpacity: 0.28,
+shadowRadius: 24,
+shadowOffset: {
+width: 0,
+height: 12,
+},
+},
+
+tarotCornerTopLeft: {
+position: "absolute",
+top: 10,
+left: 10,
+width: 18,
+height: 18,
+borderLeftWidth: 1,
+borderTopWidth: 1,
+borderColor:
+"rgba(255,232,200,0.28)",
+},
+
+tarotCornerTopRight: {
+position: "absolute",
+top: 10,
+right: 10,
+width: 18,
+height: 18,
+borderRightWidth: 1,
+borderTopWidth: 1,
+borderColor:
+"rgba(255,232,200,0.28)",
+},
+
+tarotCornerBottomLeft: {
+position: "absolute",
+bottom: 10,
+left: 10,
+width: 18,
+height: 18,
+borderLeftWidth: 1,
+borderBottomWidth: 1,
+borderColor:
+"rgba(255,232,200,0.28)",
+},
+
+tarotCornerBottomRight: {
+position: "absolute",
+bottom: 10,
+right: 10,
+width: 18,
+height: 18,
+borderRightWidth: 1,
+borderBottomWidth: 1,
+borderColor:
+"rgba(255,232,200,0.28)",
+},
+
+tarotArtworkRoman: {
+color: COLORS.bronze,
+fontSize: 13,
+letterSpacing: 3,
+fontWeight: "800",
+},
+
+tarotArtworkName: {
+color: "#F2E5D7",
+fontSize: 11,
+lineHeight: 15,
+letterSpacing: 1.4,
+textAlign: "center",
+paddingHorizontal: 18,
+fontWeight: "700",
+},
+
+tarotSigil: {
+width: 88,
+height: 88,
+borderRadius: 44,
+alignItems: "center",
+justifyContent: "center",
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.46)",
+backgroundColor:
+"rgba(216,140,58,0.08)",
+},
+
+tarotSigilOrbit: {
+position: "absolute",
+width: 64,
+height: 64,
+borderRadius: 32,
+borderWidth: 1,
+borderColor:
+"rgba(255,232,200,0.18)",
+},
+
+tarotSigilOrbitTilt: {
+position: "absolute",
+width: 70,
+height: 34,
+borderRadius: 35,
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.30)",
+transform: [
+{
+rotate: "-28deg",
+},
+],
+},
+
+tarotSigilCrescent: {
+position: "absolute",
+width: 38,
+height: 38,
+borderRadius: 19,
+borderRightWidth: 7,
+borderColor:
+"rgba(255,209,160,0.72)",
+},
+
+tarotSigilRay: {
+position: "absolute",
+width: 2,
+height: 78,
+backgroundColor:
+"rgba(255,209,160,0.38)",
+transform: [
+{
+rotate: "42deg",
+},
+],
+},
+
+tarotSigilCore: {
+width: 22,
+height: 22,
+borderRadius: 11,
+borderWidth: 1,
+borderColor:
+"rgba(255,232,200,0.58)",
+backgroundColor:
+"rgba(216,140,58,0.22)",
+},
+
+oracleModalSecondaryButton: {
+height: 48,
+borderRadius: 999,
+borderWidth: 1,
+borderColor:
+COLORS.border,
+alignItems: "center",
+justifyContent: "center",
+backgroundColor:
+"rgba(216,140,58,0.14)",
+},
+
+oracleModalSecondaryButtonText: {
+color: COLORS.bronze,
+fontSize: 11,
+letterSpacing: 3,
+fontWeight: "800",
 },
 
 oracleModalButton: {
