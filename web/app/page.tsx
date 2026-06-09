@@ -1,10 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  TrackedButton,
   TrackedDetails,
   TrackedLink,
 } from "./analytics-controls";
+import {
+  APP_STORE_URL,
+  GOOGLE_PLAY_URL,
+} from "./site-links";
+import SupportCovenantSection from "./support-covenant-section";
 
 const habits = [
   "Cold shower",
@@ -58,9 +62,9 @@ const faqs = [
       "Yes. Your progress is connected to your account so streaks, completed days, and habit history stay with you.",
   },
   {
-    question: "When will iOS and Android be available?",
+    question: "Where can I download Covenant?",
     answer:
-      "Covenant is preparing for release on iOS and Android. Join the beta list to be notified as access opens.",
+      "Covenant is available on the App Store and Google Play. Use the download links on this page to open the official store listings.",
   },
   {
     question: "How do I reset my password?",
@@ -74,7 +78,17 @@ const faqs = [
   },
 ];
 
-export default function Home() {
+type HomeProps = {
+  searchParams?: Promise<{
+    supportLanguage?: string;
+  }>;
+};
+
+export default async function Home({ searchParams }: HomeProps) {
+  const params = await searchParams;
+  const supportLanguage =
+    params?.supportLanguage === "es" ? "es" : "en";
+
   return (
     <>
       <header className="site-header">
@@ -85,6 +99,7 @@ export default function Home() {
           <a href="#what">What</a>
           <a href="#how">How</a>
           <a href="#plans">Plans</a>
+          <a href="#mission-support">Support</a>
           <a href="#creator">Creator</a>
           <a href="#faq">FAQ</a>
         </nav>
@@ -131,7 +146,7 @@ export default function Home() {
               >
                 Download for Android
               </TrackedLink>
-              <span>Coming soon on iOS and Android</span>
+              <span>Now available on iOS and Android</span>
             </div>
           </div>
         </section>
@@ -283,29 +298,27 @@ export default function Home() {
         <section id="download" className="section download-section">
           <div>
             <p className="eyebrow">Download</p>
-            <h2>Coming soon on iOS and Android.</h2>
+            <h2>Available on iOS and Android.</h2>
             <p>
-              Join the beta list and be notified when Covenant opens for early
-              users.
+              Download Covenant from the official App Store or Google Play
+              listing.
             </p>
           </div>
           <div className="store-actions">
-            <TrackedButton
-              eventName="app_store_button_clicked"
-              eventProperties={{
-                location: "download_section",
-              }}
+            <a
+              href={APP_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              App Store — Coming soon
-            </TrackedButton>
-            <TrackedButton
-              eventName="google_play_button_clicked"
-              eventProperties={{
-                location: "download_section",
-              }}
+              Download on the App Store
+            </a>
+            <a
+              href={GOOGLE_PLAY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              Google Play — Coming soon
-            </TrackedButton>
+              Get it on Google Play
+            </a>
             <TrackedLink
               eventName="join_beta_clicked"
               eventProperties={{
@@ -317,6 +330,8 @@ export default function Home() {
             </TrackedLink>
           </div>
         </section>
+
+        <SupportCovenantSection language={supportLanguage} />
 
         <section className="section origin-section">
           <div className="origin-inner">
