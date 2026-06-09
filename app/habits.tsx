@@ -474,6 +474,11 @@ setIsSharingProgress,
 ] = useState(false);
 
 const [
+isShareCardMounted,
+setIsShareCardMounted,
+] = useState(false);
+
+const [
 oracleModalVisible,
 setOracleModalVisible,
 ] = useState(false);
@@ -537,6 +542,7 @@ setIsSyncingProgress,
 
 const mountedRef = useRef(true);
 const shareCardRef = useRef<View | null>(null);
+const shareCardLayoutResolverRef = useRef<(() => void) | null>(null);
 
 useEffect(() => {
 return () => {
@@ -1882,6 +1888,32 @@ Alert.alert(t.shareProgress, t.shareUnavailable);
 }
 }
 
+function waitForShareCardLayout() {
+return new Promise<void>((resolve) => {
+let didResolve = false;
+
+const finish = () => {
+if (didResolve) {
+return;
+}
+
+didResolve = true;
+shareCardLayoutResolverRef.current = null;
+resolve();
+};
+
+shareCardLayoutResolverRef.current = finish;
+setIsShareCardMounted(true);
+setTimeout(finish, 220);
+});
+}
+
+function waitForNextFrame() {
+return new Promise<void>((resolve) => {
+requestAnimationFrame(() => resolve());
+});
+}
+
 async function shareProgressImage() {
 const message =
 buildShareSummary();
@@ -1898,6 +1930,9 @@ return;
 setIsSharingProgress(true);
 
 try {
+await waitForShareCardLayout();
+await waitForNextFrame();
+
 if (!shareCardRef.current) {
 throw new Error("Progress share card is not mounted.");
 }
@@ -1933,6 +1968,7 @@ error
 await shareProgressTextFallback();
 } finally {
 if (mountedRef.current) {
+setIsShareCardMounted(false);
 setIsSharingProgress(false);
 }
 }
@@ -1974,6 +2010,7 @@ return (
 
 	<CovenantBackdrop intensity="strong" variant="habits" />
 
+{isShareCardMounted && (
 <View
 pointerEvents="none"
 style={styles.shareCardHost}
@@ -1981,39 +2018,121 @@ style={styles.shareCardHost}
 <View
 ref={shareCardRef}
 collapsable={false}
+onLayout={() => {
+shareCardLayoutResolverRef.current?.();
+}}
 style={styles.progressShareCard}
 >
+<View style={styles.progressShareGlowTop} />
+<View style={styles.progressShareGlowBottom} />
+
 <View style={styles.progressShareHeader}>
-<View>
-<Text style={styles.progressShareBrand}>
-COVENANT
-</Text>
-<Text style={styles.progressShareSubtitle}>
-{language === "es" ? "DISCIPLINA INTERIOR" : "INNER DISCIPLINE"}
-</Text>
-</View>
 <View style={styles.progressShareSeal}>
 <View style={styles.progressShareSealRing} />
 <View style={styles.progressShareSealCore} />
 </View>
+<View style={styles.progressShareHeaderCopy}>
+<Text style={styles.progressShareBrand}>
+COVENANT
+</Text>
+<Text style={styles.progressShareSubtitle}>
+{language === "es" ? "GUÍA DEL DÍA" : "GUIDE OF THE DAY"}
+</Text>
 </View>
-
-<View style={styles.progressShareLanguageBadge}>
 <Text style={styles.progressShareLanguageText}>
 {language === "es" ? "ES" : "EN"}
 </Text>
 </View>
 
-<Text style={styles.progressSharePhrase}>
+<View style={styles.progressShareHero}>
+<Text style={styles.progressShareQuote}>
 {language === "es"
-? "Disciplina sobre impulso."
-: "Discipline over impulse."}
+? "Lo que dominas en silencio se vuelve visible bajo presión."
+: "What you master in silence becomes visible under pressure."}
 </Text>
+</View>
 
-<View style={styles.progressShareStatsRow}>
+<View style={styles.progressShareRitualRow}>
+<View style={styles.progressShareNumberPanel}>
+<Text style={styles.progressShareGuidanceLabel}>
+{t.todayNumber}
+</Text>
+<Text style={styles.progressShareNumberValue}>
+{dailyNumberDraw ? dailyNumberDraw.number : "—"}
+</Text>
+<Text style={styles.progressShareGuidanceTitle}>
+{dailyNumberDraw
+? localize(dailyNumberDraw.title, language)
+: t.revealGuidance}
+</Text>
+<Text style={styles.progressShareGuidanceBody}>
+{dailyNumberDraw
+? localize(dailyNumberDraw.meaning, language)
+: language === "es"
+? "Revela la guía para completar el ritual."
+: "Reveal guidance to complete the ritual."}
+</Text>
+</View>
+
+<View style={styles.progressShareTarotPanel}>
+<Text style={styles.progressShareGuidanceLabel}>
+{t.todayCard}
+</Text>
+{isPro && dailyTarotDraw ? (
+<>
+<DailyTarotArtwork
+card={dailyTarotDraw}
+language={language}
+/>
+<Text style={styles.progressShareTarotTitle}>
+{dailyTarotDraw.romanNumeral} {localize(dailyTarotDraw.name, language)}
+</Text>
+<Text style={styles.progressShareTarotBody}>
+{localize(dailyTarotDraw.meaning, language)}
+</Text>
+</>
+) : (
+<View style={styles.progressShareLockedTarot}>
+<View style={styles.progressShareLockedTarotRing} />
+<Text style={styles.progressShareLockedText}>
+{t.locked} / {t.proAction}
+</Text>
+</View>
+)}
+</View>
+</View>
+
+<View style={styles.progressShareLawPanel}>
+<Text style={styles.progressShareGuidanceLabel}>
+{t.todayCounsel}
+</Text>
+<Text style={styles.progressShareLawTitle}>
+{isPro && dailyCounselDraw
+? `${dailyCounselDraw.number}. ${localize(dailyCounselDraw.title, language)}`
+: `${t.locked} / ${t.proAction}`}
+</Text>
+{isPro && dailyCounselDraw ? (
+<>
+<Text style={styles.progressShareLawPrinciple}>
+{localize(dailyCounselDraw.statement, language)}
+</Text>
+<Text style={styles.progressShareLawAction}>
+{localize(dailyCounselDraw.action, language)}
+</Text>
+</>
+) : (
+<Text style={styles.progressShareGuidanceBody}>
+{language === "es"
+? "La ley del día pertenece a Covenant Pro."
+: "The law of the day belongs to Covenant Pro."}
+</Text>
+)}
+</View>
+
+<View style={styles.progressShareProgressRow}>
 <View style={styles.progressShareStat}>
 <Text style={styles.progressShareStatLabel}>
-{language === "es" ? "MES" : "MONTH"}
+{language === "es" ? "PROGRESO MENSUAL" : "MONTHLY PROGRESS"}
 </Text>
 <Text style={styles.progressShareStatValue}>
 {monthlyProgress}%
@@ -2021,60 +2140,12 @@ COVENANT
 </View>
 <View style={styles.progressShareStat}>
 <Text style={styles.progressShareStatLabel}>
-{language === "es" ? "HOY" : "TODAY"}
-</Text>
-<Text style={styles.progressShareStatValue}>
-{completedTodayCount}/{dashboardHabits.length}
-</Text>
-</View>
-<View style={styles.progressShareStat}>
-<Text style={styles.progressShareStatLabel}>
-{language === "es" ? "RACHA" : "STREAK"}
+{language === "es" ? "RACHA ACTUAL" : "CURRENT STREAK"}
 </Text>
 <Text style={styles.progressShareStatValue}>
 {currentStreak}
 </Text>
 </View>
-</View>
-
-<View style={styles.progressShareDivider} />
-
-<View style={styles.progressShareGuidance}>
-<Text style={styles.progressShareGuidanceLabel}>
-{t.todayNumber}
-</Text>
-<Text style={styles.progressShareGuidanceTitle}>
-{dailyNumberDraw
-? `${dailyNumberDraw.number} - ${localize(dailyNumberDraw.title, language)}`
-: t.revealGuidance}
-</Text>
-</View>
-
-<View style={styles.progressShareGuidance}>
-<Text style={styles.progressShareGuidanceLabel}>
-{t.todayCard}
-</Text>
-<Text style={styles.progressShareGuidanceTitle}>
-{isPro && dailyTarotDraw
-? `${dailyTarotDraw.romanNumeral} ${localize(dailyTarotDraw.name, language)}`
-: `${t.locked} / ${t.proAction}`}
-</Text>
-</View>
-
-<View style={styles.progressShareGuidance}>
-<Text style={styles.progressShareGuidanceLabel}>
-{t.todayCounsel}
-</Text>
-<Text style={styles.progressShareGuidanceTitle}>
-{isPro && dailyCounselDraw
-? `${dailyCounselDraw.number}. ${localize(dailyCounselDraw.title, language)}`
-: `${t.locked} / ${t.proAction}`}
-</Text>
-{isPro && dailyCounselDraw && (
-<Text style={styles.progressShareGuidanceBody}>
-{localize(dailyCounselDraw.statement, language)}
-</Text>
-)}
 </View>
 
 <View style={styles.progressShareFooter}>
@@ -2084,6 +2155,7 @@ joincovenant.app
 </View>
 </View>
 </View>
+)}
 
 	<ScrollView
 showsVerticalScrollIndicator={
@@ -2217,21 +2289,30 @@ style={styles.subscriptionButton}
 
 <View style={styles.todayPanel}>
 <View style={styles.monthlyPathHeader}>
-<View>
+<View style={styles.monthlyPathCopy}>
 <Text style={styles.todayPanelLabel}>
 {t.monthlyPath}
 </Text>
+<View style={styles.monthlyPathValueRow}>
 <Text style={styles.monthlyPathValue}>
 {monthlyProgress}%
 </Text>
+<Text style={styles.monthlyPathCount}>
+{monthlyCompletedCount}/{monthlyPossibleCount}
+</Text>
+</View>
 <Text style={styles.monthlyPathSubtext}>
-{t.monthlyPathSubtext} · {monthlyCompletedCount}/{monthlyPossibleCount}
+{t.monthlyPathSubtext}
 </Text>
 </View>
 
-<View style={styles.monthlyOrb}>
-<View style={styles.monthlyOrbRing} />
-<View style={styles.monthlyOrbInner} />
+<View style={styles.dailyCompletionPill}>
+<Text style={styles.dailyCompletionPillLabel}>
+{t.dailyCompletion}
+</Text>
+<Text style={styles.dailyCompletionPillValue}>
+{completedTodayCount}/{dashboardHabits.length}
+</Text>
 </View>
 </View>
 
@@ -2248,16 +2329,20 @@ width: `${monthlyProgress}%`,
 
 <View style={styles.todayPanelDivider} />
 
-<View style={styles.oracleSummaryRow}>
+<View style={styles.guideHeaderRow}>
+<View>
+<Text style={styles.todayPanelLabel}>
+{t.oracleSummary}
+</Text>
+<Text style={styles.guideHeaderTitle}>
+{language === "es" ? "Ritual diario" : "Daily ritual"}
+</Text>
+</View>
 <View style={styles.oracleSummaryGlyph}>
 <View style={styles.oracleSummaryGlyphRing} />
 <View style={styles.oracleSummaryGlyphCore} />
 </View>
-
-<View style={styles.oracleSummaryCopy}>
-<Text style={styles.todayPanelLabel}>
-{t.oracleSummary}
-</Text>
+</View>
 
 <View style={styles.oracleSummaryItems}>
 <Text style={styles.oracleSummaryText}>
@@ -2299,8 +2384,6 @@ style={styles.lockedGuidanceRow}
 <Text style={styles.lockedGuidanceBadge}>{t.proAction}</Text>
 </TouchableOpacity>
 )}
-</View>
-</View>
 </View>
 
 <TouchableOpacity
@@ -2355,15 +2438,6 @@ style={styles.shareButton}
 >
 <Text style={styles.shareButtonText}>{t.copySummary}</Text>
 </TouchableOpacity>
-</View>
-
-<View style={styles.dailyCompletionRow}>
-<Text style={styles.dailyCompletionLabel}>
-{t.dailyCompletion}
-</Text>
-<Text style={styles.dailyCompletionValue}>
-{completedTodayCount}/{dashboardHabits.length}
-</Text>
 </View>
 </View>
 
@@ -3070,50 +3144,75 @@ position: "absolute",
 left: -10000,
 top: 0,
 width: 390,
-height: 680,
+height: 694,
 opacity: 1,
 },
 
 progressShareCard: {
 width: 390,
-height: 680,
+height: 694,
 backgroundColor: "#050403",
 borderWidth: 1,
 borderColor:
-"rgba(216,140,58,0.62)",
-paddingHorizontal: 28,
-paddingVertical: 30,
+"rgba(216,140,58,0.72)",
+paddingHorizontal: 22,
+paddingVertical: 22,
 overflow: "hidden",
+},
+
+progressShareGlowTop: {
+position: "absolute",
+top: -60,
+left: 30,
+width: 260,
+height: 160,
+borderRadius: 130,
+backgroundColor:
+"rgba(216,140,58,0.12)",
+},
+
+progressShareGlowBottom: {
+position: "absolute",
+bottom: -70,
+right: -20,
+width: 240,
+height: 170,
+borderRadius: 120,
+backgroundColor:
+"rgba(112,70,32,0.18)",
 },
 
 progressShareHeader: {
 flexDirection: "row",
 alignItems: "center",
-justifyContent: "space-between",
-gap: 18,
-marginBottom: 24,
+gap: 12,
+marginBottom: 14,
+},
+
+progressShareHeaderCopy: {
+flex: 1,
 },
 
 progressShareBrand: {
 color: "#F3D3A5",
-fontSize: 26,
-lineHeight: 32,
-letterSpacing: 7,
+fontSize: 23,
+lineHeight: 28,
+letterSpacing: 6,
 fontWeight: "300",
 },
 
 progressShareSubtitle: {
 color: COLORS.quiet,
 fontSize: 9,
-lineHeight: 15,
+lineHeight: 13,
 letterSpacing: 2.6,
 fontWeight: "800",
 },
 
 progressShareSeal: {
-width: 58,
-height: 58,
-borderRadius: 29,
+width: 45,
+height: 45,
+borderRadius: 23,
 alignItems: "center",
 justifyContent: "center",
 borderWidth: 1,
@@ -3125,36 +3224,23 @@ backgroundColor:
 
 progressShareSealRing: {
 position: "absolute",
-width: 38,
-height: 38,
-borderRadius: 19,
+width: 29,
+height: 29,
+borderRadius: 15,
 borderWidth: 1,
 borderColor:
 "rgba(255,232,200,0.20)",
 },
 
 progressShareSealCore: {
-width: 12,
-height: 12,
-borderRadius: 6,
+width: 9,
+height: 9,
+borderRadius: 5,
 backgroundColor:
 "rgba(216,140,58,0.28)",
 borderWidth: 1,
 borderColor:
 "rgba(243,211,165,0.80)",
-},
-
-progressShareLanguageBadge: {
-alignSelf: "flex-start",
-borderWidth: 1,
-borderColor:
-"rgba(255,232,200,0.18)",
-borderRadius: 999,
-paddingHorizontal: 11,
-paddingVertical: 6,
-marginBottom: 18,
-backgroundColor:
-"rgba(255,255,255,0.035)",
 },
 
 progressShareLanguageText: {
@@ -3164,97 +3250,210 @@ letterSpacing: 2,
 fontWeight: "800",
 },
 
-progressSharePhrase: {
-color: COLORS.text,
-fontSize: 24,
-lineHeight: 32,
-fontWeight: "300",
-marginBottom: 24,
+progressShareHero: {
+borderTopWidth: 1,
+borderBottomWidth: 1,
+borderColor:
+"rgba(255,232,200,0.13)",
+paddingVertical: 13,
+marginBottom: 14,
 },
 
-progressShareStatsRow: {
+progressShareQuote: {
+color: COLORS.text,
+fontSize: 22,
+lineHeight: 29,
+fontWeight: "300",
+textAlign: "center",
+},
+
+progressShareRitualRow: {
+flexDirection: "row",
+gap: 12,
+marginBottom: 13,
+},
+
+progressShareNumberPanel: {
+flex: 1,
+minHeight: 218,
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.28)",
+backgroundColor:
+"rgba(255,255,255,0.035)",
+padding: 12,
+},
+
+progressShareNumberValue: {
+color: "#F3D3A5",
+fontSize: 52,
+lineHeight: 58,
+fontWeight: "200",
+marginBottom: 5,
+},
+
+progressShareTarotPanel: {
+width: 154,
+alignItems: "center",
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.28)",
+backgroundColor:
+"rgba(216,140,58,0.07)",
+paddingHorizontal: 8,
+paddingTop: 10,
+paddingBottom: 9,
+},
+
+progressShareTarotTitle: {
+color: "#F4E8DA",
+fontSize: 12,
+lineHeight: 16,
+fontWeight: "700",
+textAlign: "center",
+marginTop: 7,
+},
+
+progressShareTarotBody: {
+color: "#BFAF9F",
+fontSize: 10,
+lineHeight: 14,
+textAlign: "center",
+marginTop: 4,
+},
+
+progressShareLockedTarot: {
+width: 116,
+height: 180,
+alignItems: "center",
+justifyContent: "center",
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.45)",
+backgroundColor:
+"rgba(5,4,3,0.62)",
+marginTop: 7,
+},
+
+progressShareLockedTarotRing: {
+width: 56,
+height: 56,
+borderRadius: 28,
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.44)",
+marginBottom: 12,
+},
+
+progressShareLockedText: {
+color: COLORS.bronze,
+fontSize: 10,
+lineHeight: 14,
+letterSpacing: 1.5,
+fontWeight: "800",
+textAlign: "center",
+},
+
+progressShareLawPanel: {
+borderLeftWidth: 1,
+borderLeftColor:
+"rgba(216,140,58,0.58)",
+paddingLeft: 13,
+paddingBottom: 10,
+marginBottom: 12,
+},
+
+progressShareLawTitle: {
+color: "#F4E8DA",
+fontSize: 17,
+lineHeight: 22,
+fontWeight: "700",
+marginBottom: 6,
+},
+
+progressShareLawPrinciple: {
+color: "#F0C892",
+fontSize: 13,
+lineHeight: 18,
+fontWeight: "600",
+marginBottom: 5,
+},
+
+progressShareLawAction: {
+color: "#C8B9A8",
+fontSize: 12,
+lineHeight: 17,
+},
+
+progressShareProgressRow: {
 flexDirection: "row",
 gap: 10,
-marginBottom: 24,
+marginTop: "auto",
+marginBottom: 12,
 },
 
 progressShareStat: {
 flex: 1,
-minHeight: 92,
+minHeight: 64,
 borderWidth: 1,
 borderColor:
 "rgba(216,140,58,0.24)",
 backgroundColor:
 "rgba(216,140,58,0.09)",
 paddingHorizontal: 12,
-paddingVertical: 13,
+paddingVertical: 10,
 justifyContent: "space-between",
 },
 
 progressShareStatLabel: {
 color: COLORS.quiet,
-fontSize: 9,
-letterSpacing: 2,
+fontSize: 8,
+lineHeight: 12,
+letterSpacing: 1.5,
 fontWeight: "800",
 },
 
 progressShareStatValue: {
 color: "#F3D3A5",
-fontSize: 28,
-lineHeight: 34,
+fontSize: 24,
+lineHeight: 29,
 fontWeight: "300",
-},
-
-progressShareDivider: {
-height: 1,
-backgroundColor:
-"rgba(255,232,200,0.14)",
-marginBottom: 20,
-},
-
-progressShareGuidance: {
-borderLeftWidth: 1,
-borderLeftColor:
-"rgba(216,140,58,0.54)",
-paddingLeft: 14,
-marginBottom: 18,
 },
 
 progressShareGuidanceLabel: {
 color: COLORS.bronze,
-fontSize: 9,
-lineHeight: 14,
-letterSpacing: 2.4,
+fontSize: 8,
+lineHeight: 12,
+letterSpacing: 1.8,
 fontWeight: "800",
 marginBottom: 5,
 },
 
 progressShareGuidanceTitle: {
 color: "#F4E8DA",
-fontSize: 16,
-lineHeight: 22,
+fontSize: 15,
+lineHeight: 20,
 fontWeight: "600",
+marginBottom: 6,
 },
 
 progressShareGuidanceBody: {
 color: "#C8B9A8",
-fontSize: 12,
-lineHeight: 18,
-marginTop: 6,
+fontSize: 11,
+lineHeight: 16,
 },
 
 progressShareFooter: {
-marginTop: "auto",
 borderTopWidth: 1,
 borderTopColor:
 "rgba(255,232,200,0.12)",
-paddingTop: 16,
+paddingTop: 10,
 },
 
 progressShareFooterText: {
 color: COLORS.bronze,
 fontSize: 12,
-lineHeight: 18,
+lineHeight: 16,
 letterSpacing: 2.6,
 fontWeight: "800",
 textAlign: "center",
@@ -3467,8 +3666,8 @@ borderWidth: 1,
 borderColor:
 "rgba(216,140,58,0.30)",
 borderRadius: 26,
-padding: 22,
-marginBottom: 24,
+padding: 20,
+marginBottom: 28,
 shadowColor:
 COLORS.bronze,
 shadowOpacity: 0.22,
@@ -3484,8 +3683,12 @@ monthlyPathHeader: {
 flexDirection: "row",
 alignItems: "center",
 justifyContent: "space-between",
-gap: 18,
-marginBottom: 16,
+gap: 14,
+marginBottom: 18,
+},
+
+monthlyPathCopy: {
+flex: 1,
 },
 
 todayPanelLabel: {
@@ -3498,10 +3701,25 @@ marginBottom: 7,
 
 monthlyPathValue: {
 color: COLORS.text,
-fontSize: 34,
-lineHeight: 40,
+fontSize: 38,
+lineHeight: 43,
 fontWeight: "300",
 letterSpacing: 1,
+},
+
+monthlyPathValueRow: {
+flexDirection: "row",
+alignItems: "flex-end",
+gap: 10,
+marginBottom: 3,
+},
+
+monthlyPathCount: {
+color: COLORS.bronze,
+fontSize: 13,
+lineHeight: 24,
+letterSpacing: 1.6,
+fontWeight: "700",
 },
 
 monthlyPathSubtext: {
@@ -3511,55 +3729,42 @@ lineHeight: 17,
 letterSpacing: 1.4,
 },
 
-monthlyOrb: {
-width: 78,
-height: 78,
-borderRadius: 39,
+dailyCompletionPill: {
+minWidth: 74,
+borderRadius: 999,
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.30)",
+backgroundColor:
+"rgba(216,140,58,0.085)",
+paddingHorizontal: 12,
+paddingVertical: 9,
 alignItems: "center",
 justifyContent: "center",
-borderWidth: 1,
-borderColor:
-"rgba(216,140,58,0.45)",
-backgroundColor:
-"rgba(216,140,58,0.11)",
-shadowColor:
-COLORS.bronze,
-shadowOpacity: 0.24,
-shadowRadius: 18,
-shadowOffset: {
-width: 0,
-height: 0,
-},
 },
 
-monthlyOrbRing: {
-position: "absolute",
-width: 56,
-height: 56,
-borderRadius: 28,
-borderWidth: 1,
-borderColor:
-"rgba(255,232,200,0.18)",
+dailyCompletionPillLabel: {
+color: COLORS.quiet,
+fontSize: 8,
+lineHeight: 12,
+letterSpacing: 1.8,
+fontWeight: "800",
 },
 
-monthlyOrbInner: {
-width: 34,
-height: 34,
-borderRadius: 17,
-borderWidth: 1,
-borderColor:
-"rgba(216,140,58,0.58)",
-backgroundColor:
-"rgba(216,140,58,0.08)",
+dailyCompletionPillValue: {
+color: "#F3D3A5",
+fontSize: 17,
+lineHeight: 22,
+fontWeight: "600",
 },
 
 monthlyTrack: {
-height: 9,
+height: 8,
 borderRadius: 999,
 overflow: "hidden",
 backgroundColor:
 "rgba(255,255,255,0.08)",
-marginBottom: 20,
+marginBottom: 18,
 },
 
 monthlyTrackFill: {
@@ -3581,20 +3786,21 @@ todayPanelDivider: {
 height: 1,
 backgroundColor:
 "rgba(255,232,200,0.12)",
-marginBottom: 18,
+marginBottom: 17,
 },
 
-oracleSummaryRow: {
+guideHeaderRow: {
 flexDirection: "row",
-alignItems: "flex-start",
-gap: 14,
-marginBottom: 18,
+alignItems: "center",
+justifyContent: "space-between",
+gap: 12,
+marginBottom: 13,
 },
 
 oracleSummaryGlyph: {
-width: 40,
-height: 40,
-borderRadius: 20,
+width: 36,
+height: 36,
+borderRadius: 18,
 alignItems: "center",
 justifyContent: "center",
 borderWidth: 1,
@@ -3606,18 +3812,18 @@ backgroundColor:
 
 oracleSummaryGlyphRing: {
 position: "absolute",
-width: 28,
-height: 28,
-borderRadius: 14,
+width: 25,
+height: 25,
+borderRadius: 13,
 borderWidth: 1,
 borderColor:
 "rgba(255,232,200,0.18)",
 },
 
 oracleSummaryGlyphCore: {
-width: 9,
-height: 9,
-borderRadius: 5,
+width: 8,
+height: 8,
+borderRadius: 4,
 borderWidth: 1,
 borderColor:
 "rgba(241,197,142,0.72)",
@@ -3629,15 +3835,28 @@ oracleSummaryCopy: {
 flex: 1,
 },
 
+guideHeaderTitle: {
+color: COLORS.text,
+fontSize: 20,
+lineHeight: 26,
+fontWeight: "300",
+marginTop: -2,
+},
+
 oracleSummaryItems: {
-gap: 6,
+gap: 8,
+marginBottom: 16,
 },
 
 oracleSummaryText: {
 color: "#F2E5D7",
 fontSize: 14,
-lineHeight: 21,
+lineHeight: 20,
 fontWeight: "500",
+borderLeftWidth: 1,
+borderLeftColor:
+"rgba(216,140,58,0.35)",
+paddingLeft: 12,
 },
 
 todayPanelText: {
@@ -3647,32 +3866,33 @@ lineHeight: 23,
 },
 
 lockedGuidanceRow: {
-minHeight: 38,
+minHeight: 34,
 borderWidth: 1,
 borderColor:
-"rgba(255,232,200,0.12)",
+"rgba(216,140,58,0.24)",
 borderRadius: 999,
-paddingHorizontal: 13,
-paddingVertical: 8,
+paddingHorizontal: 12,
+paddingVertical: 7,
 flexDirection: "row",
 alignItems: "center",
 justifyContent: "space-between",
 gap: 12,
 backgroundColor:
-"rgba(255,255,255,0.035)",
+"rgba(216,140,58,0.055)",
 },
 
 lockedGuidanceText: {
-color: "#D5C9BD",
-fontSize: 12,
-letterSpacing: 2,
+color: "#CFC0B0",
+fontSize: 11,
+letterSpacing: 1.7,
 fontWeight: "700",
+flexShrink: 1,
 },
 
 lockedGuidanceBadge: {
-color: COLORS.bronze,
+color: "#F0C892",
 fontSize: 10,
-letterSpacing: 2,
+letterSpacing: 1.8,
 fontWeight: "800",
 },
 
@@ -3680,22 +3900,30 @@ shareRow: {
 flexDirection: "row",
 flexWrap: "wrap",
 gap: 8,
-marginBottom: 16,
+marginTop: 12,
 },
 
 guidanceButton: {
-minHeight: 48,
+minHeight: 50,
 borderRadius: 999,
 borderWidth: 1,
 borderColor:
-COLORS.border,
+"rgba(216,140,58,0.62)",
 alignItems: "center",
 justifyContent: "center",
 paddingHorizontal: 16,
 paddingVertical: 12,
-marginBottom: 16,
+marginTop: 2,
 backgroundColor:
-"rgba(216,140,58,0.15)",
+"rgba(216,140,58,0.20)",
+shadowColor:
+COLORS.bronze,
+shadowOpacity: 0.20,
+shadowRadius: 18,
+shadowOffset: {
+width: 0,
+height: 8,
+},
 },
 
 guidanceButtonText: {
@@ -3707,17 +3935,17 @@ textAlign: "center",
 },
 
 shareButton: {
-minHeight: 38,
+minHeight: 36,
 borderRadius: 999,
 borderWidth: 1,
 borderColor:
-"rgba(216,140,58,0.32)",
-paddingHorizontal: 12,
-paddingVertical: 9,
+"rgba(216,140,58,0.24)",
+paddingHorizontal: 11,
+paddingVertical: 8,
 alignItems: "center",
 justifyContent: "center",
 backgroundColor:
-"rgba(216,140,58,0.10)",
+"rgba(255,255,255,0.025)",
 },
 
 shareButtonDisabled: {

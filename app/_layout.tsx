@@ -245,14 +245,22 @@ export default function Layout() {
 
         {startupGateVisible && (
           <View style={styles.loadingOverlay}>
-            <View style={styles.logoHalo} />
-            <Image
-              source={require("../assets/images/icon.png")}
-              style={styles.loadingLogo}
-              resizeMode="contain"
-            />
-            <Text style={styles.loadingBrand}>COVENANT</Text>
-            <ActivityIndicator color="#D88C3A" />
+            <View style={styles.loadingStage}>
+              <View style={styles.logoHaloOuter} />
+              <View style={styles.logoHalo} />
+              <Image
+                source={require("../assets/images/icon.png")}
+                style={styles.loadingLogo}
+                resizeMode="contain"
+              />
+              <Text style={styles.loadingBrand}>COVENANT</Text>
+              <Text style={styles.loadingSubtitle}>Inner Discipline</Text>
+              <View style={styles.loadingLine} />
+              <ActivityIndicator
+                color="#D88C3A"
+                size="small"
+              />
+            </View>
           </View>
         )}
 
@@ -279,32 +287,66 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#050505",
     zIndex: 900,
+    paddingHorizontal: 28,
+  },
+  loadingStage: {
+    width: "100%",
+    minHeight: 360,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  logoHaloOuter: {
+    position: "absolute",
+    width: 258,
+    height: 258,
+    borderRadius: 129,
+    borderWidth: 1,
+    borderColor: "rgba(216,140,58,0.10)",
+    backgroundColor: "rgba(216,140,58,0.035)",
   },
   logoHalo: {
     position: "absolute",
-    width: 190,
-    height: 190,
-    borderRadius: 95,
+    width: 184,
+    height: 184,
+    borderRadius: 92,
     borderWidth: 1,
-    borderColor: "rgba(216,140,58,0.24)",
-    backgroundColor: "rgba(216,140,58,0.05)",
+    borderColor: "rgba(216,140,58,0.32)",
+    backgroundColor: "rgba(216,140,58,0.075)",
     shadowColor: "#D88C3A",
-    shadowOpacity: 0.28,
-    shadowRadius: 42,
+    shadowOpacity: 0.34,
+    shadowRadius: 54,
     shadowOffset: {
       width: 0,
       height: 0,
     },
   },
   loadingLogo: {
-    width: 92,
-    height: 92,
-    marginBottom: 20,
+    width: 116,
+    height: 116,
+    marginBottom: 22,
   },
   loadingBrand: {
-    color: "#FFD1A0",
-    fontSize: 14,
-    letterSpacing: 7,
-    marginBottom: 22,
+    color: "#F3D3A5",
+    fontSize: 18,
+    lineHeight: 24,
+    letterSpacing: 8,
+    fontWeight: "300",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  loadingSubtitle: {
+    color: "rgba(245,232,216,0.64)",
+    fontSize: 12,
+    lineHeight: 17,
+    letterSpacing: 2.8,
+    textTransform: "uppercase",
+    marginBottom: 24,
+  },
+  loadingLine: {
+    width: 92,
+    height: 1,
+    backgroundColor: "rgba(216,140,58,0.42)",
+    marginBottom: 20,
   },
 });
