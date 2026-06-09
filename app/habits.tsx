@@ -2963,6 +2963,13 @@ onRequestClose={() => setOracleModalVisible(false)}
 {t.oracleModalTitle}
 </Text>
 
+<ScrollView
+style={styles.oracleModalScroll}
+contentContainerStyle={styles.oracleModalScrollContent}
+showsVerticalScrollIndicator={false}
+bounces
+>
+
 {dailyNumberDraw && (
 <View style={styles.oracleModalBlock}>
 <Text style={styles.oracleModalKicker}>
@@ -3048,6 +3055,8 @@ style={styles.oracleModalSecondaryButton}
 </TouchableOpacity>
 </View>
 )}
+
+</ScrollView>
 
 <View style={styles.shareRow}>
 <TouchableOpacity
@@ -4241,6 +4250,7 @@ flex: 1,
 backgroundColor:
 "rgba(0,0,0,0.82)",
 paddingHorizontal: 24,
+paddingVertical: 28,
 alignItems: "center",
 justifyContent: "center",
 },
@@ -4253,7 +4263,10 @@ borderWidth: 1,
 borderColor:
 "rgba(216,140,58,0.38)",
 borderRadius: 26,
-padding: 26,
+paddingHorizontal: 24,
+paddingTop: 24,
+paddingBottom: 20,
+maxHeight: "88%",
 shadowColor:
 COLORS.bronze,
 shadowOpacity: 0.24,
@@ -4270,7 +4283,16 @@ color: COLORS.bronze,
 fontSize: 10,
 letterSpacing: 6,
 fontWeight: "800",
-marginBottom: 20,
+marginBottom: 14,
+},
+
+oracleModalScroll: {
+width: "100%",
+flexGrow: 0,
+},
+
+oracleModalScrollContent: {
+paddingBottom: 2,
 },
 
 oracleModalBlock: {

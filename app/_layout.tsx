@@ -249,7 +249,7 @@ export default function Layout() {
               <View style={styles.logoHaloOuter} />
               <View style={styles.logoHalo} />
               <Image
-                source={require("../assets/images/icon.png")}
+                source={require("../assets/ios-icon.png")}
                 style={styles.loadingLogo}
                 resizeMode="contain"
               />
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   },
   loadingStage: {
     width: "100%",
-    minHeight: 360,
+    minHeight: 390,
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
@@ -322,9 +322,12 @@ const styles = StyleSheet.create({
     },
   },
   loadingLogo: {
-    width: 116,
-    height: 116,
-    marginBottom: 22,
+    width: 148,
+    height: 148,
+    borderRadius: 34,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: "rgba(216,140,58,0.20)",
   },
   loadingBrand: {
     color: "#F3D3A5",
