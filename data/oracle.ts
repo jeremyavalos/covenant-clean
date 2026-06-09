@@ -52,6 +52,7 @@ export type DailyCounsel = {
   statement: LocalizedText;
   explanation: LocalizedText;
   action: LocalizedText;
+  warning: LocalizedText;
 };
 
 const NUMBER_TITLES: LocalizedText[] = [
@@ -758,78 +759,1157 @@ export const MAJOR_ARCANA: TarotCard[] = [
   },
 ];
 
-const COUNSEL_SEEDS: Array<{
-  title: LocalizedText;
-  virtue: LocalizedText;
-  enemy: LocalizedText;
-  practice: LocalizedText;
-}> = [
-  { title: { en: "Guard the First Hour", es: "Guarda la Primera Hora" }, virtue: { en: "command", es: "mando" }, enemy: { en: "drift", es: "dispersión" }, practice: { en: "start before checking noise", es: "empieza antes de revisar ruido" } },
-  { title: { en: "Let Silence Work", es: "Deja Trabajar al Silencio" }, virtue: { en: "restraint", es: "dominio" }, enemy: { en: "explanation", es: "explicación" }, practice: { en: "answer one urge with quiet", es: "responde a un impulso con quietud" } },
-  { title: { en: "Spend No Strength on Display", es: "No Gastes Fuerza en Exhibición" }, virtue: { en: "reserve", es: "reserva" }, enemy: { en: "performance", es: "actuación" }, practice: { en: "complete one task unseen", es: "completa una tarea sin público" } },
-  { title: { en: "Move Before Mood Votes", es: "Muévete Antes de que Vote el Ánimo" }, virtue: { en: "obedience", es: "obediencia" }, enemy: { en: "negotiation", es: "negociación" }, practice: { en: "take the next disciplined step", es: "da el próximo paso disciplinado" } },
-  { title: { en: "Keep Your Word Small", es: "Haz Pequeña tu Palabra" }, virtue: { en: "precision", es: "precisión" }, enemy: { en: "boasting", es: "alarde" }, practice: { en: "promise less and finish more", es: "promete menos y termina más" } },
-  { title: { en: "Study the Room Before Acting", es: "Estudia la Sala Antes de Actuar" }, virtue: { en: "timing", es: "momento justo" }, enemy: { en: "haste", es: "prisa" }, practice: { en: "observe before entering conflict", es: "observa antes de entrar al conflicto" } },
-  { title: { en: "Do Not Feed Every Fire", es: "No Alimentes Cada Fuego" }, virtue: { en: "discernment", es: "discernimiento" }, enemy: { en: "reaction", es: "reacción" }, practice: { en: "let one provocation pass", es: "deja pasar una provocación" } },
-  { title: { en: "Make Reputation Quietly Expensive", es: "Haz Costosa tu Reputación en Silencio" }, virtue: { en: "consistency", es: "constancia" }, enemy: { en: "carelessness", es: "descuido" }, practice: { en: "protect one standard today", es: "protege un estándar hoy" } },
-  { title: { en: "Choose Distance Over Drama", es: "Elige Distancia Antes que Drama" }, virtue: { en: "separation", es: "separación" }, enemy: { en: "entanglement", es: "enredo" }, practice: { en: "step back without announcing it", es: "retrocede sin anunciarlo" } },
-  { title: { en: "Let Results Speak Last", es: "Deja que el Resultado Hable al Final" }, virtue: { en: "proof", es: "prueba" }, enemy: { en: "noise", es: "ruido" }, practice: { en: "finish before explaining", es: "termina antes de explicar" } },
-  { title: { en: "Hold the Line Under Praise", es: "Sostén la Línea Bajo el Elogio" }, virtue: { en: "sobriety", es: "sobriedad" }, enemy: { en: "vanity", es: "vanidad" }, practice: { en: "receive praise without changing pace", es: "recibe elogio sin cambiar el paso" } },
-  { title: { en: "Hold the Line Under Blame", es: "Sostén la Línea Bajo la Culpa" }, virtue: { en: "steadiness", es: "firmeza" }, enemy: { en: "panic", es: "pánico" }, practice: { en: "correct what is true, release the rest", es: "corrige lo verdadero, suelta lo demás" } },
-  { title: { en: "Never Crown an Impulse", es: "Nunca Corones un Impulso" }, virtue: { en: "rule", es: "gobierno" }, enemy: { en: "appetite", es: "apetito" }, practice: { en: "delay one craving by ten minutes", es: "retrasa un deseo diez minutos" } },
-  { title: { en: "Let Patience Gather Force", es: "Deja que la Paciencia Reúna Fuerza" }, virtue: { en: "patience", es: "paciencia" }, enemy: { en: "premature action", es: "acción prematura" }, practice: { en: "wait until the next clear signal", es: "espera la próxima señal clara" } },
-  { title: { en: "Keep One Door Closed", es: "Mantén una Puerta Cerrada" }, virtue: { en: "boundary", es: "límite" }, enemy: { en: "access", es: "acceso" }, practice: { en: "refuse one old permission", es: "rechaza un permiso antiguo" } },
-  { title: { en: "Train the Face", es: "Entrena el Rostro" }, virtue: { en: "composure", es: "compostura" }, enemy: { en: "leakage", es: "fuga" }, practice: { en: "breathe before your expression answers", es: "respira antes de que responda tu expresión" } },
-  { title: { en: "Protect the Unfinished Work", es: "Protege la Obra Incompleta" }, virtue: { en: "privacy", es: "privacidad" }, enemy: { en: "exposure", es: "exposición" }, practice: { en: "keep one plan off display", es: "mantén un plan fuera de exhibición" } },
-  { title: { en: "Make the Easy Thing Earn Entry", es: "Haz que lo Fácil Gane Entrada" }, virtue: { en: "standard", es: "estándar" }, enemy: { en: "convenience", es: "comodidad" }, practice: { en: "add one honest condition", es: "añade una condición honesta" } },
-  { title: { en: "Refuse the Second Wound", es: "Rechaza la Segunda Herida" }, virtue: { en: "recovery", es: "recuperación" }, enemy: { en: "rumination", es: "rumiación" }, practice: { en: "stop rehearsing one injury", es: "deja de ensayar una herida" } },
-  { title: { en: "Read Incentives, Not Speeches", es: "Lee Incentivos, no Discursos" }, virtue: { en: "clarity", es: "claridad" }, enemy: { en: "flattery", es: "adulación" }, practice: { en: "ask what the action rewards", es: "pregunta qué recompensa la acción" } },
-  { title: { en: "Make Anger Pay a Toll", es: "Haz que la Ira Pague Peaje" }, virtue: { en: "control", es: "control" }, enemy: { en: "eruption", es: "estallido" }, practice: { en: "write the response before sending none", es: "escribe la respuesta antes de no enviar ninguna" } },
-  { title: { en: "Do Not Borrow Tomorrow's Fear", es: "No Tomes Prestado el Miedo de Mañana" }, virtue: { en: "presence", es: "presencia" }, enemy: { en: "projection", es: "proyección" }, practice: { en: "solve only the present step", es: "resuelve solo el paso presente" } },
-  { title: { en: "Let Repetition Become Rank", es: "Deja que la Repetición Sea Rango" }, virtue: { en: "discipline", es: "disciplina" }, enemy: { en: "novelty", es: "novedad" }, practice: { en: "repeat the core practice cleanly", es: "repite limpia la práctica central" } },
-  { title: { en: "Keep Counsel Above Complaint", es: "Pon Consejo Sobre Queja" }, virtue: { en: "wisdom", es: "sabiduría" }, enemy: { en: "complaint", es: "queja" }, practice: { en: "turn one complaint into instruction", es: "convierte una queja en instrucción" } },
-  { title: { en: "Be Hard to Distract", es: "Sé Difícil de Distraer" }, virtue: { en: "focus", es: "enfoque" }, enemy: { en: "fragmentation", es: "fragmentación" }, practice: { en: "remove one interruption before work", es: "quita una interrupción antes de trabajar" } },
-  { title: { en: "Do Not Negotiate with Collapse", es: "No Negocies con el Derrumbe" }, virtue: { en: "resolve", es: "resolución" }, enemy: { en: "surrender", es: "rendición" }, practice: { en: "stand up and complete one small order", es: "levántate y completa un pequeño orden" } },
-  { title: { en: "Measure Before You Judge", es: "Mide Antes de Juzgar" }, virtue: { en: "accuracy", es: "exactitud" }, enemy: { en: "assumption", es: "suposición" }, practice: { en: "check the facts once", es: "verifica los hechos una vez" } },
-  { title: { en: "Keep Victory Clean", es: "Mantén Limpia la Victoria" }, virtue: { en: "honor", es: "honor" }, enemy: { en: "cruelty", es: "crueldad" }, practice: { en: "win without humiliating", es: "vence sin humillar" } },
-  { title: { en: "Lose Without Selling the Throne", es: "Pierde Sin Vender el Trono" }, virtue: { en: "dignity", es: "dignidad" }, enemy: { en: "despair", es: "desesperación" }, practice: { en: "take the lesson without self-betrayal", es: "toma la lección sin traicionarte" } },
-  { title: { en: "Hide the Root, Show the Fruit", es: "Oculta la Raíz, Muestra el Fruto" }, virtue: { en: "depth", es: "profundidad" }, enemy: { en: "display", es: "exhibición" }, practice: { en: "protect the source of one strength", es: "protege la fuente de una fuerza" } },
-  { title: { en: "Choose the Battlefield", es: "Elige el Campo de Batalla" }, virtue: { en: "strategy", es: "estrategia" }, enemy: { en: "impulse", es: "impulso" }, practice: { en: "decline one poorly timed fight", es: "rechaza una lucha mal situada" } },
-  { title: { en: "Let Scarcity Clarify", es: "Deja que la Escasez Aclare" }, virtue: { en: "priority", es: "prioridad" }, enemy: { en: "excess", es: "exceso" }, practice: { en: "choose the one thing that matters", es: "elige lo único que importa" } },
-  { title: { en: "Make Rest Serve Command", es: "Haz que el Descanso Sirva al Mando" }, virtue: { en: "renewal", es: "renovación" }, enemy: { en: "escape", es: "escape" }, practice: { en: "rest without abandoning tomorrow", es: "descansa sin abandonar mañana" } },
-  { title: { en: "Speak After the Heat Leaves", es: "Habla Cuando se Vaya el Calor" }, virtue: { en: "coolness", es: "templanza" }, enemy: { en: "heat", es: "calor" }, practice: { en: "wait for your tone to clear", es: "espera a que se limpie tu tono" } },
-  { title: { en: "Turn Envy into Study", es: "Convierte Envidia en Estudio" }, virtue: { en: "learning", es: "aprendizaje" }, enemy: { en: "envy", es: "envidia" }, practice: { en: "name one skill worth training", es: "nombra una habilidad que valga entrenar" } },
-  { title: { en: "Keep the Inner Court Sober", es: "Mantén Sobrio el Patio Interior" }, virtue: { en: "inner order", es: "orden interior" }, enemy: { en: "fantasy", es: "fantasía" }, practice: { en: "tell yourself the plain truth", es: "dite la verdad sencilla" } },
-  { title: { en: "Do the Unglamorous Part", es: "Haz la Parte Sin Gloria" }, virtue: { en: "service", es: "servicio" }, enemy: { en: "avoidance", es: "evasión" }, practice: { en: "complete the neglected detail", es: "completa el detalle descuidado" } },
-  { title: { en: "Keep Tools Sharpened", es: "Mantén Afiladas las Herramientas" }, virtue: { en: "preparation", es: "preparación" }, enemy: { en: "decay", es: "deterioro" }, practice: { en: "repair one system before it fails", es: "repara un sistema antes de que falle" } },
-  { title: { en: "Let Loyalty Require Truth", es: "Haz que la Lealtad Exija Verdad" }, virtue: { en: "truth", es: "verdad" }, enemy: { en: "blindness", es: "ceguera" }, practice: { en: "be honest without theatrics", es: "sé honesto sin teatro" } },
-  { title: { en: "Leave Before You Are Owned", es: "Sal Antes de Ser Poseído" }, virtue: { en: "freedom", es: "libertad" }, enemy: { en: "dependency", es: "dependencia" }, practice: { en: "exit one weakening pattern early", es: "sal temprano de un patrón debilitante" } },
-  { title: { en: "Give No Throne to Urgency", es: "No Des Trono a la Urgencia" }, virtue: { en: "pace", es: "ritmo" }, enemy: { en: "urgency", es: "urgencia" }, practice: { en: "separate urgent from important", es: "separa urgente de importante" } },
-  { title: { en: "Make Gratitude Practical", es: "Haz Práctica la Gratitud" }, virtue: { en: "reverence", es: "reverencia" }, enemy: { en: "entitlement", es: "derecho automático" }, practice: { en: "honor one gift with action", es: "honra un regalo con acción" } },
-  { title: { en: "Keep the Standard When Alone", es: "Mantén el Estándar a Solas" }, virtue: { en: "integrity", es: "integridad" }, enemy: { en: "permission", es: "permiso" }, practice: { en: "do the right thing unseen", es: "haz lo correcto sin testigos" } },
-  { title: { en: "Use Pain as Intelligence", es: "Usa el Dolor como Inteligencia" }, virtue: { en: "interpretation", es: "interpretación" }, enemy: { en: "self-pity", es: "autocompasión" }, practice: { en: "ask what the pain is teaching", es: "pregunta qué enseña el dolor" } },
-  { title: { en: "Do Not Confuse Access with Trust", es: "No Confundas Acceso con Confianza" }, virtue: { en: "discernment", es: "discernimiento" }, enemy: { en: "familiarity", es: "familiaridad" }, practice: { en: "set one clean boundary", es: "define un límite limpio" } },
-  { title: { en: "Give the Body a Command", es: "Dale un Mandato al Cuerpo" }, virtue: { en: "embodiment", es: "encarnación" }, enemy: { en: "inertia", es: "inercia" }, practice: { en: "move with deliberate posture", es: "muévete con postura deliberada" } },
-  { title: { en: "Let the Day Close Accountably", es: "Cierra el Día con Cuenta Clara" }, virtue: { en: "accountability", es: "rendición de cuentas" }, enemy: { en: "forgetting", es: "olvido" }, practice: { en: "review one action without excuse", es: "revisa una acción sin excusa" } },
-  { title: { en: "Return Without Ceremony", es: "Regresa Sin Ceremonia" }, virtue: { en: "return", es: "regreso" }, enemy: { en: "shame", es: "vergüenza" }, practice: { en: "restart the practice immediately", es: "reinicia la práctica de inmediato" } },
-];
-
-export const DAILY_COUNSELS: DailyCounsel[] = COUNSEL_SEEDS.map(
-  (seed, index) => ({
-    id: `counsel-${String(index + 1).padStart(2, "0")}`,
-    number: index + 1,
-    title: seed.title,
+export const DAILY_COUNSELS: DailyCounsel[] = [
+  {
+    id: "law-01",
+    number: 1,
+    title: {
+      en: "Govern the Impulse",
+      es: "Gobierna el Impulso",
+    },
     statement: {
-      en: `${seed.title.en}. Protect ${seed.virtue.en} from ${seed.enemy.en}.`,
-      es: `${seed.title.es}. Protege ${seed.virtue.es} de ${seed.enemy.es}.`,
+      en: "Govern the impulse before it governs you.",
+      es: "Gobierna el impulso antes de que te gobierne.",
     },
     explanation: {
-      en: `Power becomes discipline when it is governed before pressure arrives. Today, ${seed.virtue.en} is not an idea; it is the boundary that keeps ${seed.enemy.en} from taking command of your conduct.`,
-      es: `El poder se vuelve disciplina cuando recibe gobierno antes de que llegue la presión. Hoy, ${seed.virtue.es} no es una idea; es el límite que impide que ${seed.enemy.es} tome mando sobre tu conducta.`,
+      en: "Power begins when reaction ends. The person who cannot delay emotion becomes readable, and what is readable can be moved by any hand with enough patience.",
+      es: "El poder empieza cuando termina la reacción. Quien no puede retrasar una emoción se vuelve legible, y lo legible puede ser movido por cualquier mano con paciencia suficiente.",
     },
     action: {
-      en: `Daily action: ${seed.practice.en}.`,
-      es: `Acción diaria: ${seed.practice.es}.`,
+      en: "Daily action: Wait ten seconds before answering anything that provokes you.",
+      es: "Acción diaria: Espera diez segundos antes de responder a algo que te provoque.",
     },
-  })
-);
+    warning: {
+      en: "Warning: Silence is discipline, not fear.",
+      es: "Advertencia: El silencio es disciplina, no miedo.",
+    },
+  },
+  {
+    id: "law-02",
+    number: 2,
+    title: {
+      en: "Make Desire Wait Outside",
+      es: "Deja el Deseo Afuera",
+    },
+    statement: {
+      en: "Never let appetite sit at the council table.",
+      es: "Nunca sientes al apetito en la mesa del consejo.",
+    },
+    explanation: {
+      en: "Desire speaks as urgency because it fears examination. A disciplined life lets desire knock, but does not give it authority over direction.",
+      es: "El deseo habla como urgencia porque teme ser examinado. Una vida disciplinada deja que el deseo toque la puerta, pero no le entrega autoridad sobre la dirección.",
+    },
+    action: {
+      en: "Daily action: Delay one craving until after your first duty is complete.",
+      es: "Acción diaria: Retrasa un deseo hasta completar tu primer deber.",
+    },
+    warning: {
+      en: "Warning: Denial without purpose becomes bitterness.",
+      es: "Advertencia: Negarte sin propósito se convierte en amargura.",
+    },
+  },
+  {
+    id: "law-03",
+    number: 3,
+    title: {
+      en: "Let Silence Collect Interest",
+      es: "Deja que el Silencio Acumule Interés",
+    },
+    statement: {
+      en: "Speak less while pressure reveals more.",
+      es: "Habla menos mientras la presión revela más.",
+    },
+    explanation: {
+      en: "Most people confess their position by filling empty space. Silence gives others room to reveal motive, fear, hunger, and weakness.",
+      es: "La mayoría confiesa su posición al llenar el espacio vacío. El silencio da lugar para que otros revelen motivo, miedo, hambre y debilidad.",
+    },
+    action: {
+      en: "Daily action: Ask one clear question, then let the answer finish without interruption.",
+      es: "Acción diaria: Haz una pregunta clara y deja que la respuesta termine sin interrupción.",
+    },
+    warning: {
+      en: "Warning: Silence used to punish becomes manipulation.",
+      es: "Advertencia: El silencio usado para castigar se vuelve manipulación.",
+    },
+  },
+  {
+    id: "law-04",
+    number: 4,
+    title: {
+      en: "Protect the Unshown Work",
+      es: "Protege la Obra no Mostrada",
+    },
+    statement: {
+      en: "Do not expose what has not yet earned form.",
+      es: "No expongas lo que aún no ha ganado forma.",
+    },
+    explanation: {
+      en: "Premature display invites judgment before strength has bones. Keep the root hidden until the fruit can carry its own weight.",
+      es: "La exhibición prematura invita juicio antes de que la fuerza tenga huesos. Mantén la raíz oculta hasta que el fruto soporte su propio peso.",
+    },
+    action: {
+      en: "Daily action: Keep one plan private and advance it by one concrete step.",
+      es: "Acción diaria: Mantén un plan en privado y avánzalo con un paso concreto.",
+    },
+    warning: {
+      en: "Warning: Privacy must serve construction, not cowardice.",
+      es: "Advertencia: La privacidad debe servir a la construcción, no a la cobardía.",
+    },
+  },
+  {
+    id: "law-05",
+    number: 5,
+    title: {
+      en: "Read the Incentive",
+      es: "Lee el Incentivo",
+    },
+    statement: {
+      en: "Trust actions more than speeches.",
+      es: "Confía más en las acciones que en los discursos.",
+    },
+    explanation: {
+      en: "Words decorate intention; incentives expose it. Watch what someone gains by moving you, praising you, rushing you, or making you doubt your own sight.",
+      es: "Las palabras decoran la intención; los incentivos la exponen. Observa qué gana alguien al moverte, elogiarte, apresurarte o hacerte dudar de tu vista.",
+    },
+    action: {
+      en: "Daily action: Before agreeing, name what the other side receives.",
+      es: "Acción diaria: Antes de aceptar, nombra qué recibe la otra parte.",
+    },
+    warning: {
+      en: "Warning: Suspicion without evidence corrodes judgment.",
+      es: "Advertencia: La sospecha sin evidencia corroe el juicio.",
+    },
+  },
+  {
+    id: "law-06",
+    number: 6,
+    title: {
+      en: "Choose the Field",
+      es: "Elige el Campo",
+    },
+    statement: {
+      en: "Never fight where impatience placed you.",
+      es: "Nunca luches donde te colocó la impaciencia.",
+    },
+    explanation: {
+      en: "A bad field turns strength into waste. Strategic restraint means refusing battles whose timing, audience, or terms were chosen by your agitation.",
+      es: "Un mal campo convierte la fuerza en desperdicio. La restricción estratégica rechaza batallas cuyo tiempo, público o términos fueron elegidos por tu agitación.",
+    },
+    action: {
+      en: "Daily action: Decline one poorly timed argument.",
+      es: "Acción diaria: Rechaza una discusión mal ubicada.",
+    },
+    warning: {
+      en: "Warning: Avoidance wears strategy's clothing easily.",
+      es: "Advertencia: La evasión se viste fácilmente de estrategia.",
+    },
+  },
+  {
+    id: "law-07",
+    number: 7,
+    title: {
+      en: "Spend No Strength on Display",
+      es: "No Gastes Fuerza en Exhibición",
+    },
+    statement: {
+      en: "Let proof arrive before performance.",
+      es: "Deja que la prueba llegue antes que la actuación.",
+    },
+    explanation: {
+      en: "The hunger to be seen often steals the energy required to become undeniable. Quiet completion creates a reputation that does not need decoration.",
+      es: "El hambre de ser visto suele robar la energía necesaria para volverse innegable. La finalización silenciosa crea una reputación que no necesita adorno.",
+    },
+    action: {
+      en: "Daily action: Finish one task without announcing it.",
+      es: "Acción diaria: Termina una tarea sin anunciarla.",
+    },
+    warning: {
+      en: "Warning: Hidden work still needs honest accountability.",
+      es: "Advertencia: El trabajo oculto aún necesita rendición de cuentas honesta.",
+    },
+  },
+  {
+    id: "law-08",
+    number: 8,
+    title: {
+      en: "Guard the First Hour",
+      es: "Guarda la Primera Hora",
+    },
+    statement: {
+      en: "The first hour sets the ruler of the day.",
+      es: "La primera hora establece el gobernante del día.",
+    },
+    explanation: {
+      en: "If noise owns your morning, discipline spends the rest of the day negotiating for scraps. Command early, before appetite gathers its advisors.",
+      es: "Si el ruido posee tu mañana, la disciplina pasa el resto del día negociando sobras. Manda temprano, antes de que el apetito reúna consejeros.",
+    },
+    action: {
+      en: "Daily action: Complete one disciplined act before checking feeds or messages.",
+      es: "Acción diaria: Completa un acto disciplinado antes de revisar redes o mensajes.",
+    },
+    warning: {
+      en: "Warning: Ritual without attention becomes theater.",
+      es: "Advertencia: El ritual sin atención se vuelve teatro.",
+    },
+  },
+  {
+    id: "law-09",
+    number: 9,
+    title: {
+      en: "Control the Door",
+      es: "Controla la Puerta",
+    },
+    statement: {
+      en: "Not everything that knocks deserves entry.",
+      es: "No todo lo que toca merece entrada.",
+    },
+    explanation: {
+      en: "Access is power. What you allow near your attention can shape your mood, pace, appetite, and eventually your identity.",
+      es: "El acceso es poder. Lo que permites cerca de tu atención puede formar tu ánimo, ritmo, apetito y finalmente tu identidad.",
+    },
+    action: {
+      en: "Daily action: Remove one weakening input from your day.",
+      es: "Acción diaria: Quita una entrada debilitante de tu día.",
+    },
+    warning: {
+      en: "Warning: Boundaries without warmth can become vanity.",
+      es: "Advertencia: Los límites sin calidez pueden volverse vanidad.",
+    },
+  },
+  {
+    id: "law-10",
+    number: 10,
+    title: {
+      en: "Make Anger Pay a Toll",
+      es: "Haz que la Ira Pague Peaje",
+    },
+    statement: {
+      en: "Anger may enter only after it has been examined.",
+      es: "La ira solo puede entrar después de ser examinada.",
+    },
+    explanation: {
+      en: "Anger contains information, but unfiltered anger sells your position cheaply. The disciplined person extracts the signal and refuses the spectacle.",
+      es: "La ira contiene información, pero sin filtro vende tu posición barata. La persona disciplinada extrae la señal y rechaza el espectáculo.",
+    },
+    action: {
+      en: "Daily action: Write the angry response, wait, then send only what serves the objective.",
+      es: "Acción diaria: Escribe la respuesta airada, espera y envía solo lo que sirve al objetivo.",
+    },
+    warning: {
+      en: "Warning: Repressed anger leaks through contempt.",
+      es: "Advertencia: La ira reprimida se filtra como desprecio.",
+    },
+  },
+  {
+    id: "law-11",
+    number: 11,
+    title: {
+      en: "Keep Reputation Expensive",
+      es: "Mantén Costosa tu Reputación",
+    },
+    statement: {
+      en: "Let your standard cost you enough to be believed.",
+      es: "Haz que tu estándar te cueste lo suficiente para ser creído.",
+    },
+    explanation: {
+      en: "Reputation is not built by claims but by repeated refusals. People trust the person who has paid for a standard when no applause was available.",
+      es: "La reputación no se construye con afirmaciones sino con rechazos repetidos. Se confía en quien ha pagado por un estándar cuando no había aplauso.",
+    },
+    action: {
+      en: "Daily action: Refuse one convenient compromise.",
+      es: "Acción diaria: Rechaza una concesión conveniente.",
+    },
+    warning: {
+      en: "Warning: A standard can become pride if it stops serving truth.",
+      es: "Advertencia: Un estándar puede volverse orgullo si deja de servir a la verdad.",
+    },
+  },
+  {
+    id: "law-12",
+    number: 12,
+    title: {
+      en: "Delay the Visible Strike",
+      es: "Retrasa el Golpe Visible",
+    },
+    statement: {
+      en: "Move after the pattern is clear.",
+      es: "Muévete cuando el patrón esté claro.",
+    },
+    explanation: {
+      en: "Action before observation is usually vanity with motion. Patience lets repeated behavior separate accident from design.",
+      es: "La acción antes de observar suele ser vanidad en movimiento. La paciencia deja que la conducta repetida separe accidente de diseño.",
+    },
+    action: {
+      en: "Daily action: Observe one recurring problem before correcting it.",
+      es: "Acción diaria: Observa un problema recurrente antes de corregirlo.",
+    },
+    warning: {
+      en: "Warning: Waiting too long can become permission.",
+      es: "Advertencia: Esperar demasiado puede convertirse en permiso.",
+    },
+  },
+  {
+    id: "law-13",
+    number: 13,
+    title: {
+      en: "Use Absence as a Boundary",
+      es: "Usa la Ausencia como Límite",
+    },
+    statement: {
+      en: "Sometimes the cleanest answer is distance.",
+      es: "A veces la respuesta más limpia es distancia.",
+    },
+    explanation: {
+      en: "Presence is a gift, not an obligation. Withdrawal, used carefully, can protect dignity without feeding drama.",
+      es: "La presencia es un regalo, no una obligación. Retirarte, usado con cuidado, puede proteger la dignidad sin alimentar drama.",
+    },
+    action: {
+      en: "Daily action: Step away from one exchange that rewards your worst self.",
+      es: "Acción diaria: Aléjate de un intercambio que premia tu peor versión.",
+    },
+    warning: {
+      en: "Warning: Distance should clarify, not secretly punish.",
+      es: "Advertencia: La distancia debe aclarar, no castigar en secreto.",
+    },
+  },
+  {
+    id: "law-14",
+    number: 14,
+    title: {
+      en: "Let Others Reveal Their Price",
+      es: "Deja que Otros Revelen su Precio",
+    },
+    statement: {
+      en: "Do not guess what loyalty costs; watch what breaks it.",
+      es: "No adivines cuánto cuesta la lealtad; observa qué la rompe.",
+    },
+    explanation: {
+      en: "People often declare values above their discipline. Pressure reveals the real exchange rate of attention, comfort, status, and fear.",
+      es: "La gente suele declarar valores por encima de su disciplina. La presión revela el tipo de cambio real de atención, comodidad, estatus y miedo.",
+    },
+    action: {
+      en: "Daily action: Notice what someone repeatedly chooses when no one forces them.",
+      es: "Acción diaria: Observa qué elige alguien repetidamente cuando nadie lo obliga.",
+    },
+    warning: {
+      en: "Warning: Do not test people cruelly to prove a theory.",
+      es: "Advertencia: No pruebes cruelmente a otros para confirmar una teoría.",
+    },
+  },
+  {
+    id: "law-15",
+    number: 15,
+    title: {
+      en: "Refuse the Borrowed Panic",
+      es: "Rechaza el Pánico Prestado",
+    },
+    statement: {
+      en: "Do not inherit urgency that is not yours.",
+      es: "No heredes urgencias que no son tuyas.",
+    },
+    explanation: {
+      en: "Urgency is contagious because it bypasses thought. The disciplined person distinguishes real fire from another person's poor preparation.",
+      es: "La urgencia contagia porque evita el pensamiento. La persona disciplinada distingue el fuego real de la mala preparación de otro.",
+    },
+    action: {
+      en: "Daily action: Before rushing, ask what actually changes if you wait five minutes.",
+      es: "Acción diaria: Antes de correr, pregunta qué cambia realmente si esperas cinco minutos.",
+    },
+    warning: {
+      en: "Warning: Calm must not become indifference.",
+      es: "Advertencia: La calma no debe volverse indiferencia.",
+    },
+  },
+  {
+    id: "law-16",
+    number: 16,
+    title: {
+      en: "Separate Signal from Theater",
+      es: "Separa Señal de Teatro",
+    },
+    statement: {
+      en: "Do not answer volume; answer meaning.",
+      es: "No respondas al volumen; responde al significado.",
+    },
+    explanation: {
+      en: "Drama inflates weak claims so they appear large. Strategy reduces noise until the real demand, threat, or fear is visible.",
+      es: "El drama infla reclamos débiles para que parezcan grandes. La estrategia reduce el ruido hasta que la demanda, amenaza o miedo real sea visible.",
+    },
+    action: {
+      en: "Daily action: Restate one loud problem in one plain sentence.",
+      es: "Acción diaria: Reformula un problema ruidoso en una frase sencilla.",
+    },
+    warning: {
+      en: "Warning: Reducing drama does not mean dismissing pain.",
+      es: "Advertencia: Reducir drama no significa descartar dolor.",
+    },
+  },
+  {
+    id: "law-17",
+    number: 17,
+    title: {
+      en: "Make the Body Obey First",
+      es: "Haz que el Cuerpo Obedezca Primero",
+    },
+    statement: {
+      en: "Command the posture before commanding the room.",
+      es: "Ordena la postura antes de ordenar la sala.",
+    },
+    explanation: {
+      en: "A scattered body leaks authority. Breath, posture, and pace teach the nervous system who is in command before words arrive.",
+      es: "Un cuerpo disperso filtra autoridad. Respiración, postura y ritmo enseñan al sistema nervioso quién manda antes de que lleguen las palabras.",
+    },
+    action: {
+      en: "Daily action: Stand upright, slow your breath, and walk deliberately into one difficult moment.",
+      es: "Acción diaria: Enderézate, baja la respiración y entra deliberadamente a un momento difícil.",
+    },
+    warning: {
+      en: "Warning: Composure without humility becomes cold performance.",
+      es: "Advertencia: La compostura sin humildad se vuelve actuación fría.",
+    },
+  },
+  {
+    id: "law-18",
+    number: 18,
+    title: {
+      en: "Let Scarcity Clarify",
+      es: "Deja que la Escasez Aclare",
+    },
+    statement: {
+      en: "When everything cannot be kept, truth appears.",
+      es: "Cuando no todo puede conservarse, aparece la verdad.",
+    },
+    explanation: {
+      en: "Abundance can hide weak priorities. Scarcity forces rank, and rank reveals what you actually serve.",
+      es: "La abundancia puede ocultar prioridades débiles. La escasez obliga a ordenar, y ese orden revela a qué sirves realmente.",
+    },
+    action: {
+      en: "Daily action: Choose the one task that would make the day honorable if nothing else were done.",
+      es: "Acción diaria: Elige la tarea que haría honorable el día aunque nada más se complete.",
+    },
+    warning: {
+      en: "Warning: Scarcity is a teacher, not an identity.",
+      es: "Advertencia: La escasez es maestra, no identidad.",
+    },
+  },
+  {
+    id: "law-19",
+    number: 19,
+    title: {
+      en: "Keep Victory Clean",
+      es: "Mantén Limpia la Victoria",
+    },
+    statement: {
+      en: "Win without poisoning the ground you stand on.",
+      es: "Vence sin envenenar el suelo donde estás parado.",
+    },
+    explanation: {
+      en: "A dirty victory creates future resistance. Power lasts longer when it does not require humiliation to feel complete.",
+      es: "Una victoria sucia crea resistencia futura. El poder dura más cuando no necesita humillación para sentirse completo.",
+    },
+    action: {
+      en: "Daily action: Correct or win one matter without insulting anyone's dignity.",
+      es: "Acción diaria: Corrige o gana un asunto sin insultar la dignidad de nadie.",
+    },
+    warning: {
+      en: "Warning: Mercy must not become weakness toward repeated harm.",
+      es: "Advertencia: La misericordia no debe volverse debilidad ante daño repetido.",
+    },
+  },
+  {
+    id: "law-20",
+    number: 20,
+    title: {
+      en: "Lose Without Selling the Throne",
+      es: "Pierde Sin Vender el Trono",
+    },
+    statement: {
+      en: "Defeat may take the result; do not let it take command.",
+      es: "La derrota puede tomar el resultado; no dejes que tome el mando.",
+    },
+    explanation: {
+      en: "Loss reveals whether identity was built on outcome or authority. The disciplined person studies defeat without kneeling to it.",
+      es: "La pérdida revela si la identidad fue construida sobre resultado o autoridad. La persona disciplinada estudia la derrota sin arrodillarse ante ella.",
+    },
+    action: {
+      en: "Daily action: Name one lesson from a loss without insulting yourself.",
+      es: "Acción diaria: Nombra una lección de una pérdida sin insultarte.",
+    },
+    warning: {
+      en: "Warning: Dignity is not denial of consequence.",
+      es: "Advertencia: La dignidad no es negar la consecuencia.",
+    },
+  },
+  {
+    id: "law-21",
+    number: 21,
+    title: {
+      en: "Study the Room's Weather",
+      es: "Estudia el Clima de la Sala",
+    },
+    statement: {
+      en: "Before acting, read the emotional climate.",
+      es: "Antes de actuar, lee el clima emocional.",
+    },
+    explanation: {
+      en: "Timing is not only the clock; it is the atmosphere. The same truth can open a door or close it depending on when it enters.",
+      es: "El momento no es solo el reloj; es la atmósfera. La misma verdad puede abrir o cerrar una puerta según cuándo entra.",
+    },
+    action: {
+      en: "Daily action: Before speaking a hard truth, identify the room's fear, hunger, and pace.",
+      es: "Acción diaria: Antes de decir una verdad dura, identifica el miedo, hambre y ritmo de la sala.",
+    },
+    warning: {
+      en: "Warning: Reading the room should not make you a servant of it.",
+      es: "Advertencia: Leer la sala no debe hacerte siervo de ella.",
+    },
+  },
+  {
+    id: "law-22",
+    number: 22,
+    title: {
+      en: "Make Gratitude Strategic",
+      es: "Haz Estratégica la Gratitud",
+    },
+    statement: {
+      en: "Honor what strengthens the mission.",
+      es: "Honra lo que fortalece la misión.",
+    },
+    explanation: {
+      en: "Gratitude is not softness; it is accurate memory. What you honor is more likely to remain visible and more likely to be protected.",
+      es: "La gratitud no es blandura; es memoria exacta. Lo que honras permanece más visible y es más probable que sea protegido.",
+    },
+    action: {
+      en: "Daily action: Thank one person or system that quietly supports your discipline.",
+      es: "Acción diaria: Agradece a una persona o sistema que sostiene silenciosamente tu disciplina.",
+    },
+    warning: {
+      en: "Warning: Gratitude must not excuse dependency.",
+      es: "Advertencia: La gratitud no debe excusar dependencia.",
+    },
+  },
+  {
+    id: "law-23",
+    number: 23,
+    title: {
+      en: "Hide the Root, Show the Fruit",
+      es: "Oculta la Raíz, Muestra el Fruto",
+    },
+    statement: {
+      en: "Protect the source of your strength.",
+      es: "Protege la fuente de tu fuerza.",
+    },
+    explanation: {
+      en: "Not every method belongs to public view. Some sources lose power when exposed to opinion, imitation, and negotiation.",
+      es: "No todo método pertenece a la vista pública. Algunas fuentes pierden poder al exponerse a opinión, imitación y negociación.",
+    },
+    action: {
+      en: "Daily action: Keep one stabilizing ritual private and complete it fully.",
+      es: "Acción diaria: Mantén privado un ritual estabilizador y complétalo por completo.",
+    },
+    warning: {
+      en: "Warning: Secrecy that protects corruption is not wisdom.",
+      es: "Advertencia: El secreto que protege corrupción no es sabiduría.",
+    },
+  },
+  {
+    id: "law-24",
+    number: 24,
+    title: {
+      en: "Do Not Confuse Access with Trust",
+      es: "No Confundas Acceso con Confianza",
+    },
+    statement: {
+      en: "Nearness is not proof of loyalty.",
+      es: "La cercanía no prueba lealtad.",
+    },
+    explanation: {
+      en: "Access can be accidental, inherited, or convenient. Trust must be built by consistency under pressure, not by proximity alone.",
+      es: "El acceso puede ser accidental, heredado o conveniente. La confianza se construye por constancia bajo presión, no por proximidad.",
+    },
+    action: {
+      en: "Daily action: Give one person or habit the access they have earned, not the access they request.",
+      es: "Acción diaria: Da a una persona o hábito el acceso que ha ganado, no el que pide.",
+    },
+    warning: {
+      en: "Warning: Guardedness can become loneliness if it never matures.",
+      es: "Advertencia: Estar en guardia puede volverse soledad si nunca madura.",
+    },
+  },
+  {
+    id: "law-25",
+    number: 25,
+    title: {
+      en: "Let Repetition Become Rank",
+      es: "Deja que la Repetición Sea Rango",
+    },
+    statement: {
+      en: "What you repeat earns authority.",
+      es: "Lo que repites gana autoridad.",
+    },
+    explanation: {
+      en: "A single act is a gesture; repeated action becomes rank in the inner order. Habits are coronations performed slowly.",
+      es: "Un acto aislado es un gesto; la acción repetida se vuelve rango en el orden interior. Los hábitos son coronaciones realizadas lentamente.",
+    },
+    action: {
+      en: "Daily action: Repeat your core habit at the same level even if no emotion supports it.",
+      es: "Acción diaria: Repite tu hábito central al mismo nivel aunque ninguna emoción lo apoye.",
+    },
+    warning: {
+      en: "Warning: Repetition without review can enthrone the wrong thing.",
+      es: "Advertencia: Repetir sin revisar puede entronar lo equivocado.",
+    },
+  },
+  {
+    id: "law-26",
+    number: 26,
+    title: {
+      en: "Refuse the Second Wound",
+      es: "Rechaza la Segunda Herida",
+    },
+    statement: {
+      en: "Do not keep injuring yourself with the memory.",
+      es: "No sigas hiriéndote con el recuerdo.",
+    },
+    explanation: {
+      en: "The first wound may be real; the second is often rehearsal. Power returns when memory becomes instruction instead of a courtroom.",
+      es: "La primera herida puede ser real; la segunda suele ser ensayo. El poder vuelve cuando la memoria se vuelve instrucción en vez de tribunal.",
+    },
+    action: {
+      en: "Daily action: Convert one painful memory into one boundary or lesson.",
+      es: "Acción diaria: Convierte un recuerdo doloroso en un límite o lección.",
+    },
+    warning: {
+      en: "Warning: Healing is not pretending the injury was acceptable.",
+      es: "Advertencia: Sanar no es fingir que la herida fue aceptable.",
+    },
+  },
+  {
+    id: "law-27",
+    number: 27,
+    title: {
+      en: "Keep Counsel Above Complaint",
+      es: "Pon Consejo Sobre Queja",
+    },
+    statement: {
+      en: "Complaint without counsel weakens the throne.",
+      es: "La queja sin consejo debilita el trono.",
+    },
+    explanation: {
+      en: "Complaint can expose pain, but if it never becomes instruction it trains helplessness. Counsel asks what the pain now demands.",
+      es: "La queja puede exponer dolor, pero si nunca se vuelve instrucción entrena impotencia. El consejo pregunta qué exige ahora el dolor.",
+    },
+    action: {
+      en: "Daily action: For one complaint, write the instruction hidden inside it.",
+      es: "Acción diaria: Para una queja, escribe la instrucción escondida dentro de ella.",
+    },
+    warning: {
+      en: "Warning: Counsel without compassion becomes cruelty.",
+      es: "Advertencia: El consejo sin compasión se vuelve crueldad.",
+    },
+  },
+  {
+    id: "law-28",
+    number: 28,
+    title: {
+      en: "Let the Face Serve the Mission",
+      es: "Haz que el Rostro Sirva a la Misión",
+    },
+    statement: {
+      en: "Do not let every feeling report itself.",
+      es: "No dejes que todo sentimiento se reporte.",
+    },
+    explanation: {
+      en: "The face can become a leak in the wall. Composure keeps strategy from being sold by a momentary expression.",
+      es: "El rostro puede volverse una fuga en el muro. La compostura evita que una expresión momentánea venda la estrategia.",
+    },
+    action: {
+      en: "Daily action: Breathe once before your face answers disappointment.",
+      es: "Acción diaria: Respira una vez antes de que tu rostro responda a la decepción.",
+    },
+    warning: {
+      en: "Warning: A controlled face must not become a dishonest heart.",
+      es: "Advertencia: Un rostro controlado no debe volverse corazón deshonesto.",
+    },
+  },
+  {
+    id: "law-29",
+    number: 29,
+    title: {
+      en: "Do the Unseen Maintenance",
+      es: "Haz el Mantenimiento Invisible",
+    },
+    statement: {
+      en: "Power decays first in neglected systems.",
+      es: "El poder se deteriora primero en sistemas descuidados.",
+    },
+    explanation: {
+      en: "Collapse rarely begins with spectacle. It begins with small ignored repairs, weak routines, and tolerated disorder.",
+      es: "El derrumbe rara vez empieza con espectáculo. Empieza con reparaciones pequeñas ignoradas, rutinas débiles y desorden tolerado.",
+    },
+    action: {
+      en: "Daily action: Repair one small system before it becomes urgent.",
+      es: "Acción diaria: Repara un sistema pequeño antes de que se vuelva urgente.",
+    },
+    warning: {
+      en: "Warning: Maintenance can become avoidance of decisive action.",
+      es: "Advertencia: El mantenimiento puede volverse evasión de la acción decisiva.",
+    },
+  },
+  {
+    id: "law-30",
+    number: 30,
+    title: {
+      en: "Never Negotiate with Collapse",
+      es: "Nunca Negocies con el Derrumbe",
+    },
+    statement: {
+      en: "When the inner structure falls, rebuild the first stone.",
+      es: "Cuando cae la estructura interior, reconstruye la primera piedra.",
+    },
+    explanation: {
+      en: "Collapse wants philosophy because philosophy delays obedience. The first useful response is usually small, physical, and immediate.",
+      es: "El derrumbe quiere filosofía porque la filosofía retrasa la obediencia. La primera respuesta útil suele ser pequeña, física e inmediata.",
+    },
+    action: {
+      en: "Daily action: When you feel yourself spiraling, stand up and complete one visible order.",
+      es: "Acción diaria: Cuando sientas que caes en espiral, levántate y completa un orden visible.",
+    },
+    warning: {
+      en: "Warning: Action helps, but chronic collapse may need outside help.",
+      es: "Advertencia: La acción ayuda, pero el derrumbe crónico puede necesitar ayuda externa.",
+    },
+  },
+  {
+    id: "law-31",
+    number: 31,
+    title: {
+      en: "Measure Before Judgment",
+      es: "Mide Antes del Juicio",
+    },
+    statement: {
+      en: "Do not let assumption wear the robe of truth.",
+      es: "No dejes que la suposición vista la túnica de la verdad.",
+    },
+    explanation: {
+      en: "Judgment feels powerful because it closes uncertainty. Measurement is stronger because it can survive contact with reality.",
+      es: "El juicio se siente poderoso porque cierra la incertidumbre. La medida es más fuerte porque sobrevive al contacto con la realidad.",
+    },
+    action: {
+      en: "Daily action: Verify one fact before forming a conclusion.",
+      es: "Acción diaria: Verifica un hecho antes de formar una conclusión.",
+    },
+    warning: {
+      en: "Warning: Endless measuring can hide fear of choosing.",
+      es: "Advertencia: Medir sin fin puede ocultar miedo a elegir.",
+    },
+  },
+  {
+    id: "law-32",
+    number: 32,
+    title: {
+      en: "Turn Envy into Study",
+      es: "Convierte Envidia en Estudio",
+    },
+    statement: {
+      en: "What you envy may reveal what you refuse to train.",
+      es: "Lo que envidias puede revelar lo que te niegas a entrenar.",
+    },
+    explanation: {
+      en: "Envy wastes attention by worshiping distance. Study closes distance by asking what skill, sacrifice, or patience created the result.",
+      es: "La envidia desperdicia atención adorando distancia. El estudio cierra distancia preguntando qué habilidad, sacrificio o paciencia creó el resultado.",
+    },
+    action: {
+      en: "Daily action: Name one skill behind something you envy and practice its first form.",
+      es: "Acción diaria: Nombra una habilidad detrás de algo que envidias y practica su primera forma.",
+    },
+    warning: {
+      en: "Warning: Study should not become imitation without identity.",
+      es: "Advertencia: El estudio no debe volverse imitación sin identidad.",
+    },
+  },
+  {
+    id: "law-33",
+    number: 33,
+    title: {
+      en: "Make Rest Serve Command",
+      es: "Haz que el Descanso Sirva al Mando",
+    },
+    statement: {
+      en: "Rest to return sharper, not to disappear.",
+      es: "Descansa para volver más preciso, no para desaparecer.",
+    },
+    explanation: {
+      en: "Rest is strategic when it restores command. Escape is different: it asks for relief while secretly abandoning the post.",
+      es: "El descanso es estratégico cuando restaura el mando. El escape es distinto: pide alivio mientras abandona el puesto en secreto.",
+    },
+    action: {
+      en: "Daily action: Take one deliberate rest with a clear return point.",
+      es: "Acción diaria: Toma un descanso deliberado con un punto claro de regreso.",
+    },
+    warning: {
+      en: "Warning: Exhaustion can disguise itself as discipline.",
+      es: "Advertencia: El agotamiento puede disfrazarse de disciplina.",
+    },
+  },
+  {
+    id: "law-34",
+    number: 34,
+    title: {
+      en: "Let Loyalty Require Truth",
+      es: "Haz que la Lealtad Exija Verdad",
+    },
+    statement: {
+      en: "Do not protect a bond by feeding its blindness.",
+      es: "No protejas un vínculo alimentando su ceguera.",
+    },
+    explanation: {
+      en: "Loyalty that refuses truth becomes a comfortable prison. Real allegiance strengthens what is worthy and confronts what is decaying.",
+      es: "La lealtad que rechaza verdad se vuelve prisión cómoda. La alianza real fortalece lo digno y confronta lo que se deteriora.",
+    },
+    action: {
+      en: "Daily action: Tell one necessary truth without insult or performance.",
+      es: "Acción diaria: Di una verdad necesaria sin insulto ni actuación.",
+    },
+    warning: {
+      en: "Warning: Truth without timing can become self-indulgence.",
+      es: "Advertencia: La verdad sin tiempo correcto puede volverse indulgencia propia.",
+    },
+  },
+  {
+    id: "law-35",
+    number: 35,
+    title: {
+      en: "Leave Before You Are Owned",
+      es: "Sal Antes de Ser Poseído",
+    },
+    statement: {
+      en: "Exit weakening patterns while exit is still cheap.",
+      es: "Sal de patrones debilitantes mientras salir aún es barato.",
+    },
+    explanation: {
+      en: "Chains are easiest to break when they are still called preferences. Delay gives them history, appetite, and a convincing voice.",
+      es: "Las cadenas son más fáciles de romper cuando aún se llaman preferencias. La demora les da historia, apetito y una voz convincente.",
+    },
+    action: {
+      en: "Daily action: End one small permission that you know grows expensive later.",
+      es: "Acción diaria: Termina un permiso pequeño que sabes que luego se vuelve caro.",
+    },
+    warning: {
+      en: "Warning: Leaving everything quickly is not freedom; it is instability.",
+      es: "Advertencia: Dejar todo rápido no es libertad; es inestabilidad.",
+    },
+  },
+  {
+    id: "law-36",
+    number: 36,
+    title: {
+      en: "Give No Throne to Urgency",
+      es: "No Des Trono a la Urgencia",
+    },
+    statement: {
+      en: "Urgent is not always sovereign.",
+      es: "Lo urgente no siempre es soberano.",
+    },
+    explanation: {
+      en: "Urgency often arrives wearing a crown it did not earn. The disciplined mind separates immediate pressure from actual importance.",
+      es: "La urgencia suele llegar con una corona que no ganó. La mente disciplinada separa presión inmediata de importancia real.",
+    },
+    action: {
+      en: "Daily action: Sort one demand into urgent, important, both, or neither.",
+      es: "Acción diaria: Ordena una demanda como urgente, importante, ambas o ninguna.",
+    },
+    warning: {
+      en: "Warning: Dismissing urgency can become negligence.",
+      es: "Advertencia: Descartar urgencia puede volverse negligencia.",
+    },
+  },
+  {
+    id: "law-37",
+    number: 37,
+    title: {
+      en: "Keep the Standard Alone",
+      es: "Mantén el Estándar a Solas",
+    },
+    statement: {
+      en: "Character is what remains when the audience leaves.",
+      es: "El carácter es lo que queda cuando se va el público.",
+    },
+    explanation: {
+      en: "The hidden standard is the true one. If discipline depends on witnesses, it belongs to the crowd, not to you.",
+      es: "El estándar oculto es el verdadero. Si la disciplina depende de testigos, pertenece a la multitud, no a ti.",
+    },
+    action: {
+      en: "Daily action: Do one correct thing that no one will notice.",
+      es: "Acción diaria: Haz una cosa correcta que nadie notará.",
+    },
+    warning: {
+      en: "Warning: Invisible virtue must not become secret superiority.",
+      es: "Advertencia: La virtud invisible no debe volverse superioridad secreta.",
+    },
+  },
+  {
+    id: "law-38",
+    number: 38,
+    title: {
+      en: "Use Pain as Intelligence",
+      es: "Usa el Dolor como Inteligencia",
+    },
+    statement: {
+      en: "Pain is a messenger; do not make it king.",
+      es: "El dolor es mensajero; no lo hagas rey.",
+    },
+    explanation: {
+      en: "Pain can show where structure failed, where desire ruled, or where a boundary was absent. It informs command but must not command alone.",
+      es: "El dolor puede mostrar dónde falló la estructura, dónde gobernó el deseo o dónde faltó un límite. Informa al mando, pero no debe mandar solo.",
+    },
+    action: {
+      en: "Daily action: Ask what your discomfort is trying to protect, expose, or demand.",
+      es: "Acción diaria: Pregunta qué intenta proteger, exponer o exigir tu incomodidad.",
+    },
+    warning: {
+      en: "Warning: Not every pain is noble; some pain is a signal to stop.",
+      es: "Advertencia: No todo dolor es noble; algunos dolores son señal de detenerse.",
+    },
+  },
+  {
+    id: "law-39",
+    number: 39,
+    title: {
+      en: "Let the Ledger Stay Honest",
+      es: "Deja Honesto el Registro",
+    },
+    statement: {
+      en: "Track reality without decorating it.",
+      es: "Registra la realidad sin adornarla.",
+    },
+    explanation: {
+      en: "False accounting protects the ego and bankrupts the future. A clean ledger lets discipline know where to begin.",
+      es: "La contabilidad falsa protege el ego y arruina el futuro. Un registro limpio le muestra a la disciplina dónde empezar.",
+    },
+    action: {
+      en: "Daily action: Record one missed or completed duty exactly as it happened.",
+      es: "Acción diaria: Registra un deber fallado o completado exactamente como ocurrió.",
+    },
+    warning: {
+      en: "Warning: Honesty should correct you, not crush you.",
+      es: "Advertencia: La honestidad debe corregirte, no aplastarte.",
+    },
+  },
+  {
+    id: "law-40",
+    number: 40,
+    title: {
+      en: "Refuse Cheap Certainty",
+      es: "Rechaza la Certeza Barata",
+    },
+    statement: {
+      en: "Do not buy confidence with missing facts.",
+      es: "No compres confianza con hechos ausentes.",
+    },
+    explanation: {
+      en: "Cheap certainty feels powerful because it ends the search. Strategic certainty waits for enough evidence to move without fantasy.",
+      es: "La certeza barata se siente poderosa porque termina la búsqueda. La certeza estratégica espera evidencia suficiente para moverse sin fantasía.",
+    },
+    action: {
+      en: "Daily action: Say 'I do not know yet' where your pride wants a conclusion.",
+      es: "Acción diaria: Di 'aún no lo sé' donde tu orgullo quiere una conclusión.",
+    },
+    warning: {
+      en: "Warning: Humility before facts should not become permanent hesitation.",
+      es: "Advertencia: La humildad ante los hechos no debe volverse duda permanente.",
+    },
+  },
+  {
+    id: "law-41",
+    number: 41,
+    title: {
+      en: "Make Your Pace Difficult to Own",
+      es: "Haz tu Ritmo Difícil de Poseer",
+    },
+    statement: {
+      en: "Do not let another person's tempo become your master.",
+      es: "No dejes que el tempo de otra persona sea tu amo.",
+    },
+    explanation: {
+      en: "Whoever controls your pace often controls your thinking. A sovereign rhythm gives you room to see, choose, and refuse.",
+      es: "Quien controla tu ritmo suele controlar tu pensamiento. Un ritmo soberano te da espacio para ver, elegir y rechazar.",
+    },
+    action: {
+      en: "Daily action: Slow one decision down until you can hear your own judgment.",
+      es: "Acción diaria: Desacelera una decisión hasta escuchar tu propio juicio.",
+    },
+    warning: {
+      en: "Warning: Independence of pace is not contempt for others.",
+      es: "Advertencia: Independencia de ritmo no es desprecio por otros.",
+    },
+  },
+  {
+    id: "law-42",
+    number: 42,
+    title: {
+      en: "Turn Applause into Fuel, Not Food",
+      es: "Convierte el Aplauso en Combustible, no Alimento",
+    },
+    statement: {
+      en: "Receive praise without becoming hungry for it.",
+      es: "Recibe elogio sin volverte hambriento de él.",
+    },
+    explanation: {
+      en: "Applause can encourage the mission or replace it. The moment praise becomes food, discipline begins serving the audience.",
+      es: "El aplauso puede alentar la misión o reemplazarla. Cuando el elogio se vuelve alimento, la disciplina empieza a servir al público.",
+    },
+    action: {
+      en: "Daily action: After receiving praise, return to one unglamorous duty.",
+      es: "Acción diaria: Después de recibir elogio, vuelve a un deber sin gloria.",
+    },
+    warning: {
+      en: "Warning: Rejecting all praise can hide fear of being seen.",
+      es: "Advertencia: Rechazar todo elogio puede ocultar miedo a ser visto.",
+    },
+  },
+  {
+    id: "law-43",
+    number: 43,
+    title: {
+      en: "Make the Easy Thing Earn Entry",
+      es: "Haz que lo Fácil Gane Entrada",
+    },
+    statement: {
+      en: "Convenience must pass inspection.",
+      es: "La comodidad debe pasar inspección.",
+    },
+    explanation: {
+      en: "The easiest path often asks for a hidden payment: attention, dignity, health, or future freedom. Inspect the price before entering.",
+      es: "El camino más fácil suele pedir un pago oculto: atención, dignidad, salud o libertad futura. Revisa el precio antes de entrar.",
+    },
+    action: {
+      en: "Daily action: Before choosing the easy option, name what it costs.",
+      es: "Acción diaria: Antes de elegir la opción fácil, nombra lo que cuesta.",
+    },
+    warning: {
+      en: "Warning: Difficulty alone does not make a path wise.",
+      es: "Advertencia: La dificultad por sí sola no vuelve sabio un camino.",
+    },
+  },
+  {
+    id: "law-44",
+    number: 44,
+    title: {
+      en: "Do Not Feed Every Fire",
+      es: "No Alimentes Cada Fuego",
+    },
+    statement: {
+      en: "Some conflicts survive only because you keep warming them.",
+      es: "Algunos conflictos sobreviven solo porque sigues calentándolos.",
+    },
+    explanation: {
+      en: "Attention is oxygen. A disciplined person knows which fires require water, which require distance, and which require no audience.",
+      es: "La atención es oxígeno. Una persona disciplinada sabe qué fuegos requieren agua, cuáles distancia y cuáles ningún público.",
+    },
+    action: {
+      en: "Daily action: Let one provocation pass without commentary.",
+      es: "Acción diaria: Deja pasar una provocación sin comentario.",
+    },
+    warning: {
+      en: "Warning: Ignored injustice can grow teeth.",
+      es: "Advertencia: La injusticia ignorada puede desarrollar dientes.",
+    },
+  },
+  {
+    id: "law-45",
+    number: 45,
+    title: {
+      en: "Close the Day with Authority",
+      es: "Cierra el Día con Autoridad",
+    },
+    statement: {
+      en: "Do not let the day dissolve without judgment.",
+      es: "No dejes que el día se disuelva sin juicio.",
+    },
+    explanation: {
+      en: "An unexamined day becomes fog. Closing the day with authority turns scattered action into instruction for tomorrow.",
+      es: "Un día sin examinar se vuelve niebla. Cerrar el día con autoridad convierte acción dispersa en instrucción para mañana.",
+    },
+    action: {
+      en: "Daily action: Name what you obeyed, what you avoided, and what must be corrected.",
+      es: "Acción diaria: Nombra qué obedeciste, qué evitaste y qué debe corregirse.",
+    },
+    warning: {
+      en: "Warning: Review must not become nightly self-punishment.",
+      es: "Advertencia: La revisión no debe volverse castigo nocturno.",
+    },
+  },
+  {
+    id: "law-46",
+    number: 46,
+    title: {
+      en: "Return Without Ceremony",
+      es: "Regresa Sin Ceremonia",
+    },
+    statement: {
+      en: "When you fall, restart before shame organizes a parade.",
+      es: "Cuando caigas, reinicia antes de que la vergüenza organice un desfile.",
+    },
+    explanation: {
+      en: "Shame loves ceremony because ceremony delays return. The disciplined person does not dramatize the fall; they restore command.",
+      es: "La vergüenza ama la ceremonia porque la ceremonia retrasa el regreso. La persona disciplinada no dramatiza la caída; restaura el mando.",
+    },
+    action: {
+      en: "Daily action: Correct one lapse immediately with the next small obedience.",
+      es: "Acción diaria: Corrige una caída inmediatamente con la siguiente obediencia pequeña.",
+    },
+    warning: {
+      en: "Warning: Quick return is not permission to repeat the wound.",
+      es: "Advertencia: Regresar rápido no es permiso para repetir la herida.",
+    },
+  },
+  {
+    id: "law-47",
+    number: 47,
+    title: {
+      en: "Aim Influence at the Self First",
+      es: "Dirige la Influencia Primero al Yo",
+    },
+    statement: {
+      en: "Influence without self-rule becomes contamination.",
+      es: "La influencia sin gobierno propio se vuelve contaminación.",
+    },
+    explanation: {
+      en: "The first territory of power is the self. If you cannot influence your own habits, influencing others becomes hunger in ceremonial clothing.",
+      es: "El primer territorio del poder es el yo. Si no puedes influir en tus propios hábitos, influir en otros se vuelve hambre con ropa ceremonial.",
+    },
+    action: {
+      en: "Daily action: Persuade yourself into one disciplined action before advising anyone else.",
+      es: "Acción diaria: Persuádete a una acción disciplinada antes de aconsejar a alguien más.",
+    },
+    warning: {
+      en: "Warning: Self-rule should make you clearer, not self-obsessed.",
+      es: "Advertencia: El gobierno propio debe hacerte más claro, no obsesionado contigo.",
+    },
+  },
+  {
+    id: "law-48",
+    number: 48,
+    title: {
+      en: "Hold Power as Stewardship",
+      es: "Sostén el Poder como Custodia",
+    },
+    statement: {
+      en: "Power is safest when it remembers what it serves.",
+      es: "El poder es más seguro cuando recuerda a qué sirve.",
+    },
+    explanation: {
+      en: "Power without purpose becomes appetite with better tools. Covenant power serves order, clarity, restraint, and the future self that must live with today's choices.",
+      es: "El poder sin propósito se vuelve apetito con mejores herramientas. El poder Covenant sirve al orden, claridad, dominio y al yo futuro que vivirá con las decisiones de hoy.",
+    },
+    action: {
+      en: "Daily action: Before using authority, name the responsibility it must protect.",
+      es: "Acción diaria: Antes de usar autoridad, nombra la responsabilidad que debe proteger.",
+    },
+    warning: {
+      en: "Warning: Stewardship without courage becomes polite surrender.",
+      es: "Advertencia: La custodia sin coraje se vuelve rendición educada.",
+    },
+  },
+];

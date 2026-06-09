@@ -24,7 +24,10 @@ import {
   useLocalSearchParams,
   useRouter,
 } from "expo-router";
+import * as Clipboard from "expo-clipboard";
+import * as Sharing from "expo-sharing";
 import { usePostHog } from "posthog-react-native";
+import { captureRef } from "react-native-view-shot";
 
 import CovenantBackdrop from "../components/CovenantBackdrop";
 import {
@@ -466,6 +469,11 @@ setIsRevealingGuidance,
 ] = useState(false);
 
 const [
+isSharingProgress,
+setIsSharingProgress,
+] = useState(false);
+
+const [
 oracleModalVisible,
 setOracleModalVisible,
 ] = useState(false);
@@ -528,6 +536,7 @@ setIsSyncingProgress,
 ] = useState(false);
 
 const mountedRef = useRef(true);
+const shareCardRef = useRef<View | null>(null);
 
 useEffect(() => {
 return () => {
@@ -1362,7 +1371,7 @@ todayCard:
 "CARTA",
 
 todayCounsel:
-"CONSEJO",
+"LEY / CONSEJO",
 
 revealGuidance:
 "Revelar la guía de hoy",
@@ -1372,6 +1381,9 @@ shareProgress:
 
 shareSocials:
 "Compartir en redes",
+
+sharingProgress:
+"Preparando imagen",
 
 copySummary:
 "Copiar resumen",
@@ -1603,7 +1615,7 @@ todayCard:
 "CARD",
 
 todayCounsel:
-"COUNSEL",
+"LAW / COUNSEL",
 
 revealGuidance:
 "Reveal today's guidance",
@@ -1613,6 +1625,9 @@ shareProgress:
 
 shareSocials:
 "Share on socials",
+
+sharingProgress:
+"Preparing image",
 
 copySummary:
 "Copy summary",
@@ -1668,6 +1683,14 @@ dashboardHabits.filter(
 (habit) =>
 progressMap[habit.slug]?.lastCompleted === today
 ).length;
+
+const currentStreak =
+Math.max(
+...dashboardHabits.map(
+(habit) => progressMap[habit.slug]?.streak || 0
+),
+0
+);
 
 const averageProgress =
 Math.min(
@@ -1794,13 +1817,13 @@ language === "es"
 ? [
 "Covenant",
 `Progreso mensual: ${monthlyProgress}%`,
-`Racha actual: ${Math.max(...dashboardHabits.map((habit) => progressMap[habit.slug]?.streak || 0), 0)}`,
+`Racha actual: ${currentStreak}`,
 `Hábitos completados hoy: ${completedTodayCount}/${dashboardHabits.length}`,
 ]
 : [
 "Covenant",
 `Monthly progress: ${monthlyProgress}%`,
-`Current streak: ${Math.max(...dashboardHabits.map((habit) => progressMap[habit.slug]?.streak || 0), 0)}`,
+`Current streak: ${currentStreak}`,
 `Completed today: ${completedTodayCount}/${dashboardHabits.length}`,
 ];
 
@@ -1823,15 +1846,17 @@ language === "es"
 if (isPro && dailyCounselDraw) {
 lines.push(
 language === "es"
-? `Consejo del día: ${localize(dailyCounselDraw.title, language)}`
-: `Counsel of the day: ${localize(dailyCounselDraw.title, language)}`
+? `Ley / Consejo del día: ${localize(dailyCounselDraw.title, language)}`
+: `Law / Counsel of the day: ${localize(dailyCounselDraw.title, language)}`
 );
 }
+
+lines.push("joincovenant.app");
 
 return lines.join("\n");
 }
 
-async function shareProgressSummary() {
+async function shareProgressTextFallback() {
 const message =
 buildShareSummary();
 
@@ -1857,11 +1882,73 @@ Alert.alert(t.shareProgress, t.shareUnavailable);
 }
 }
 
+async function shareProgressImage() {
+const message =
+buildShareSummary();
+
+if (Platform.OS === "web") {
+await shareProgressTextFallback();
+return;
+}
+
+if (isSharingProgress) {
+return;
+}
+
+setIsSharingProgress(true);
+
+try {
+if (!shareCardRef.current) {
+throw new Error("Progress share card is not mounted.");
+}
+
+const uri =
+await captureRef(shareCardRef, {
+format: "png",
+quality: 1,
+result: "tmpfile",
+});
+
+const canShareFile =
+await Sharing.isAvailableAsync();
+
+if (canShareFile) {
+await Sharing.shareAsync(uri, {
+dialogTitle: t.shareProgress,
+mimeType: "image/png",
+});
+return;
+}
+
+await Share.share({
+message,
+title: "Covenant",
+url: uri,
+});
+} catch (error) {
+console.warn(
+"[Share] Could not share progress image.",
+error
+);
+await shareProgressTextFallback();
+} finally {
+if (mountedRef.current) {
+setIsSharingProgress(false);
+}
+}
+}
+
 async function copyProgressSummary() {
 const message =
 buildShareSummary();
 
 try {
+if (Platform.OS !== "web") {
+await Clipboard.setStringAsync(message);
+Alert.alert(t.copySummary, t.copiedSummary);
+return;
+}
+
 const clipboard =
 Platform.OS === "web" &&
 typeof navigator !== "undefined"
@@ -1874,10 +1961,8 @@ Alert.alert(t.copySummary, t.copiedSummary);
 return;
 }
 
-await Share.share({
-message,
-title: "Covenant",
-});
+await Clipboard.setStringAsync(message);
+Alert.alert(t.copySummary, t.copiedSummary);
 } catch {
 Alert.alert(t.copySummary, t.shareUnavailable);
 }
@@ -1888,6 +1973,117 @@ return (
 	<View style={styles.container}>
 
 	<CovenantBackdrop intensity="strong" variant="habits" />
+
+<View
+pointerEvents="none"
+style={styles.shareCardHost}
+>
+<View
+ref={shareCardRef}
+collapsable={false}
+style={styles.progressShareCard}
+>
+<View style={styles.progressShareHeader}>
+<View>
+<Text style={styles.progressShareBrand}>
+COVENANT
+</Text>
+<Text style={styles.progressShareSubtitle}>
+{language === "es" ? "DISCIPLINA INTERIOR" : "INNER DISCIPLINE"}
+</Text>
+</View>
+<View style={styles.progressShareSeal}>
+<View style={styles.progressShareSealRing} />
+<View style={styles.progressShareSealCore} />
+</View>
+</View>
+
+<View style={styles.progressShareLanguageBadge}>
+<Text style={styles.progressShareLanguageText}>
+{language === "es" ? "ES" : "EN"}
+</Text>
+</View>
+
+<Text style={styles.progressSharePhrase}>
+{language === "es"
+? "Disciplina sobre impulso."
+: "Discipline over impulse."}
+</Text>
+
+<View style={styles.progressShareStatsRow}>
+<View style={styles.progressShareStat}>
+<Text style={styles.progressShareStatLabel}>
+{language === "es" ? "MES" : "MONTH"}
+</Text>
+<Text style={styles.progressShareStatValue}>
+{monthlyProgress}%
+</Text>
+</View>
+<View style={styles.progressShareStat}>
+<Text style={styles.progressShareStatLabel}>
+{language === "es" ? "HOY" : "TODAY"}
+</Text>
+<Text style={styles.progressShareStatValue}>
+{completedTodayCount}/{dashboardHabits.length}
+</Text>
+</View>
+<View style={styles.progressShareStat}>
+<Text style={styles.progressShareStatLabel}>
+{language === "es" ? "RACHA" : "STREAK"}
+</Text>
+<Text style={styles.progressShareStatValue}>
+{currentStreak}
+</Text>
+</View>
+</View>
+
+<View style={styles.progressShareDivider} />
+
+<View style={styles.progressShareGuidance}>
+<Text style={styles.progressShareGuidanceLabel}>
+{t.todayNumber}
+</Text>
+<Text style={styles.progressShareGuidanceTitle}>
+{dailyNumberDraw
+? `${dailyNumberDraw.number} - ${localize(dailyNumberDraw.title, language)}`
+: t.revealGuidance}
+</Text>
+</View>
+
+<View style={styles.progressShareGuidance}>
+<Text style={styles.progressShareGuidanceLabel}>
+{t.todayCard}
+</Text>
+<Text style={styles.progressShareGuidanceTitle}>
+{isPro && dailyTarotDraw
+? `${dailyTarotDraw.romanNumeral} ${localize(dailyTarotDraw.name, language)}`
+: `${t.locked} / ${t.proAction}`}
+</Text>
+</View>
+
+<View style={styles.progressShareGuidance}>
+<Text style={styles.progressShareGuidanceLabel}>
+{t.todayCounsel}
+</Text>
+<Text style={styles.progressShareGuidanceTitle}>
+{isPro && dailyCounselDraw
+? `${dailyCounselDraw.number}. ${localize(dailyCounselDraw.title, language)}`
+: `${t.locked} / ${t.proAction}`}
+</Text>
+{isPro && dailyCounselDraw && (
+<Text style={styles.progressShareGuidanceBody}>
+{localize(dailyCounselDraw.statement, language)}
+</Text>
+)}
+</View>
+
+<View style={styles.progressShareFooter}>
+<Text style={styles.progressShareFooterText}>
+joincovenant.app
+</Text>
+</View>
+</View>
+</View>
 
 	<ScrollView
 showsVerticalScrollIndicator={
@@ -2063,33 +2259,20 @@ width: `${monthlyProgress}%`,
 {t.oracleSummary}
 </Text>
 
-{hasOracleSummary ? (
 <View style={styles.oracleSummaryItems}>
-{dailyNumberDraw && (
 <Text style={styles.oracleSummaryText}>
-{t.todayNumber} {dailyNumberDraw.number} — {localize(dailyNumberDraw.title, language)}
+{dailyNumberDraw
+? `${t.todayNumber} ${dailyNumberDraw.number} - ${localize(dailyNumberDraw.title, language)}`
+: `${t.todayNumber} - ${isRevealingGuidance ? t.processing : t.revealGuidance}`}
 </Text>
-)}
 
-{isPro && dailyTarotDraw && (
+{isPro ? (
 <Text style={styles.oracleSummaryText}>
-{t.todayCard} {localize(dailyTarotDraw.name, language)}
+{dailyTarotDraw
+? `${t.todayCard} ${localize(dailyTarotDraw.name, language)}`
+: `${t.todayCard} - ${isRevealingGuidance ? t.processing : t.revealGuidance}`}
 </Text>
-)}
-
-{isPro && dailyCounselDraw && (
-<Text style={styles.oracleSummaryText}>
-{t.todayCounsel} {localize(dailyCounselDraw.title, language)}
-</Text>
-)}
-</View>
 ) : (
-<View style={styles.oracleSummaryItems}>
-<Text style={styles.todayPanelText}>
-{isRevealingGuidance ? t.processing : t.revealGuidance}
-</Text>
-{!isPro && (
-<>
 <TouchableOpacity
 activeOpacity={0.78}
 onPress={openOraclePaywall}
@@ -2098,6 +2281,15 @@ style={styles.lockedGuidanceRow}
 <Text style={styles.lockedGuidanceText}>{t.todayCard}</Text>
 <Text style={styles.lockedGuidanceBadge}>{t.proAction}</Text>
 </TouchableOpacity>
+)}
+
+{isPro ? (
+<Text style={styles.oracleSummaryText}>
+{dailyCounselDraw
+? `${t.todayCounsel} ${localize(dailyCounselDraw.title, language)}`
+: `${t.todayCounsel} - ${isRevealingGuidance ? t.processing : t.revealGuidance}`}
+</Text>
+) : (
 <TouchableOpacity
 activeOpacity={0.78}
 onPress={openOraclePaywall}
@@ -2106,10 +2298,8 @@ style={styles.lockedGuidanceRow}
 <Text style={styles.lockedGuidanceText}>{t.todayCounsel}</Text>
 <Text style={styles.lockedGuidanceBadge}>{t.proAction}</Text>
 </TouchableOpacity>
-</>
 )}
 </View>
-)}
 </View>
 </View>
 
@@ -2132,18 +2322,30 @@ opacity: 0.72,
 <View style={styles.shareRow}>
 <TouchableOpacity
 activeOpacity={0.78}
-onPress={shareProgressSummary}
-style={styles.shareButton}
+onPress={shareProgressImage}
+disabled={isSharingProgress}
+style={[
+styles.shareButton,
+isSharingProgress && styles.shareButtonDisabled,
+]}
 >
-<Text style={styles.shareButtonText}>{t.shareProgress}</Text>
+<Text style={styles.shareButtonText}>
+{isSharingProgress ? t.sharingProgress : t.shareProgress}
+</Text>
 </TouchableOpacity>
 
 <TouchableOpacity
 activeOpacity={0.78}
-onPress={shareProgressSummary}
-style={styles.shareButton}
+onPress={shareProgressImage}
+disabled={isSharingProgress}
+style={[
+styles.shareButton,
+isSharingProgress && styles.shareButtonDisabled,
+]}
 >
-<Text style={styles.shareButtonText}>{t.shareSocials}</Text>
+<Text style={styles.shareButtonText}>
+{isSharingProgress ? t.sharingProgress : t.shareSocials}
+</Text>
 </TouchableOpacity>
 
 <TouchableOpacity
@@ -2745,6 +2947,9 @@ language={language}
 <Text style={styles.oracleModalQuestion}>
 {localize(dailyCounselDraw.action, language)}
 </Text>
+<Text style={styles.oracleModalWarning}>
+{localize(dailyCounselDraw.warning, language)}
+</Text>
 </View>
 )}
 
@@ -2773,10 +2978,16 @@ style={styles.oracleModalSecondaryButton}
 <View style={styles.shareRow}>
 <TouchableOpacity
 activeOpacity={0.78}
-onPress={shareProgressSummary}
-style={styles.shareButton}
+onPress={shareProgressImage}
+disabled={isSharingProgress}
+style={[
+styles.shareButton,
+isSharingProgress && styles.shareButtonDisabled,
+]}
 >
-<Text style={styles.shareButtonText}>{t.shareSocials}</Text>
+<Text style={styles.shareButtonText}>
+{isSharingProgress ? t.sharingProgress : t.shareSocials}
+</Text>
 </TouchableOpacity>
 
 <TouchableOpacity
@@ -2852,6 +3063,201 @@ backgroundColor:
 COLORS.background,
 paddingHorizontal: 22,
 paddingTop: 62,
+},
+
+shareCardHost: {
+position: "absolute",
+left: -10000,
+top: 0,
+width: 390,
+height: 680,
+opacity: 1,
+},
+
+progressShareCard: {
+width: 390,
+height: 680,
+backgroundColor: "#050403",
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.62)",
+paddingHorizontal: 28,
+paddingVertical: 30,
+overflow: "hidden",
+},
+
+progressShareHeader: {
+flexDirection: "row",
+alignItems: "center",
+justifyContent: "space-between",
+gap: 18,
+marginBottom: 24,
+},
+
+progressShareBrand: {
+color: "#F3D3A5",
+fontSize: 26,
+lineHeight: 32,
+letterSpacing: 7,
+fontWeight: "300",
+},
+
+progressShareSubtitle: {
+color: COLORS.quiet,
+fontSize: 9,
+lineHeight: 15,
+letterSpacing: 2.6,
+fontWeight: "800",
+},
+
+progressShareSeal: {
+width: 58,
+height: 58,
+borderRadius: 29,
+alignItems: "center",
+justifyContent: "center",
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.58)",
+backgroundColor:
+"rgba(216,140,58,0.10)",
+},
+
+progressShareSealRing: {
+position: "absolute",
+width: 38,
+height: 38,
+borderRadius: 19,
+borderWidth: 1,
+borderColor:
+"rgba(255,232,200,0.20)",
+},
+
+progressShareSealCore: {
+width: 12,
+height: 12,
+borderRadius: 6,
+backgroundColor:
+"rgba(216,140,58,0.28)",
+borderWidth: 1,
+borderColor:
+"rgba(243,211,165,0.80)",
+},
+
+progressShareLanguageBadge: {
+alignSelf: "flex-start",
+borderWidth: 1,
+borderColor:
+"rgba(255,232,200,0.18)",
+borderRadius: 999,
+paddingHorizontal: 11,
+paddingVertical: 6,
+marginBottom: 18,
+backgroundColor:
+"rgba(255,255,255,0.035)",
+},
+
+progressShareLanguageText: {
+color: COLORS.bronze,
+fontSize: 10,
+letterSpacing: 2,
+fontWeight: "800",
+},
+
+progressSharePhrase: {
+color: COLORS.text,
+fontSize: 24,
+lineHeight: 32,
+fontWeight: "300",
+marginBottom: 24,
+},
+
+progressShareStatsRow: {
+flexDirection: "row",
+gap: 10,
+marginBottom: 24,
+},
+
+progressShareStat: {
+flex: 1,
+minHeight: 92,
+borderWidth: 1,
+borderColor:
+"rgba(216,140,58,0.24)",
+backgroundColor:
+"rgba(216,140,58,0.09)",
+paddingHorizontal: 12,
+paddingVertical: 13,
+justifyContent: "space-between",
+},
+
+progressShareStatLabel: {
+color: COLORS.quiet,
+fontSize: 9,
+letterSpacing: 2,
+fontWeight: "800",
+},
+
+progressShareStatValue: {
+color: "#F3D3A5",
+fontSize: 28,
+lineHeight: 34,
+fontWeight: "300",
+},
+
+progressShareDivider: {
+height: 1,
+backgroundColor:
+"rgba(255,232,200,0.14)",
+marginBottom: 20,
+},
+
+progressShareGuidance: {
+borderLeftWidth: 1,
+borderLeftColor:
+"rgba(216,140,58,0.54)",
+paddingLeft: 14,
+marginBottom: 18,
+},
+
+progressShareGuidanceLabel: {
+color: COLORS.bronze,
+fontSize: 9,
+lineHeight: 14,
+letterSpacing: 2.4,
+fontWeight: "800",
+marginBottom: 5,
+},
+
+progressShareGuidanceTitle: {
+color: "#F4E8DA",
+fontSize: 16,
+lineHeight: 22,
+fontWeight: "600",
+},
+
+progressShareGuidanceBody: {
+color: "#C8B9A8",
+fontSize: 12,
+lineHeight: 18,
+marginTop: 6,
+},
+
+progressShareFooter: {
+marginTop: "auto",
+borderTopWidth: 1,
+borderTopColor:
+"rgba(255,232,200,0.12)",
+paddingTop: 16,
+},
+
+progressShareFooterText: {
+color: COLORS.bronze,
+fontSize: 12,
+lineHeight: 18,
+letterSpacing: 2.6,
+fontWeight: "800",
+textAlign: "center",
 },
 
 headerRow: {
@@ -3314,6 +3720,10 @@ backgroundColor:
 "rgba(216,140,58,0.10)",
 },
 
+shareButtonDisabled: {
+opacity: 0.66,
+},
+
 shareButtonText: {
 color: COLORS.bronze,
 fontSize: 10,
@@ -3670,6 +4080,17 @@ oracleModalQuestion: {
 color: "#F0C892",
 fontSize: 14,
 lineHeight: 23,
+},
+
+oracleModalWarning: {
+color: "#C4B3A3",
+fontSize: 13,
+lineHeight: 22,
+borderLeftWidth: 1,
+borderLeftColor:
+"rgba(216,140,58,0.48)",
+paddingLeft: 12,
+marginTop: 2,
 },
 
 tarotArtwork: {
